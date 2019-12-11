@@ -1,0 +1,195 @@
+LRP_ID,Standard_LRP_Stamp,Sort_of_Stamp,LRP_Stamp_Lower_Date,LRP_Stamp_Upper_Date
+1,LRP-GROUP I,,360,450
+2,LRP-GROUP II,,440,490
+3,LRP-GROUP IIA,,440,490
+4,LRP-GROUP IIB,,440,490
+5,LRP-GROUP IIB-C,,440,490
+6,LRP-GROUP III,,470,580
+7,LRP-GROUP II-III,,440,580
+8,LRP-MOTIF,,,
+9,LRP-MOTIF 1,"""Palm-branch""",360,450
+10,LRP-MOTIF 12,"""Lotus-bud""",440,490
+11,LRP-MOTIF 12l,"""Lotus-bud""",440,490
+12,LRP-MOTIF 13,"""'Onion'""",440,490
+13,LRP-MOTIF 14,"""'Almond'""",440,490
+14,LRP-MOTIF 15,"""Seven-petalled rosette""",440,490
+15,LRP-MOTIF 16,"""Lozenge with volutes""",440,490
+16,LRP-MOTIF 17,"""Lozenge with volutes"" ""with four pelta-shaped motifs""",440,540
+17,LRP-MOTIF 17w,"""Lozenge with volutes"" ""with four pelta-shaped motifs""",440,540
+18,LRP-MOTIF 19,"""S-scroll""",440,580
+19,LRP-MOTIF 22,"""Cable-pattern between two lines""",440,490
+20,LRP-MOTIF 24,"""Linked lozenges and triangles""",440,580
+21,LRP-MOTIF 25,"""Interweave pattern""",470,580
+22,LRP-MOTIF 26,"""Figure-of-eight and key pattern""",440,490
+23,LRP-MOTIF 29,"""Sole of shoe""",440,490
+24,LRP-MOTIF 2b,"""Concentric circle[s]"" (two)",360,450
+25,LRP-MOTIF 32,"""Quatrefoil""",470,580
+26,LRP-MOTIF 33,"""Four double volutes in circle""",470,580
+27,LRP-MOTIF 34,"""Cross on lozenge""",440,580
+28,LRP-MOTIF 35,"""Hare""",440,490
+29,LRP-MOTIF 35b-d,"""Hare""",465,490
+30,LRP-MOTIF 35l-v,"""Hare""",440,490
+31,LRP-MOTIF 35o,"""Hare""",440,490
+32,LRP-MOTIF 35p,"""Hare""",440,490
+33,LRP-MOTIF 35t,"""Hare""",440,490
+34,LRP-MOTIF 35w,"""Hare""",470,510
+35,LRP-MOTIF 37,"""Lion""",470,580
+36,LRP-MOTIF 38,"""'Lioness', pacing""",425,500
+37,LRP-MOTIF 41,"""Stag""",470,580
+38,LRP-MOTIF 41g,"""Stag""",470,580
+39,LRP-MOTIF 43,"""Horse/mule/zebra""",470,580
+40,LRP-MOTIF 45,"""Dolphin""",440,580
+41,LRP-MOTIF 45n-o,"""Dolphin""",440,580
+42,LRP-MOTIF 45p,"""Dolphin""",440,580
+43,LRP-MOTIF 46,"""Chick""",,
+44,LRP-MOTIF 46a,"""'Chick'""",440,490
+45,LRP-MOTIF 47/48,"""Peacock""",440,580
+46,LRP-MOTIF 48,"""Peacock, later type""",470,580
+47,LRP-MOTIF 5,"""Small lentoid leaf""",360,450
+48,LRP-MOTIF 50,"""Long-tailed birds (peahens?)""",470,510
+49,LRP-MOTIF 53,"""Running figure""",470,580
+50,LRP-MOTIF 55,"""Man holding bunch of grapes""",470,580
+51,LRP-MOTIF 56,"""'Emperor', saluting""",470,580
+52,LRP-MOTIF 58,"""Priest, in 'orans' position""",470,580
+53,LRP-MOTIF 59,Cantharos,440,580
+54,LRP-MOTIF 59-60,"""Canthari""",500,525
+55,LRP-MOTIF 6,"""'Star of David'""",440,490
+56,LRP-MOTIF 61,"""Cross-monogram with closed rho""",440,580
+57,LRP-MOTIF 63,"""Cross-monogram [...] with open rho""",470,580
+58,LRP-MOTIF 65,"""Double-ribbed cross-monogram with A and ?""",475,500
+59,LRP-MOTIF 66,"""Cross-monogram with A and ?""",440,580
+60,LRP-MOTIF 66/67,"""Cross-monogram with A and ?""/""Cross-monogram with two pendants below arms""",440,580
+61,LRP-MOTIF 67,"""Cross-monogram with two pendants below arms""",475,525
+62,LRP-MOTIF 67/68,"""Cross-monogram with two pendants below arms""/""Cross-monogram with four circle-motifs between arms""",475,525
+63,LRP-MOTIF 67j,"""Cross-monogram with two pendants below arms""",475,525
+64,LRP-MOTIF 67l,"""Cross-monogram with two pendants below arms""",475,525
+65,LRP-MOTIF 68,"""Cross-monogram with four circle-motifs between arms""",480,520
+66,LRP-MOTIF 68/79,"""Cross[-monogram] with four circle-motifs between arms""",475,550
+67,LRP-MOTIF 69,"""Double-ribbed Greek cross""",440,490
+68,LRP-MOTIF 69p,"""Double-ribbed Greek cross""",440,490
+69,LRP-MOTIF 70,"""Double-ribbed Greek cross with pendants""",450,475
+70,LRP-MOTIF 71,"""Cross with double outline""",475,525
+71,LRP-MOTIF 71c/d,"""Cross with double outline""",475,525
+72,LRP-MOTIF 71d,"""Cross with double outline""",475,525
+73,LRP-MOTIF 72,"""Greek cross with double outline""",470,580
+74,LRP-MOTIF 73,"""Plain cross""",475,600
+75,LRP-MOTIF 77,"""Jewelled cross with pendants""",475,525
+76,LRP-MOTIF 79,"""Cross with four circle-motifs between arms""",475,550
+77,LRP-MOTIF 79s,"""Cross with four circle-motifs between arms""",475,550
+78,LRP-MOTIF 8,"""Palmette""",440,490
+79,LRP-MOTIF 80,"""Cross with two pendants""",500,550
+80,LRP-MOTIFS 1 & 12,"""Palm-branch"" & ""Lotus-bud""",425,500
+81,LRP-MOTIFS 1 & 2,"""Palm-branch"" & ""Concentric circles""",360,450
+82,LRP-MOTIFS 1 & 2a,"""Palm-branch"" & ""Concentric circles""",360,450
+83,LRP-MOTIFS 1 & 3,"""Palm-branch"" & ""Small circular rosette""",375,400
+84,LRP-MOTIFS 1 & 33,"""Palm-branch & four double volutes in circle forming cross-pattern""",425,500
+85,LRP-MOTIFS 1 & 8,"""Palm-branch"" & ""Palmette""",425,500
+86,LRP-MOTIFS 12l & 17w,"""Lotus-bud"" & ""Lozenge with volutes"" ""with four pelta-shaped motifs""",440,490
+87,LRP-MOTIFS 14 & 71,"""Almond"" & ""Cross with double outline""",440,490
+88,LRP-MOTIFS 2 & 5,"""Concentric circle"" & ""Small lentoid motif, with triple outline""",360,450
+89,LRP-MOTIFS 35 & 59,,470,510
+90,LRP-MOTIFS 35 & 73,,475,500
+91,LRP-MOTIFS 66-68,,470,580
+92,LRP-MOTIFS 71-72,,475,525
+93,LRP-MOTIFS 8-9,,440,490
+94,LRP-STAMP,,,
+95,LRP-STAMP 10,,350,400
+96,LRP-STAMP 106,,440,500
+97,LRP-STAMP 112,,525,575
+98,LRP-STAMP 121,,480,540
+99,LRP-STAMP 132,,400,425
+100,LRP-STAMP 142,,480,540
+101,LRP-STAMP 151,,480,540
+102,LRP-STAMP 153,,410,540
+103,LRP-STAMP 156,,410,470
+104,LRP-STAMP 209A,,525,575
+105,LRP-STAMP 209B,,550,600
+106,LRP-STAMP 213,"""Cock""",530,600
+107,LRP-STAMP 223B,,530,600
+108,LRP-STAMP 239,,525,575
+109,LRP-STAMP 239B,,525,575
+110,LRP-STAMP 250,,530,600
+111,LRP-STAMP 256,,530,600
+112,LRP-STAMP 26,,350,470
+113,LRP-STAMP 262,,570,600
+114,LRP-STAMP 27,,350,470
+115,LRP-STAMP 278,,530,600
+116,LRP-STAMP 28,,350,450
+117,LRP-STAMP 3,,350,425
+118,LRP-STAMP 306,,480,540
+119,LRP-STAMP 311,"""Cross with double outline""",475,525
+120,LRP-STAMP 316,,480,600
+121,LRP-STAMP 317,,480,600
+122,LRP-STAMP 32,,375,475
+123,LRP-STAMP 323,,530,570
+124,LRP-STAMP 328B,,530,600
+125,LRP-STAMP 333,,570,600
+126,LRP-STAMP 334,,570,600
+127,LRP-STAMP 36,,375,475
+128,LRP-STAMP 37,"""Four circles with whirl-fringe""",425,475
+129,LRP-STAMP 38,,400,425
+130,LRP-STAMP 44B,,350,420
+131,LRP-STAMP 69,,350,470
+132,LRP-STAMP 73,,375,475
+133,LRP-STAMP 75,"""chevron""",400,450
+134,LRP-STAMP 78,,350,420
+135,LRP-STAMPS 1 & 54,,320,470
+136,"LRP-STAMPS 1/3/19, 36 & 69","""Palm-branch"", ""Three circles with whirl-fringe"" and ""square"" ""grille-pattern[s]""",,
+137,LRP-STAMPS 10 & 28,,350,400
+138,LRP-STAMPS 111 & 293,,440,500
+139,LRP-STAMPS 12/13 & 99,,380,440
+140,LRP-STAMPS 1-3,"""Palm-branches""",325,400
+141,LRP-STAMPS 17 & 333/334,,570,600
+142,LRP-STAMPS 171-172,,525,550
+143,LRP-STAMPS 23 & 44,,320,420
+144,LRP-STAMPS 230A & 246B,,550,575
+145,LRP-STAMPS 24 & 25,,350,380
+146,LRP-STAMPS 24 & 44B,,350,380
+147,LRP-STAMPS 25 & 67a,"""Three"" ""Concentric circles"" and ""Square"" ""Grille-pattern[s]""",350,420
+148,LRP-STAMPS 26 & 31,,375,425
+149,LRP-STAMPS 26 & 44,,320,420
+150,LRP-STAMPS 26 & 76,,410,470
+151,LRP-STAMPS 262 & 335,"""Female head (to r.)"" & Cross ""Large, with double outline""",550,575
+152,LRP-STAMPS 27 & 69,,350,470
+153,LRP-STAMPS 27 & 76,,410,470
+154,LRP-STAMPS 3 & 25,,350,400
+155,LRP-STAMPS 3 & 83,"""Palm-branch"" & ""Trefoil""",350,450
+156,LRP-STAMPS 31 & 69,,375,425
+157,LRP-STAMPS 311 & 323,,475,525
+158,LRP-STAMPS 35 & 69,,375,425
+159,LRP-STAMPS 4 & 26,,350,425
+160,LRP-STAMPS 4 & 27,,350,425
+161,LRP-STAMPS 4 & 28,,350,425
+162,LRP-STAMPS 4 & 35,,375,425
+163,LRP-STAMPS 4 & 44,,320,420
+164,LRP-STAMPS 4 & 67,,350,425
+165,LRP-STAMPS 4 & 70,,350,425
+166,LRP-STAMPS 4 & 73,,375,425
+167,LRP-STAMPS 4 & 74,,350,425
+168,LRP-STAMPS 4 & 78,"""Palm-branch"" & ""clover-leaf""",375,400
+169,LRP-STAMPS 44 & 69,,350,420
+170,LRP-STAMPS 44B & 83,,400,420
+171,LRP-STAMPS 5 & 26,,425,475
+172,LRP-STAMPS 70 & 75,"""Grille pattern"" (""circular"") & ""Chevron""",,
+173,LRP-STAMPS 70 & 78,"""Grille pattern"" (""circular"") & ""simple clover-leaf""",375,400
+174,LRP-STAMPS 71 & 78,,375,425
+175,"LRP-STAMPS 73, 108 & 149",,375,475
+176,LRP-STYLE Ai,,320,350
+177,LRP-STYLE Aii,,350,420
+178,LRP-STYLE Aiii,,410,470
+179,LRP-STYLE Ai-ii,,320,420
+180,LRP-STYLE Ai-iii,,320,470
+181,LRP-STYLE Aii-iii,,350,470
+182,LRP-STYLE D,,440,500
+183,LRP-STYLE Ei,,480,540
+184,LRP-STYLE Eii,,530,600
+185,LRP-STYLE Ei-ii,,480,600
+186,LRP-STAMP 245,,,
+187,LRP-STAMP 247,,,
+188,LRP-STAMPS 44 & 23,,,
+189,LRP-STYLE B,,,
+190,LRP-STYLE C,,,
+191,LRP-STAMPS 9 & 38,,,
+192,LRP-STAMPS 24 & 28,,,
+193,LRP-MOTIF 35/46,,,
+194,LRP-MOTIF 2,"""Concentric circles""",360,450
