@@ -1,5 +1,6 @@
 library(igraph)
 library(tidyverse)
+source("scripts/network_metrics.R")
 
 #read in data and clean
 aa = read.csv("Data/Prignano/AA.gdf")
@@ -64,7 +65,7 @@ create_new_edge_list = function(edges, groups) {
   return(edges)
 }
 
-#time averaging functions to create combined graphs
+#### time averaging functions to create combined graphs ####
 average_two = function(e1, e2, groups) {
   edge1 = create_new_edge_list(e1, groups)
   edge2 = create_new_edge_list(e2, groups)
@@ -103,3 +104,10 @@ average_five = function(e1, e2, e3, e4, e5, groups) {
   return(graph)
 }
 
+#### analysis ####
+#test on eia1e and eia1l
+g1 = graph_from_edgelist(as.matrix(create_new_edge_list(eia1e.edge, groups)[,5:6]))
+g2 = graph_from_edgelist(as.matrix(create_new_edge_list(eia1l.edge, groups)[,5:6]))
+ga = average_two(eia1e.edge, eia1l.edge, groups)
+
+#create dataframe for comparison
