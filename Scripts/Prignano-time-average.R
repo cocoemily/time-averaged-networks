@@ -78,7 +78,7 @@ average_three = function(e1, e2, e3, groups) {
   edge1 = create_new_edge_list(e1, groups)
   edge2 = create_new_edge_list(e2, groups)
   edge3 = create_new_edge_list(e3, groups)
-  e = rbint(edge1, edge2, edge3)
+  e = rbind(edge1, edge2, edge3)
   graph = simplify(graph_from_edgelist(as.matrix(e[,5:6])))
   return(graph)
 }
@@ -88,7 +88,7 @@ average_four = function(e1, e2, e3, e4, groups) {
   edge2 = create_new_edge_list(e2, groups)
   edge3 = create_new_edge_list(e3, groups)
   edge4 = create_new_edge_list(e4, groups)
-  e = rbint(edge1, edge2, edge3, edge4)
+  e = rbind(edge1, edge2, edge3, edge4)
   graph = simplify(graph_from_edgelist(as.matrix(e[,5:6])))
   return(graph)
 }
@@ -105,9 +105,88 @@ average_five = function(e1, e2, e3, e4, e5, groups) {
 }
 
 #### analysis ####
-#test on eia1e and eia1l
-g1 = graph_from_edgelist(as.matrix(create_new_edge_list(eia1e.edge, groups)[,5:6]))
-g2 = graph_from_edgelist(as.matrix(create_new_edge_list(eia1l.edge, groups)[,5:6]))
-ga = average_two(eia1e.edge, eia1l.edge, groups)
+#functions to create dataframe for comparison
+ta_compare = function(edge1, edge2, edge3 = NULL, edge4 = NULL, edge5 = NULL, 
+                      groups) {
+  df = data.frame(cc = integer(), 
+                  diam = integer(), 
+                  edge.dens = integer(), 
+                  btwn = integer(), 
+                  close = integer(), 
+                  eigen = integer(), 
+                  path.length = integer(), 
+                  size = integer())
+  g1 = NULL
+  g2 = NULL
+  g3 = NULL
+  g4 = NULL
+  g5 = NULL
+  ga = NULL
+  
+  if(is.null(edge3) & is.null(edge4) & is.null(edge5)) {
+    g1 = graph_from_edgelist(as.matrix(create_new_edge_list(edge1, groups)[,5:6]))
+    g2 = graph_from_edgelist(as.matrix(create_new_edge_list(edge2, groups)[,5:6]))
+    ga = average_two(edge1, edge2, groups)
+  }else if(is.null(edge4) & is.null(edge5)) {
+    g1 = graph_from_edgelist(as.matrix(create_new_edge_list(edge1, groups)[,5:6]))
+    g2 = graph_from_edgelist(as.matrix(create_new_edge_list(edge2, groups)[,5:6]))
+    g3 = graph_from_edgelist(as.matrix(create_new_edge_list(edge3, groups)[,5:6]))
+    ga = average_three(edge1, edge2, edge3, groups)
+  }else if(is.null(edge5)) {
+    g1 = graph_from_edgelist(as.matrix(create_new_edge_list(edge1, groups)[,5:6]))
+    g2 = graph_from_edgelist(as.matrix(create_new_edge_list(edge2, groups)[,5:6]))
+    g3 = graph_from_edgelist(as.matrix(create_new_edge_list(edge3, groups)[,5:6]))
+    g4 = graph_from_edgelist(as.matrix(create_new_edge_list(edge4, groups)[,5:6]))
+    ga = average_four(edge1, edge2, edge3, edge4, groups)
+  }else {
+    g1 = graph_from_edgelist(as.matrix(create_new_edge_list(edge1, groups)[,5:6]))
+    g2 = graph_from_edgelist(as.matrix(create_new_edge_list(edge2, groups)[,5:6]))
+    g3 = graph_from_edgelist(as.matrix(create_new_edge_list(edge3, groups)[,5:6]))
+    g4 = graph_from_edgelist(as.matrix(create_new_edge_list(edge4, groups)[,5:6]))
+    g5 = graph_from_edgelist(as.matrix(create_new_edge_list(edge5, groups)[,5:6]))
+    ga = average_five(edge1, edge2, edge3, edge4, edge5, groups)
+  }
+  
+  if(is.null(g3) & is.null(g4) & is.null(g5)) {
+    df[nrow(df) + 1, ] = get_row(g1)
+    df[nrow(df) + 1, ] = get_row(g2)
+    df[nrow(df) + 1, ] = get_row(ga)
+    df$names = c(edge1$age[1], edge2$age[1], "ta2")
+  }else if (is.null(g4) & is.null(g5)) {
+    df[nrow(df) + 1, ] = get_row(g1)
+    df[nrow(df) + 1, ] = get_row(g2)
+    df[nrow(df) + 1, ] = get_row(g3)
+    df[nrow(df) + 1, ] = get_row(ga)
+    df$names = c(edge1$age[1], edge2$age[1], edge3$age[1], "ta3")
+  }else if(is.null(g5)){
+    df[nrow(df) + 1, ] = get_row(g1)
+    df[nrow(df) + 1, ] = get_row(g2)
+    df[nrow(df) + 1, ] = get_row(g3)
+    df[nrow(df) + 1, ] = get_row(g4)
+    df[nrow(df) + 1, ] = get_row(ga)
+    df$names = c(edge1$age[1], edge2$age[1], edge3$age[1], edge4$age[1], "ta4")
+  }else {
+    df[nrow(df) + 1, ] = get_row(g1)
+    df[nrow(df) + 1, ] = get_row(g2)
+    df[nrow(df) + 1, ] = get_row(g3)
+    df[nrow(df) + 1, ] = get_row(g4)
+    df[nrow(df) + 1, ] = get_row(g5)
+    df[nrow(df) + 1, ] = get_row(ga)
+    df$names = c(edge1$age[1], edge2$age[1], edge3$age[1], 
+                 edge4$age[1], edge5$age[1], "ta5")
+  }
+  return(df)
+}
 
-#create dataframe for comparison
+get_row = function(graph) {
+  return(c(calc.cc(graph), calc.diam(graph), calc.edge.dens(graph), 
+           calc.mean.between(graph), calc.mean.close(graph), 
+           calc.mean.eigen(graph), calc.mean.path.length(graph), 
+           calc.S(graph)))
+}
+
+##analysis
+ta2 = ta_compare(eia1e.edge, eia1l.edge, groups = groups)
+ta3 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, groups = groups)
+ta4 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups = groups)
+ta5 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups = groups)
