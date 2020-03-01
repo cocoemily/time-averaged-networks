@@ -43,6 +43,7 @@ calc.cc <- function(g) {
 }
 #modularity
 calc.mod <- function(g) {
-  mod <- modularity(g, "global")
+  wtc = cluster_walktrap(g)
+  mod <- modularity(as.undirected(g), membership(wtc))
   return(mod)
 }

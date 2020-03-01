@@ -112,10 +112,10 @@ ta_compare = function(edge1, edge2, edge3 = NULL, edge4 = NULL, edge5 = NULL,
                   diam = integer(), 
                   edge.dens = integer(), 
                   btwn = integer(), 
-                  close = integer(), 
                   eigen = integer(), 
                   path.length = integer(), 
-                  size = integer())
+                  size = integer(), 
+                  mod = integer())
   g1 = NULL
   g2 = NULL
   g3 = NULL
@@ -180,13 +180,69 @@ ta_compare = function(edge1, edge2, edge3 = NULL, edge4 = NULL, edge5 = NULL,
 
 get_row = function(graph) {
   return(c(calc.cc(graph), calc.diam(graph), calc.edge.dens(graph), 
-           calc.mean.between(graph), calc.mean.close(graph), 
+           calc.mean.between(graph),
            calc.mean.eigen(graph), calc.mean.path.length(graph), 
-           calc.S(graph)))
+           calc.S(graph), calc.mod(graph)))
 }
 
 ##analysis
-ta2 = ta_compare(eia1e.edge, eia1l.edge, groups = groups)
-ta3 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, groups = groups)
-ta4 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups = groups)
+#EIA1E : Early Iron Age 1 Early (950/925 900 BC)
+#EIA1L : Early Iron Age 1 Late (900 850/825 BC)
+#EIA2 : Early Iron Age 2 (850/825 730/720 BC)
+#OA : Orientalizing Age (730/720 580 BC)
+#AA : Archaic Period (580-500 BC)
 ta5 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups = groups)
+
+ta2_1 = ta_compare(eia1e.edge, eia1l.edge, groups = groups)
+ta2_2 = ta_compare(eia1l.edge, eia2.edge, groups = groups)
+ta2_3 = ta_compare(eia2.edge, oa.edge, groups = groups)
+ta2_4 = ta_compare(oa.edge, aa.edge, groups = groups)
+
+ta3_1 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, groups = groups)
+ta3_2 = ta_compare(eia1l.edge, eia2.edge, oa.edge, groups = groups)
+ta3_3 = ta_compare(eia2.edge, oa.edge, aa.edge, groups = groups)
+
+ta4_1 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups = groups)
+ta4_2 = ta_compare(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups = groups)
+
+eia1eta = rbind(ta2_1 %>% filter(names != "eia1l"), 
+                ta3_1 %>% filter(names == "ta3"),
+                ta4_1 %>% filter(names == "ta4"),
+                ta5 %>% filter(names == "ta5"))
+eia1eta$num.graphs = c(1,2,3,4,5)
+eia1lta = rbind(ta2_1 %>% filter(names != "eia1e"), ta2_2 %>% filter(names == "ta2"), 
+                ta3_1 %>% filter(names == "ta3"), ta3_2 %>% filter(names == "ta3"), 
+                ta4_1 %>% filter(names == "ta4"), ta4_2 %>% filter(names == "ta4"), 
+                ta5 %>% filter(names == "ta5"))
+eia1lta$num.graphs = c(1,2,2,3,3,4,4,5)
+eia2ta = rbind(ta2_2 %>% filter(names != "eia1l"), ta2_3 %>% filter(names == "ta2"), 
+             ta3_1 %>% filter(names == "ta3"), ta3_2 %>% filter(names == "ta3"), ta3_3 %>% filter(names == "ta3"), 
+             ta4_1 %>% filter(names == "ta4"), ta4_2 %>% filter(names == "ta4"), 
+             ta5 %>% filter(names == "ta5"))
+eia2ta$num.graphs = c(1,2,2,3,3,3,4,4,5)
+oata = rbind(ta2_3 %>% filter(names != "eia2"), ta2_4 %>% filter(names == "ta2"), 
+             ta3_2 %>% filter(names == "ta3"), ta3_3 %>% filter(names == "ta3"), 
+             ta4_1 %>% filter(names == "ta4"), ta4_2 %>% filter(names == "ta4"), 
+             ta5 %>% filter(names == "ta5"))
+oata$num.graphs = c(1,2,2,3,3,4,4,5)
+aata = rbind(ta2_4 %>% filter(names != "oa"), 
+             ta3_3 %>% filter(names == "ta3"), 
+             ta4_2 %>% filter(names == "ta4"), 
+             ta5 %>% filter(names == "ta5"))
+aata$num.graphs = c(1,2,3,4,5)
+
+#diam, edge.dens, btwn, eigen, path.length, size, mod
+p = ggplot(mapping = aes(x = num.graphs, y = mod)) +
+  geom_jitter(data = eia1eta, color = "red", alpha = 0.5) +
+  geom_smooth(data = eia1eta, se = F, color = "red") +
+  geom_jitter(data = eia1lta, color = "blue", alpha = 0.5) +
+  geom_smooth(data = eia1lta, se = F, color = "blue") +
+  geom_jitter(data = eia2ta, color = "green", alpha = 0.5) +
+  geom_smooth(data = eia2ta, se = F, color = "green") +
+  geom_jitter(data = oata, color = "purple", alpha = 0.5) +
+  geom_smooth(data = oata, se = F, color = "purple") +
+  geom_jitter(data = aata, color = "orange", alpha = 0.5) +
+  geom_smooth(data = aata, se = F, color = "orange") +
+  theme_minimal()
+ggsave("figures/mod.png", p, dpi = 300)
+
