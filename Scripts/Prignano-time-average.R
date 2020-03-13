@@ -1,5 +1,11 @@
 library(igraph)
 library(tidyverse)
+library(censReg)
+library(tidyverse)
+library(bbmle)
+library(MASS)
+library(pscl)
+library(stargazer)
 source("scripts/network_metrics.R")
 
 #read in data and clean
@@ -210,39 +216,80 @@ eia1eta = rbind(ta2_1 %>% filter(names != "eia1l"),
                 ta4_1 %>% filter(names == "ta4"),
                 ta5 %>% filter(names == "ta5"))
 eia1eta$num.graphs = c(1,2,3,4,5)
+eia1eta$network = "EIA1E"
 eia1lta = rbind(ta2_1 %>% filter(names != "eia1e"), ta2_2 %>% filter(names == "ta2"), 
                 ta3_1 %>% filter(names == "ta3"), ta3_2 %>% filter(names == "ta3"), 
                 ta4_1 %>% filter(names == "ta4"), ta4_2 %>% filter(names == "ta4"), 
                 ta5 %>% filter(names == "ta5"))
 eia1lta$num.graphs = c(1,2,2,3,3,4,4,5)
+eia1lta$network = "EIA1L"
 eia2ta = rbind(ta2_2 %>% filter(names != "eia1l"), ta2_3 %>% filter(names == "ta2"), 
              ta3_1 %>% filter(names == "ta3"), ta3_2 %>% filter(names == "ta3"), ta3_3 %>% filter(names == "ta3"), 
              ta4_1 %>% filter(names == "ta4"), ta4_2 %>% filter(names == "ta4"), 
              ta5 %>% filter(names == "ta5"))
 eia2ta$num.graphs = c(1,2,2,3,3,3,4,4,5)
+eia2ta$network = "EIA2"
 oata = rbind(ta2_3 %>% filter(names != "eia2"), ta2_4 %>% filter(names == "ta2"), 
              ta3_2 %>% filter(names == "ta3"), ta3_3 %>% filter(names == "ta3"), 
              ta4_1 %>% filter(names == "ta4"), ta4_2 %>% filter(names == "ta4"), 
              ta5 %>% filter(names == "ta5"))
 oata$num.graphs = c(1,2,2,3,3,4,4,5)
+oata$network = "OA"
 aata = rbind(ta2_4 %>% filter(names != "oa"), 
              ta3_3 %>% filter(names == "ta3"), 
              ta4_2 %>% filter(names == "ta4"), 
              ta5 %>% filter(names == "ta5"))
 aata$num.graphs = c(1,2,3,4,5)
+aata$network = "AA"
 
 #diam, edge.dens, btwn, eigen, path.length, size, mod
-p = ggplot(mapping = aes(x = num.graphs, y = mod)) +
-  geom_jitter(data = eia1eta, color = "red", alpha = 0.5) +
-  geom_smooth(data = eia1eta, se = F, color = "red") +
-  geom_jitter(data = eia1lta, color = "blue", alpha = 0.5) +
-  geom_smooth(data = eia1lta, se = F, color = "blue") +
-  geom_jitter(data = eia2ta, color = "green", alpha = 0.5) +
-  geom_smooth(data = eia2ta, se = F, color = "green") +
-  geom_jitter(data = oata, color = "purple", alpha = 0.5) +
-  geom_smooth(data = oata, se = F, color = "purple") +
-  geom_jitter(data = aata, color = "orange", alpha = 0.5) +
-  geom_smooth(data = aata, se = F, color = "orange") +
-  theme_minimal()
-ggsave("figures/mod.png", p, dpi = 300)
+# p = ggplot(mapping = aes(x = num.graphs, y = btwn)) +
+#   geom_jitter(data = eia1eta, color = "red", alpha = 0.5) +
+#   geom_smooth(data = eia1eta, se = F, color = "red") +
+#   geom_jitter(data = eia1lta, color = "blue", alpha = 0.5) +
+#   geom_smooth(data = eia1lta, se = F, color = "blue") +
+#   geom_jitter(data = eia2ta, color = "green", alpha = 0.5) +
+#   geom_smooth(data = eia2ta, se = F, color = "green") +
+#   geom_jitter(data = oata, color = "purple", alpha = 0.5) +
+#   geom_smooth(data = oata, se = F, color = "purple") +
+#   geom_jitter(data = aata, color = "orange", alpha = 0.5) +
+#   geom_smooth(data = aata, se = F, color = "orange") +
+#   theme_minimal()
+#ggsave("figures/mod.png", p, dpi = 300)
 
+alldata = rbind(eia1eta, eia1lta, eia2ta, oata, aata)
+alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L", 
+                                                     "EIA2", "OA", "AA"))
+
+b = lm(btwn ~ num.graphs, data = alldata)
+plot(b, which = 2)
+plot(b, which = 1)
+summary(b)
+d = lm(log(diam) ~ num.graphs, data = alldata)
+plot(d, which = 2)
+summary(d)
+hist(alldata$edge.dens)
+ed = lm(log(edge.dens) ~ num.graphs, data = alldata)
+plot(ed, which = 2)
+summary(ed)
+hist(alldata$eigen)
+e = glm(eigen ~ num.graphs, data = alldata)
+plot(e, which = 2)
+summary(e)
+pl = lm(log(path.length) ~ num.graphs, data = alldata)
+plot(pl, which = 2)
+summary(pl)
+s = lm(size ~ num.graphs, data = alldata)
+plot(s, which = 2)
+summary(s)
+m = lm(mod ~ num.graphs, data = alldata)
+plot(m, which = 2)
+summary(m)
+
+#btwn, log(diam), log(edge.dens), eigen, log(path.length), size, mod
+p2 = ggplot(data = alldata, aes(x = num.graphs, y = mod)) +
+  geom_jitter(aes(color = network),alpha = 0.5, size = 0.5) +
+  geom_smooth(aes(color = network), alpha = 0.5, size = 0.75, se = F, method = "lm") +
+  geom_smooth(se = T, method = "lm", color = "black", linetype = "dashed") +
+  theme_minimal()
+ggsave("figures/mod.png", p2, dpi = 300)
