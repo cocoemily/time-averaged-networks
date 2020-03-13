@@ -277,14 +277,22 @@ summary(m)
 cc = lm(cc ~ num.graphs, data = alldata)
 plot(cc, which = 2)
 summary(cc)
-
+md = lm(log(mean.deg) ~ num.graphs, data = alldata)
+plot(md, which = 2)
+summary(md)
+mi = lm(log(mean.in) ~ num.graphs, data = alldata)
+plot(mi, which = 2)
+summary(mi)
+mo = lm(log(mean.out) ~ num.graphs, data = alldata)
+plot(mo, which = 2)
 
 ##plotting##
 
-#btwn, log(diam), log(edge.dens), eigen, log(path.length), size, mod, cc
-p2 = ggplot(data = alldata, aes(x = num.graphs, y = cc)) +
+#btwn, log(diam), log(edge.dens), eigen, log(path.length), size, mod, cc,
+#log(mean.deg), log(mean.in), log(mean.out)
+p2 = ggplot(data = alldata, aes(x = num.graphs, y = log(mean.out))) +
   geom_jitter(aes(color = network),alpha = 0.5, size = 0.5) +
   geom_smooth(aes(color = network), alpha = 0.5, size = 0.75, se = F, method = "lm") +
   geom_smooth(se = T, method = "lm", color = "black", linetype = "dashed") +
   theme_minimal()
-#ggsave("figures/cc.png", p2, dpi = 300)
+ggsave("figures/log-mean-out.png", p2, dpi = 300)
