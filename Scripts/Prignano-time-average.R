@@ -7,6 +7,7 @@ library(MASS)
 library(pscl)
 library(stargazer)
 source("scripts/network_metrics.R")
+source("scripts/node_metrics.R")
 
 #read in data and clean
 aa = read.csv("Data/Prignano/AA.gdf")
@@ -110,7 +111,6 @@ average_five = function(e1, e2, e3, e4, e5, groups) {
   return(graph)
 }
 
-#### analysis ####
 #functions to create dataframe for comparison
 ta_compare = function(edge1, edge2, edge3 = NULL, edge4 = NULL, edge5 = NULL, 
                       groups) {
@@ -121,7 +121,10 @@ ta_compare = function(edge1, edge2, edge3 = NULL, edge4 = NULL, edge5 = NULL,
                   eigen = integer(), 
                   path.length = integer(), 
                   size = integer(), 
-                  mod = integer())
+                  mod = integer(), 
+                  mean.deg = integer(), 
+                  mean.in = integer(), 
+                  mean.out = integer())
   g1 = NULL
   g2 = NULL
   g3 = NULL
@@ -188,10 +191,11 @@ get_row = function(graph) {
   return(c(calc.cc(graph), calc.diam(graph), calc.edge.dens(graph), 
            calc.mean.between(graph),
            calc.mean.eigen(graph), calc.mean.path.length(graph), 
-           calc.S(graph), calc.mod(graph)))
+           calc.S(graph), calc.mod(graph), calc.mean.deg(graph), 
+           calc.mean.in(graph), calc.mean.out(graph)))
 }
 
-##analysis
+####Analysis####
 #EIA1E : Early Iron Age 1 Early (950/925 900 BC)
 #EIA1L : Early Iron Age 1 Late (900 850/825 BC)
 #EIA2 : Early Iron Age 2 (850/825 730/720 BC)
@@ -242,21 +246,6 @@ aata = rbind(ta2_4 %>% filter(names != "oa"),
 aata$num.graphs = c(1,2,3,4,5)
 aata$network = "AA"
 
-#diam, edge.dens, btwn, eigen, path.length, size, mod
-# p = ggplot(mapping = aes(x = num.graphs, y = btwn)) +
-#   geom_jitter(data = eia1eta, color = "red", alpha = 0.5) +
-#   geom_smooth(data = eia1eta, se = F, color = "red") +
-#   geom_jitter(data = eia1lta, color = "blue", alpha = 0.5) +
-#   geom_smooth(data = eia1lta, se = F, color = "blue") +
-#   geom_jitter(data = eia2ta, color = "green", alpha = 0.5) +
-#   geom_smooth(data = eia2ta, se = F, color = "green") +
-#   geom_jitter(data = oata, color = "purple", alpha = 0.5) +
-#   geom_smooth(data = oata, se = F, color = "purple") +
-#   geom_jitter(data = aata, color = "orange", alpha = 0.5) +
-#   geom_smooth(data = aata, se = F, color = "orange") +
-#   theme_minimal()
-#ggsave("figures/mod.png", p, dpi = 300)
-
 alldata = rbind(eia1eta, eia1lta, eia2ta, oata, aata)
 alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L", 
                                                      "EIA2", "OA", "AA"))
@@ -285,11 +274,17 @@ summary(s)
 m = lm(mod ~ num.graphs, data = alldata)
 plot(m, which = 2)
 summary(m)
+cc = lm(cc ~ num.graphs, data = alldata)
+plot(cc, which = 2)
+summary(cc)
 
-#btwn, log(diam), log(edge.dens), eigen, log(path.length), size, mod
-p2 = ggplot(data = alldata, aes(x = num.graphs, y = mod)) +
+
+##plotting##
+
+#btwn, log(diam), log(edge.dens), eigen, log(path.length), size, mod, cc
+p2 = ggplot(data = alldata, aes(x = num.graphs, y = cc)) +
   geom_jitter(aes(color = network),alpha = 0.5, size = 0.5) +
   geom_smooth(aes(color = network), alpha = 0.5, size = 0.75, se = F, method = "lm") +
   geom_smooth(se = T, method = "lm", color = "black", linetype = "dashed") +
   theme_minimal()
-ggsave("figures/mod.png", p2, dpi = 300)
+#ggsave("figures/cc.png", p2, dpi = 300)

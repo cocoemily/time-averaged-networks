@@ -47,3 +47,15 @@ calc.mod <- function(g) {
   mod <- modularity(as.undirected(g), membership(wtc))
   return(mod)
 }
+#mean degree
+calc.mean.deg = function(g) {
+  return(mean(degree(g, mode = "all")))
+}
+#mean in degree
+calc.mean.in = function(g) {
+  return(mean(degree(g, mode = "in")))
+}
+#mean out degree
+calc.mean.out = function(g) {
+  return(mean(degree(g, mode = "out")))
+}
