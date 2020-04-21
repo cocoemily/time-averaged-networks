@@ -22,7 +22,9 @@ calc.eigen = function(g) {
 }
 
 calc.btwn = function(g) {
-  return(betweenness(g))
+  bdf = as.data.frame(betweenness(g))
+  bdf$node = as.numeric(rownames(bdf))
+  return(bdf)
 }
 
 calc.close = function(g) {

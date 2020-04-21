@@ -9,10 +9,13 @@ source("scripts/node_metrics.R")
 #OA : Orientalizing Age (730/720 580 BC)
 #AA : Archaic Period (580-500 BC)
 
-eia1l.graph = graph_from_edgelist(as.matrix(eia1l.edge[,1:2]))
+eia1l.graph = graph_from_edgelist(as.matrix(eia1l.edge[1:2]))
 ta2 = average_two(eia1e.edge, eia1l.edge, groups)
+
  
-orig = calc.eigen(eia1l.graph)
-avg = calc.eigen(ta2)
+orig = calc.close(eia1l.graph)
+avg = calc.close(ta2)
+View(orig)
 
-
+plot(eia1l.graph, edge.arrow.size = 0.1, vertex.size = 10, 
+     vertex.label.cex = 0.8)

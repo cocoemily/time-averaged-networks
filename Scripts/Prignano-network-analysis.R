@@ -69,7 +69,7 @@ ed = lm(log(edge.dens) ~ num.graphs, data = alldata)
 plot(ed, which = 2)
 summary(ed)
 hist(alldata$eigen)
-e = glm(eigen ~ num.graphs, data = alldata)
+e = lm(log(eigen) ~ num.graphs, data = alldata)
 plot(e, which = 2)
 summary(e)
 pl = lm(log(path.length) ~ num.graphs, data = alldata)
@@ -81,32 +81,31 @@ summary(s)
 m = lm(mod ~ num.graphs, data = alldata)
 plot(m, which = 2)
 summary(m)
-cc = lm(cc ~ num.graphs, data = alldata)
+cc = lm(log(cc) ~ num.graphs, data = alldata)
 plot(cc, which = 2)
 summary(cc)
-md = lm(log(mean.deg) ~ num.graphs, data = alldata)
+md = lm(mean.deg ~ num.graphs, data = alldata)
 plot(md, which = 2)
 summary(md)
-mi = lm(log(mean.in) ~ num.graphs, data = alldata)
+mi = lm(mean.in ~ num.graphs, data = alldata)
 plot(mi, which = 2)
 summary(mi)
-mo = lm(log(mean.out) ~ num.graphs, data = alldata)
+mo = lm(mean.out ~ num.graphs, data = alldata)
 plot(mo, which = 2)
+summary(mo)
 
 ##plotting##
 
-#btwn, log(diam), log(edge.dens), eigen, log(path.length), size, mod, cc,
-#log(mean.deg), log(mean.in), log(mean.out)
-p2 = ggplot(data = alldata, aes(x = num.graphs, y = log(mean.out))) +
+#btwn, log(diam), log(edge.dens), log(eigen), log(path.length), size, mod, log(cc),
+#mean.deg, mean.in, log(mean.out)
+p2 = ggplot(data = alldata, aes(x = num.graphs, y = mean.out)) +
   geom_jitter(aes(color = network),alpha = 0.5, size = 0.5) +
   geom_smooth(aes(color = network), alpha = 0.5, size = 0.75, se = F, method = "lm") +
   geom_smooth(se = T, method = "lm", color = "black", linetype = "dashed") +
   theme_minimal()
-#ggsave("figures/log-mean-out.png", p2, dpi = 300)
-
+#ggsave("figures/mean-out.png", p2, dpi = 300)
 
 ####Random Null Models####
-
 #test with eigencentrality
 eia1e.graph = graph_from_edgelist(as.matrix(eia1e.edge[,1:2]))
 calc.mean.eigen(eia1e.graph)
