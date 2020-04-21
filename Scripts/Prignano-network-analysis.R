@@ -1,0 +1,124 @@
+#Prignano dataset network-level analysis
+source("scripts/Prignano-time-average.R")
+theme_set(theme_minimal())
+
+####Analysis####
+#EIA1E : Early Iron Age 1 Early (950/925 900 BC)
+#EIA1L : Early Iron Age 1 Late (900 850/825 BC)
+#EIA2 : Early Iron Age 2 (850/825 730/720 BC)
+#OA : Orientalizing Age (730/720 580 BC)
+#AA : Archaic Period (580-500 BC)
+ta5 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups = groups)
+
+ta2_1 = ta_compare(eia1e.edge, eia1l.edge, groups = groups)
+ta2_2 = ta_compare(eia1l.edge, eia2.edge, groups = groups)
+ta2_3 = ta_compare(eia2.edge, oa.edge, groups = groups)
+ta2_4 = ta_compare(oa.edge, aa.edge, groups = groups)
+
+ta3_1 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, groups = groups)
+ta3_2 = ta_compare(eia1l.edge, eia2.edge, oa.edge, groups = groups)
+ta3_3 = ta_compare(eia2.edge, oa.edge, aa.edge, groups = groups)
+
+ta4_1 = ta_compare(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups = groups)
+ta4_2 = ta_compare(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups = groups)
+
+eia1eta = rbind(ta2_1 %>% filter(names != "eia1l"), 
+                ta3_1 %>% filter(names == "ta3"),
+                ta4_1 %>% filter(names == "ta4"),
+                ta5 %>% filter(names == "ta5"))
+eia1eta$num.graphs = c(1,2,3,4,5)
+eia1eta$network = "EIA1E"
+eia1lta = rbind(ta2_1 %>% filter(names != "eia1e"), ta2_2 %>% filter(names == "ta2"), 
+                ta3_1 %>% filter(names == "ta3"), ta3_2 %>% filter(names == "ta3"), 
+                ta4_1 %>% filter(names == "ta4"), ta4_2 %>% filter(names == "ta4"), 
+                ta5 %>% filter(names == "ta5"))
+eia1lta$num.graphs = c(1,2,2,3,3,4,4,5)
+eia1lta$network = "EIA1L"
+eia2ta = rbind(ta2_2 %>% filter(names != "eia1l"), ta2_3 %>% filter(names == "ta2"), 
+               ta3_1 %>% filter(names == "ta3"), ta3_2 %>% filter(names == "ta3"), ta3_3 %>% filter(names == "ta3"), 
+               ta4_1 %>% filter(names == "ta4"), ta4_2 %>% filter(names == "ta4"), 
+               ta5 %>% filter(names == "ta5"))
+eia2ta$num.graphs = c(1,2,2,3,3,3,4,4,5)
+eia2ta$network = "EIA2"
+oata = rbind(ta2_3 %>% filter(names != "eia2"), ta2_4 %>% filter(names == "ta2"), 
+             ta3_2 %>% filter(names == "ta3"), ta3_3 %>% filter(names == "ta3"), 
+             ta4_1 %>% filter(names == "ta4"), ta4_2 %>% filter(names == "ta4"), 
+             ta5 %>% filter(names == "ta5"))
+oata$num.graphs = c(1,2,2,3,3,4,4,5)
+oata$network = "OA"
+aata = rbind(ta2_4 %>% filter(names != "oa"), 
+             ta3_3 %>% filter(names == "ta3"), 
+             ta4_2 %>% filter(names == "ta4"), 
+             ta5 %>% filter(names == "ta5"))
+aata$num.graphs = c(1,2,3,4,5)
+aata$network = "AA"
+
+alldata = rbind(eia1eta, eia1lta, eia2ta, oata, aata)
+alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L", 
+                                                     "EIA2", "OA", "AA"))
+
+b = lm(btwn ~ num.graphs, data = alldata)
+plot(b, which = 2)
+plot(b, which = 1)
+summary(b)
+d = lm(log(diam) ~ num.graphs, data = alldata)
+plot(d, which = 2)
+summary(d)
+hist(alldata$edge.dens)
+ed = lm(log(edge.dens) ~ num.graphs, data = alldata)
+plot(ed, which = 2)
+summary(ed)
+hist(alldata$eigen)
+e = glm(eigen ~ num.graphs, data = alldata)
+plot(e, which = 2)
+summary(e)
+pl = lm(log(path.length) ~ num.graphs, data = alldata)
+plot(pl, which = 2)
+summary(pl)
+s = lm(size ~ num.graphs, data = alldata)
+plot(s, which = 2)
+summary(s)
+m = lm(mod ~ num.graphs, data = alldata)
+plot(m, which = 2)
+summary(m)
+cc = lm(cc ~ num.graphs, data = alldata)
+plot(cc, which = 2)
+summary(cc)
+md = lm(log(mean.deg) ~ num.graphs, data = alldata)
+plot(md, which = 2)
+summary(md)
+mi = lm(log(mean.in) ~ num.graphs, data = alldata)
+plot(mi, which = 2)
+summary(mi)
+mo = lm(log(mean.out) ~ num.graphs, data = alldata)
+plot(mo, which = 2)
+
+##plotting##
+
+#btwn, log(diam), log(edge.dens), eigen, log(path.length), size, mod, cc,
+#log(mean.deg), log(mean.in), log(mean.out)
+p2 = ggplot(data = alldata, aes(x = num.graphs, y = log(mean.out))) +
+  geom_jitter(aes(color = network),alpha = 0.5, size = 0.5) +
+  geom_smooth(aes(color = network), alpha = 0.5, size = 0.75, se = F, method = "lm") +
+  geom_smooth(se = T, method = "lm", color = "black", linetype = "dashed") +
+  theme_minimal()
+#ggsave("figures/log-mean-out.png", p2, dpi = 300)
+
+
+####Random Null Models####
+
+#test with eigencentrality
+eia1e.graph = graph_from_edgelist(as.matrix(eia1e.edge[,1:2]))
+calc.mean.eigen(eia1e.graph)
+
+null.eigen = c()
+for(i in 1:1000) {
+  test1 = rewire(eia1e.graph, each_edge(p = 1))
+  null.eigen = c(null.eigen, calc.mean.eigen(test1))
+}
+q95 = quantile(null.eigen, c(0.025, 0.975))
+
+ggplot(data = eia1eta, aes(x = num.graphs, y = eigen)) +
+  geom_point() +
+  geom_rect(aes(ymin = q95[1], ymax = q95[2], xmin = 0, xmax = Inf), fill = "grey10", alpha = 0.25) +
+  geom_hline(aes(yintercept = eia1eta$eigen[1]))
