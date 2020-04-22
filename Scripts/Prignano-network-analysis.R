@@ -95,29 +95,10 @@ plot(mo, which = 2)
 summary(mo)
 
 ##plotting##
-
-#btwn, log(diam), log(edge.dens), log(eigen), log(path.length), size, mod, log(cc),
-#mean.deg, mean.in, log(mean.out)
 p2 = ggplot(data = alldata, aes(x = num.graphs, y = mean.out)) +
   geom_jitter(aes(color = network),alpha = 0.5, size = 0.5) +
-  geom_smooth(aes(color = network), alpha = 0.5, size = 0.75, se = F, method = "lm") +
-  geom_smooth(se = T, method = "lm", color = "black", linetype = "dashed") +
+  geom_smooth(aes(color = network), alpha = 0.5, size = 0.75, se = F) +
+  geom_smooth(se = T, color = "black", linetype = "dashed") +
   theme_minimal()
-#ggsave("figures/mean-out.png", p2, dpi = 300)
+#ggsave("figures/mean-out-smooth.png", p2, dpi = 300)
 
-####Random Null Models####
-#test with eigencentrality
-eia1e.graph = graph_from_edgelist(as.matrix(eia1e.edge[,1:2]))
-calc.mean.eigen(eia1e.graph)
-
-null.eigen = c()
-for(i in 1:1000) {
-  test1 = rewire(eia1e.graph, each_edge(p = 1))
-  null.eigen = c(null.eigen, calc.mean.eigen(test1))
-}
-q95 = quantile(null.eigen, c(0.025, 0.975))
-
-ggplot(data = eia1eta, aes(x = num.graphs, y = eigen)) +
-  geom_point() +
-  geom_rect(aes(ymin = q95[1], ymax = q95[2], xmin = 0, xmax = Inf), fill = "grey10", alpha = 0.25) +
-  geom_hline(aes(yintercept = eia1eta$eigen[1]))
