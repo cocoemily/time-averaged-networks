@@ -1,6 +1,7 @@
 #Prignano dataset network-level analysis
 source("scripts/Prignano-time-average.R")
 theme_set(theme_minimal())
+library(ggthemes)
 
 ####Analysis####
 #EIA1E : Early Iron Age 1 Early (950/925 900 BC)
@@ -101,4 +102,24 @@ p2 = ggplot(data = alldata, aes(x = num.graphs, y = mean.out)) +
   geom_smooth(se = T, color = "black", linetype = "dashed") +
   theme_minimal()
 #ggsave("figures/mean-out-smooth.png", p2, dpi = 300)
+
+####Null Model Analysis####
+get_null_model_values = function(graph, FUN = calc.diam) {
+  values = c()
+  for(i in 1:1000) {
+    ngraph = rewire(graph, each_edge(p = 1))
+    values = c(values, FUN(ngraph))
+  }
+  return(values)
+}
+
+#create graphs for EIA1E graph
+test = data.frame(metric = get_null_model_values(o1.graph, FUN = calc.mod))
+
+pn = ggplot(test, aes(x = metric)) +
+  geom_histogram(binwidth = 0.01) +
+  geom_vline(data = eia1eta, aes(xintercept = mod, color = as.factor(num.graphs))) +
+  scale_color_colorblind() +
+  labs(x = "Modularity", color = "Networks Averaged", title = "Original Graph: EIA1E")
+#ggsave("figures/null-models/mod.png", pn, dpi = 300)
 
