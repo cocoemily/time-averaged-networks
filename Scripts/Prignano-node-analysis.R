@@ -26,12 +26,27 @@ compdf = compdf %>% full_join(calc.btwn(ta2.graph), by = "node", suffix = c("", 
 
 
 
-calc_jaccard_similarity = function(compdf) { #calculate similarity between 
+calc_jaccard_similarity_high = function(compdf) { #calculate similarity between 
   set1 = as.character(compdf[order(-compdf$metric),]$node[1:5])
   set2 = as.character(compdf[order(-compdf$metric.2),]$node[1:5])
   set3 = as.character(compdf[order(-compdf$metric.3),]$node[1:5])
   set4 = as.character(compdf[order(-compdf$metric.4),]$node[1:5])
   set5 = as.character(compdf[order(-compdf$metric.5),]$node[1:5])
+  
+  df = data.frame(num.graphs = c(2,3,4,5), 
+                  sim = c(jaccard(set1, set2), 
+                          jaccard(set1, set3), 
+                          jaccard(set1, set4), 
+                          jaccard(set1, set5)))
+  return(df)
+}
+
+calc_jaccard_similarity_low = function(compdf) { #calculate similarity between 
+  set1 = as.character(compdf[order(compdf$metric),]$node[1:5])
+  set2 = as.character(compdf[order(compdf$metric.2),]$node[1:5])
+  set3 = as.character(compdf[order(compdf$metric.3),]$node[1:5])
+  set4 = as.character(compdf[order(compdf$metric.4),]$node[1:5])
+  set5 = as.character(compdf[order(compdf$metric.5),]$node[1:5])
   
   df = data.frame(num.graphs = c(2,3,4,5), 
                   sim = c(jaccard(set1, set2), 
