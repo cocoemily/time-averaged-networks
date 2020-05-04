@@ -1,11 +1,11 @@
 ###Network Metrics
 library(igraph)
 
-#closeness centrality
-calc.mean.close <- function(g) {
-  close <- closeness(g)
-  return(mean(close))
-}
+#closeness centrality - does not work with disconnected graphs
+# calc.mean.close <- function(g) {
+#   close <- closeness(g)
+#   return(mean(close))
+# }
 #betweenness centrality
 calc.mean.between <- function(g) {
   btwn <- betweenness(g)
