@@ -59,10 +59,11 @@ alldata = rbind(eia1eta, eia1lta, eia2ta, oata, aata)
 alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L", 
                                                      "EIA2", "OA", "AA"))
 
-fit1 = lm(diam ~ num.graphs + network, data = alldata)
+fit1 = lm(mod ~ num.graphs + network, data = alldata)
 summary(fit1)
-fit2 = lmer(size ~ num.graphs + (1 | network), data = alldata)
+fit2 = lmer(mod ~ num.graphs + (1 | network), data = alldata)
 summary(fit2)
+AICtab(fit1, fit2, base = T, weights = T)
 
 # ##plotting##
 # p2 = ggplot(data = alldata, aes(x = num.graphs, y = mean.out)) +
@@ -85,7 +86,7 @@ get_null_model_values = function(graph, FUN = calc.diam) {
 #create graphs
 create_null_model_graph = function(graph, avg.data, orig.name) {
   p1 = ggplot(data.frame(metric = get_null_model_values(graph, FUN = calc.mean.between)), aes(x = metric)) +
-    geom_histogram(binwidth = 10) +
+    geom_histogram(binwidth = 0.001) +
     geom_vline(data = avg.data, aes(xintercept = btwn, color = as.factor(num.graphs))) +
     scale_color_colorblind() +
     labs(x = "betweeness", color = "Networks Averaged", title = paste0("Original Graph: ", orig.name)) +
@@ -103,7 +104,7 @@ create_null_model_graph = function(graph, avg.data, orig.name) {
           legend.text = element_text(size = 7),
           legend.title = element_text(size = 6))
   p3 = ggplot(data.frame(metric = get_null_model_values(graph, FUN = calc.mean.path.length)), aes(x = metric)) +
-    geom_histogram(binwidth = 0.5) +
+    geom_histogram(binwidth = 0.005) +
     geom_vline(data = avg.data, aes(xintercept = path.length, color = as.factor(num.graphs))) +
     scale_color_colorblind() +
     labs(x = "path length", color = "Networks Averaged", title = paste0("Original Graph: ", orig.name)) +
@@ -112,7 +113,7 @@ create_null_model_graph = function(graph, avg.data, orig.name) {
           legend.text = element_text(size = 7),
           legend.title = element_text(size = 6))
   p4 = ggplot(data.frame(metric = get_null_model_values(graph, FUN = calc.diam)), aes(x = metric)) +
-    geom_histogram(binwidth = 1) +
+    geom_histogram(binwidth = 0.01) +
     geom_vline(data = avg.data, aes(xintercept = diam, color = as.factor(num.graphs))) +
     scale_color_colorblind() +
     labs(x = "diameter", color = "Networks Averaged", title = paste0("Original Graph: ", orig.name)) +
