@@ -61,17 +61,15 @@ alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L",
 
 fit1 = lm(mod ~ num.graphs + network, data = alldata)
 summary(fit1)
-fit2 = lmer(mod ~ num.graphs + (1 | network), data = alldata)
-summary(fit2)
-AICtab(fit1, fit2, base = T, weights = T)
+fit2 = lm(mod ~ num.graphs, data = alldata)
+fit3 = lmer(mod ~ num.graphs + (1 | network), data = alldata)
+summary(fit3)
+AICtab(fit2, fit3, base = T, weights = T)
 
 # ##plotting##
-# p2 = ggplot(data = alldata, aes(x = num.graphs, y = mean.out)) +
-#   geom_jitter(aes(color = network),alpha = 0.5, size = 0.5) +
-#   geom_smooth(aes(color = network), alpha = 0.5, size = 0.75, se = F) +
-#   geom_smooth(se = T, color = "black", linetype = "dashed") +
-#   theme_minimal()
-#ggsave("figures/mean-out-smooth.png", p2, dpi = 300)
+# ggplot(data = alldata, aes(x = num.graphs, y = edge.dens, color = network)) +
+#   geom_smooth(se = F) +
+#   scale_color_colorblind()
 
 ####Null Model Analysis####
 get_null_model_values = function(graph, FUN = calc.diam) {
