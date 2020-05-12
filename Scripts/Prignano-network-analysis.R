@@ -66,10 +66,9 @@ fit3 = lmer(mod ~ num.graphs + (1 | network), data = alldata)
 summary(fit3)
 AICtab(fit2, fit3, base = T, weights = T)
 
-# ##plotting##
-# ggplot(data = alldata, aes(x = num.graphs, y = edge.dens, color = network)) +
-#   geom_smooth(se = F) +
-#   scale_color_colorblind()
+talldata = alldata %>% gather(key = "measure", value = "value", c(1:11))
+ggplot(talldata, aes(x = num.graphs, y = value, group = network, color = network)) +
+  geom_smooth(se = F) + facet_wrap(. ~ measure, scales = "free_y")
 
 ####Null Model Analysis####
 get_null_model_values = function(graph, FUN = calc.diam) {

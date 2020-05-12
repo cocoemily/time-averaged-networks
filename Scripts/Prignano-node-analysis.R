@@ -49,7 +49,7 @@ ta5.graph = average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, gr
 
 graphlist = list(eia1e.graph, ta2.graph, ta3.graph, ta4.graph, ta5.graph)
 suffixes = c(".2", ".3", ".4", ".5")
-compdf1e = get_comparison_dataframe(graphlist, suffixes, FUN = calc.btwn)
+compdf1e = get_comparison_dataframe(graphlist, suffixes, FUN = calc.eigen)
 sim.df = calc_jaccard_similarity_high(compdf1e, c(2, 3, 4, 5))
 sim.df$original = "eia1e"
 
@@ -65,7 +65,7 @@ ta5.graph = average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, gr
 
 graphlist = list(eia1e.graph, ta2.graph1, ta2.graph2, ta3.graph1, ta3.graph2, ta4.graph1, ta4.graph2, ta5.graph)
 suffixes = c(".2.1", ".2.2", ".3.1", ".3.2", ".4.1", ".4.2", ".5")
-compdf1l = get_comparison_dataframe(graphlist, suffixes, FUN = calc.btwn)
+compdf1l = get_comparison_dataframe(graphlist, suffixes, FUN = calc.eigen)
 sim.df1l = calc_jaccard_similarity_high(compdf1l, c(2, 2, 3, 3, 4, 4, 5))
 sim.df1l$original = "eia1l"
 
@@ -80,7 +80,7 @@ graphlist = list(graph_from_edgelist(as.matrix(create_new_edge_list(eia2.edge, g
                  average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
                  average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
 suffixes = c(".2.1", ".2.2", ".3.1", ".3.2", ".3.3", ".4.1", ".4.2", ".5")
-compdf2 = get_comparison_dataframe(graphlist, suffixes, FUN = calc.btwn)
+compdf2 = get_comparison_dataframe(graphlist, suffixes, FUN = calc.eigen)
 sim.df2 = calc_jaccard_similarity_high(compdf2, c(2, 2, 3, 3, 3, 4, 4, 5))
 sim.df2$original = "eia2"
 
@@ -94,7 +94,7 @@ graphlist = list(graph_from_edgelist(as.matrix(create_new_edge_list(oa.edge, gro
                  average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
                  average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
 suffixes = c(".2.1", ".2.2", ".3.1", ".3.2", ".4.1", ".4.2", ".5")
-compdfo = get_comparison_dataframe(graphlist, suffixes, FUN = calc.btwn)
+compdfo = get_comparison_dataframe(graphlist, suffixes, FUN = calc.eigen)
 sim.dfo = calc_jaccard_similarity_high(compdfo, c(2, 2, 3, 3, 4, 4, 5))
 sim.dfo$original = "oa"
 
@@ -105,11 +105,9 @@ graphlist = list(graph_from_edgelist(as.matrix(create_new_edge_list(aa.edge, gro
                  average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
                  average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
 suffixes = c(".2", ".3", ".4", ".5")
-compdfa = get_comparison_dataframe(graphlist, suffixes, FUN = calc.btwn)
+compdfa = get_comparison_dataframe(graphlist, suffixes, FUN = calc.eigen)
 sim.dfa = calc_jaccard_similarity_high(compdfa, c(2,3,4,5))
 sim.dfa$original = "aa"
-
-
 
 #all similarity measures
 allsim = rbind(sim.df, sim.df1l, sim.df2, sim.dfo, sim.dfa)
@@ -122,4 +120,11 @@ simfit3 = lmer(sim ~ num.graphs + (1 | original), data = allsim)
 summary(simfit3)
 AICtab(simfit2, simfit3, base = T, weights = T)
 
+allsim$original = ordered(allsim$original, levels = c("eia1e", "eia1l", "eia2", "oa", "aa"))
+
+p = ggplot(allsim, aes(x = num.graphs, y = sim, group = original, color = as.factor(original))) +
+  geom_smooth(se = F) +
+  labs(x = "Number of Networks", y = "Jaccard Similarity", title = "Top Nodes by Eigencentrality", color = "Original Network")
+plot(p)
+ggsave(filename = "figures/node-centrality/high_eigen.png", p)
 
