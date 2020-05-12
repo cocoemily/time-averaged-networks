@@ -70,6 +70,25 @@ talldata = alldata %>% gather(key = "measure", value = "value", c(1:11))
 ggplot(talldata, aes(x = num.graphs, y = value, group = network, color = network)) +
   geom_smooth(se = F) + facet_wrap(. ~ measure, scales = "free_y")
 
+pca_all = prcomp(alldata[,1:11])
+pcadf = data.frame(pca_all$x)
+pcadf$network = alldata$network
+hulls = pcadf %>% group_by(network) %>% dplyr::slice(chull(PC1, PC2))
+ggplot(pcadf, aes(x = PC1, y = PC2, fill = network, color = network)) +
+  geom_point() +
+  geom_polygon(data = hulls, alpha = 0.25)
+
+avg = alldata %>% filter(num.graphs != 1)
+orig = alldata %>% filter(num.graphs == 1)
+pca_avg = prcomp(avg[,1:11])
+avgdf = data.frame(pca_avg$x)
+avgdf$network = avg$network
+hulls = avgdf %>% group_by(network) %>% dplyr::slice(chull(PC1, PC2))
+ggplot(avgdf, aes(x = PC1, y = PC2, fill = network, color = network)) +
+  geom_point() +
+  geom_polygon(data = hulls, alpha = 0.25)
+  
+
 ####Null Model Analysis####
 get_null_model_values = function(graph, FUN = calc.diam) {
   values = c()
