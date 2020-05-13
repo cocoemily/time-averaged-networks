@@ -70,23 +70,29 @@ talldata = alldata %>% gather(key = "measure", value = "value", c(1:11))
 ggplot(talldata, aes(x = num.graphs, y = value, group = network, color = network)) +
   geom_smooth(se = F) + facet_wrap(. ~ measure, scales = "free_y")
 
-pca_all = prcomp(alldata[,1:11])
+pca_all = prcomp(alldata[,c(1:6, 8:11)], scale = T)
 pcadf = data.frame(pca_all$x)
 pcadf$network = alldata$network
 hulls = pcadf %>% group_by(network) %>% dplyr::slice(chull(PC1, PC2))
 ggplot(pcadf, aes(x = PC1, y = PC2, fill = network, color = network)) +
   geom_point() +
   geom_polygon(data = hulls, alpha = 0.25)
+summary(pca_all)
 
 avg = alldata %>% filter(num.graphs != 1)
 orig = alldata %>% filter(num.graphs == 1)
-pca_avg = prcomp(avg[,1:11])
+pca_avg = prcomp(avg[,c(1:6, 8:11)], scale = T)
 avgdf = data.frame(pca_avg$x)
 avgdf$network = avg$network
 hulls = avgdf %>% group_by(network) %>% dplyr::slice(chull(PC1, PC2))
 ggplot(avgdf, aes(x = PC1, y = PC2, fill = network, color = network)) +
   geom_point() +
+  coord_equal() +
   geom_polygon(data = hulls, alpha = 0.25)
+
+summary(pca_avg)
+print(pca_avg$rotation)
+
   
 
 ####Null Model Analysis####
@@ -178,3 +184,47 @@ ggsave("figures/null-models/oa.png", pall, dpi = 300, width = 8.5, height = 5)
 aa.graph = graph_from_edgelist(as.matrix(create_new_edge_list(aa.edge, groups)[,5:6]))
 pall = create_null_model_graph(aa.graph, aata, "AA")
 ggsave("figures/null-models/aa.png", pall, dpi = 300, width = 8.5, height = 5)
+
+####Model Error Comparison####
+#functions = list(calc.mean.between, calc.eigen, calc.mean.path.length, calc.diam, calc.cc, calc.mod)
+
+modelerrors = rbind(
+  calculate_model_error(eia1e.graph, eia1eta), 
+  calculate_model_error(eia1l.graph, eia1lta), 
+  calculate_model_error(eia2.graph, eia2ta), 
+  calculate_model_error(oa.graph, oata), 
+  calculate_model_error(aa.graph, aata)
+)
+
+calculate_model_error = function(graph, df) {
+  null.btwn = get_null_model_values(graph, FUN = calc.mean.between)
+  df$btwn_diff = (mean(null.btwn) - df$btwn)/(quantile(null.btwn, 0.975) - mean(null.btwn))
+  
+  null.eigen = get_null_model_values(graph, FUN = calc.mean.eigen)
+  df$eigen_diff = (mean(null.eigen) - df$eigen)/(quantile(null.eigen, 0.975) - mean(null.eigen))
+  
+  null.pl = get_null_model_values(graph, FUN = calc.mean.path.length)
+  df$pl_diff = (mean(null.pl) - df$path.length)/(quantile(null.pl, 0.975) - mean(null.pl))
+  
+  null.diam = get_null_model_values(graph, FUN = calc.diam)
+  df$diam_diff = (mean(null.diam) - df$diam)/(quantile(null.diam, 0.975) - mean(null.diam))
+  
+  null.cc = get_null_model_values(graph, FUN = calc.cc)
+  df$cc_diff = (mean(null.cc) - df$cc)/(mean(null.cc) - quantile(null.diam, 0.025))
+  
+  null.mod = get_null_model_values(graph, FUN = calc.mod)
+  df$mod_diff = (mean(null.mod) - df$mod)/(mean(null.cc) - quantile(null.diam, 0.025))
+  
+  return(df)
+}
+
+me = modelerrors %>% gather(key = "modelerror", value = "value", c(15:20))
+me$network = ordered(me$network, levels = c("EIA1E", "EIA1L", "EIA2", "OA", "AA"))
+meplot = ggplot(me, aes(x = num.graphs, y = value, group = network, color = network)) +
+  geom_rect(xmin = -Inf, xmax = Inf, ymin = -1, ymax = 1, alpha = 0.05, color = NA) +
+  geom_hline(yintercept = 0) +
+  geom_smooth(se = F) +
+  facet_wrap(modelerror ~ ., scales = "free_y")
+
+ggsave("figures/null-models/model-error.png", meplot)
+  
