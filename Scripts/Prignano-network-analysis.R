@@ -76,11 +76,14 @@ pcadf$network = alldata$network
 hulls = pcadf %>% group_by(network) %>% dplyr::slice(chull(PC1, PC2))
 ggplot(pcadf, aes(x = PC1, y = PC2, fill = network, color = network)) +
   geom_point() +
-  geom_polygon(data = hulls, alpha = 0.25)
+  geom_polygon(data = hulls, alpha = 0.25) +
+  coord_equal()
 summary(pca_all)
+biplot(pca_all)
 
 avg = alldata %>% filter(num.graphs != 1)
 orig = alldata %>% filter(num.graphs == 1)
+
 pca_avg = prcomp(avg[,c(1:6, 8:11)], scale = T)
 avgdf = data.frame(pca_avg$x)
 avgdf$network = avg$network
@@ -91,7 +94,21 @@ ggplot(avgdf, aes(x = PC1, y = PC2, fill = network, color = network)) +
   geom_polygon(data = hulls, alpha = 0.25)
 
 summary(pca_avg)
-print(pca_avg$rotation)
+biplot(pca_avg)
+
+orig.coord = as.data.frame(predict(pca_avg, orig[,c(1:6, 8:11)]))
+rownames(orig.coord) = as.character(orig$network)
+
+p.pca = fviz_pca_biplot(pca_avg, repel = T, pointsize = 2, pointshape = 20, col.var = "grey30", col.ind = avg$network, 
+                addEllipses = T, ellipse.type = "confidence", palette = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"))
+p.pca = fviz_add(p.pca, orig.coord[1,], shape = 15, color = "#E69F00") 
+p.pca = fviz_add(p.pca, orig.coord[2,], shape = 15, color = "#56B4E9") 
+p.pca = fviz_add(p.pca, orig.coord[3,], shape = 15, color = "#009E73") 
+p.pca = fviz_add(p.pca, orig.coord[4,], shape = 15, color = "#F0E442") 
+p.pca = fviz_add(p.pca, orig.coord[5,], shape = 15, color = "#0072B2") 
+plot(p.pca)
+
+ggsave("figures/pca/pca-biplot.png", p.pca)
 
   
 
@@ -188,14 +205,6 @@ ggsave("figures/null-models/aa.png", pall, dpi = 300, width = 8.5, height = 5)
 ####Model Error Comparison####
 #functions = list(calc.mean.between, calc.eigen, calc.mean.path.length, calc.diam, calc.cc, calc.mod)
 
-modelerrors = rbind(
-  calculate_model_error(eia1e.graph, eia1eta), 
-  calculate_model_error(eia1l.graph, eia1lta), 
-  calculate_model_error(eia2.graph, eia2ta), 
-  calculate_model_error(oa.graph, oata), 
-  calculate_model_error(aa.graph, aata)
-)
-
 calculate_model_error = function(graph, df) {
   null.btwn = get_null_model_values(graph, FUN = calc.mean.between)
   df$btwn_diff = (mean(null.btwn) - df$btwn)/(quantile(null.btwn, 0.975) - mean(null.btwn))
@@ -217,6 +226,14 @@ calculate_model_error = function(graph, df) {
   
   return(df)
 }
+
+modelerrors = rbind(
+  calculate_model_error(eia1e.graph, eia1eta), 
+  calculate_model_error(eia1l.graph, eia1lta), 
+  calculate_model_error(eia2.graph, eia2ta), 
+  calculate_model_error(oa.graph, oata), 
+  calculate_model_error(aa.graph, aata)
+)
 
 me = modelerrors %>% gather(key = "modelerror", value = "value", c(15:20))
 me$network = ordered(me$network, levels = c("EIA1E", "EIA1L", "EIA2", "OA", "AA"))
