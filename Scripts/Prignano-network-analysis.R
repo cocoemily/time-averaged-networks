@@ -4,6 +4,7 @@ theme_set(theme_minimal())
 library(ggthemes)
 library(lme4)
 library(dplyr)
+library(factoextra)
 
 ####Analysis####
 #EIA1E : Early Iron Age 1 Early (950/925 900 BC)
@@ -60,57 +61,34 @@ alldata = rbind(eia1eta, eia1lta, eia2ta, oata, aata)
 alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L", 
                                                      "EIA2", "OA", "AA"))
 
-# fit1 = lm(edge.dens ~ num.graphs + network, data = alldata)
-# summary(fit1)
-# fit2 = lm(edge.dens ~ num.graphs, data = alldata)
-# summary(fit2)
-# fit3 = lmer(edge.dens ~ num.graphs + (1 | network), data = alldata)
-# summary(fit3)
-# AICtab(fit2, fit3, base = T, weights = T)
-# 
-# talldata = alldata %>% gather(key = "measure", value = "value", c(1:11))
-# ggplot(talldata, aes(x = num.graphs, y = value, group = network, color = network)) +
-#   geom_smooth(se = F) + facet_wrap(. ~ measure, scales = "free_y")
-# 
-# pca_all = prcomp(alldata[,c(1:6, 8:11)], scale = T)
-# pcadf = data.frame(pca_all$x)
-# pcadf$network = alldata$network
-# hulls = pcadf %>% group_by(network) %>% dplyr::slice(chull(PC1, PC2))
-# ggplot(pcadf, aes(x = PC1, y = PC2, fill = network, color = network)) +
-#   geom_point() +
-#   geom_polygon(data = hulls, alpha = 0.25) +
-#   coord_equal()
-# summary(pca_all)
-# biplot(pca_all)
-# 
-# avg = alldata %>% filter(num.graphs != 1)
-# orig = alldata %>% filter(num.graphs == 1)
-# 
-# pca_avg = prcomp(avg[,c(1:6, 8:11)], scale = T)
-# avgdf = data.frame(pca_avg$x)
-# avgdf$network = avg$network
-# hulls = avgdf %>% group_by(network) %>% dplyr::slice(chull(PC1, PC2))
-# ggplot(avgdf, aes(x = PC1, y = PC2, fill = network, color = network)) +
-#   geom_point() +
-#   coord_equal() +
-#   geom_polygon(data = hulls, alpha = 0.25)
-# 
-# summary(pca_avg)
-# biplot(pca_avg)
-# 
-# orig.coord = as.data.frame(predict(pca_avg, orig[,c(1:6, 8:11)]))
-# rownames(orig.coord) = as.character(orig$network)
-# 
-# p.pca = fviz_pca_biplot(pca_avg, repel = T, pointsize = 2, pointshape = 20, col.var = "grey30", col.ind = avg$network, 
-#                 addEllipses = T, ellipse.type = "confidence", palette = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"))
-# p.pca = fviz_add(p.pca, orig.coord[1,], shape = 15, color = "#E69F00") 
-# p.pca = fviz_add(p.pca, orig.coord[2,], shape = 15, color = "#56B4E9") 
-# p.pca = fviz_add(p.pca, orig.coord[3,], shape = 15, color = "#009E73") 
-# p.pca = fviz_add(p.pca, orig.coord[4,], shape = 15, color = "#F0E442") 
-# p.pca = fviz_add(p.pca, orig.coord[5,], shape = 15, color = "#0072B2") 
-# plot(p.pca)
-# 
-# ggsave("figures/pca/pca-biplot.png", p.pca)
+####PCA Analysis####
+avg = alldata %>% filter(num.graphs != 1)
+orig = alldata %>% filter(num.graphs == 1)
+
+pca_avg = prcomp(avg[,c(1, 4:6, 8)], scale = T)
+avgdf = data.frame(pca_avg$x)
+avgdf$network = avg$network
+hulls = avgdf %>% group_by(network) %>% dplyr::slice(chull(PC1, PC2))
+ggplot(avgdf, aes(x = PC1, y = PC2, fill = network, color = network)) +
+  geom_point() +
+  coord_equal() +
+  geom_polygon(data = hulls, alpha = 0.25)
+print(pca_avg)
+biplot(pca_avg)
+
+orig.coord = as.data.frame(predict(pca_avg, orig[,c(1, 4:6, 8)]))
+rownames(orig.coord) = as.character(orig$network)
+
+p.pca = fviz_pca_biplot(pca_avg, repel = T, pointsize = 1, pointshape = 20, col.var = "grey30", col.ind = avg$network,
+                addEllipses = T, ellipse.type = "confidence", palette = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"), 
+                label = "var")
+p.pca = fviz_add(p.pca, orig.coord[1,], shape = 15, color = "#E69F00")
+p.pca = fviz_add(p.pca, orig.coord[2,], shape = 15, color = "#56B4E9")
+p.pca = fviz_add(p.pca, orig.coord[3,], shape = 15, color = "#009E73")
+p.pca = fviz_add(p.pca, orig.coord[4,], shape = 15, color = "#F0E442")
+p.pca = fviz_add(p.pca, orig.coord[5,], shape = 15, color = "#0072B2")
+plot(p.pca)
+ggsave("figures/pca/pca-biplot.pdf", p.pca)
 
   
 
