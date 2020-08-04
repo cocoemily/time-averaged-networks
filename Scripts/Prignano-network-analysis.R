@@ -125,61 +125,115 @@ get_null_model_values = function(graph, FUN = calc.diam) {
 }
 
 ####Model Error Comparison####
-#functions = list(calc.mean.between, calc.eigen, calc.mean.path.length, calc.diam, calc.cc, calc.mod)
-
-##need to update the way this is being calculate so it's not dependent on certain values for normalization
 calculate_model_error = function(graph, df) {
   null.btwn = get_null_model_values(graph, FUN = calc.mean.between)
-  df$btwn_diff = (mean(null.btwn) - df$btwn)/(quantile(null.btwn, 0.975) - mean(null.btwn))
+  df$btwn_me = ifelse(median(null.btwn) > df$btwn, 
+                   (median(null.btwn) - df$btwn)/(quantile(null.btwn, 0.975) - median(null.btwn)), 
+                   (median(null.btwn) - df$btwn)/(median(null.btwn) - quantile(null.btwn, 0.025))) 
   
   null.eigen = get_null_model_values(graph, FUN = calc.mean.eigen)
-  df$eigen_diff = (mean(null.eigen) - df$eigen)/(quantile(null.eigen, 0.975) - mean(null.eigen))
-  
+  df$eigen_me = ifelse(median(null.eigen) > df$eigen, 
+                       (median(null.eigen) - df$eigen)/(quantile(null.eigen, 0.975) - median(null.eigen)), 
+                       (median(null.eigen) - df$eigen)/(median(null.eigen) - quantile(null.eigen, 0.025)))
+
   null.pl = get_null_model_values(graph, FUN = calc.mean.path.length)
-  df$pl_diff = (mean(null.pl) - df$path.length)/(quantile(null.pl, 0.975) - mean(null.pl))
-  
+  df$pl_me = ifelse(median(null.pl) > df$path.length, 
+                    (median(null.pl) - df$path.length)/(quantile(null.pl, 0.975) - median(null.pl)), 
+                    (median(null.pl) - df$path.length)/(median(null.pl) - quantile(null.pl, 0.025)))
+
   null.diam = get_null_model_values(graph, FUN = calc.diam)
-  df$diam_diff = (mean(null.diam) - df$diam)/(quantile(null.diam, 0.975) - mean(null.diam))
-  
+  df$diam_me = ifelse(median(null.diam) > df$diam, 
+                      (median(null.diam) - df$diam)/(quantile(null.diam, 0.975) - median(null.diam)), 
+                      (median(null.diam) - df$diam)/(median(null.diam) - quantile(null.diam, 0.025)))
+
   null.cc = get_null_model_values(graph, FUN = calc.cc)
-  df$cc_diff = (mean(null.cc) - df$cc)/(mean(null.cc) - quantile(null.diam, 0.025))
-  
+  df$cc_me = ifelse(median(null.cc) > df$cc, 
+                    (median(null.cc) - df$cc)/(quantile(null.cc, 0.975) - median(null.cc)), 
+                    (median(null.cc) - df$cc)/(median(null.cc) - quantile(null.cc, 0.025)))
+
   null.mod = get_null_model_values(graph, FUN = calc.mod)
-  df$mod_diff = (mean(null.mod) - df$mod)/(mean(null.cc) - quantile(null.diam, 0.025))
+  df$mod_me = ifelse(median(null.mod) > df$mod, 
+                     (median(null.mod) - df$mod)/(quantile(null.mod, 0.975) - median(null.mod)), 
+                     (median(null.mod) - df$mod)/(median(null.mod) - quantile(null.mod, 0.025)))
   
   return(df)
 }
 
 modelerrors = rbind(
-  calculate_model_error(eia1e.graph, eia1eta), 
-  calculate_model_error(eia1l.graph, eia1lta), 
-  calculate_model_error(eia2.graph, eia2ta), 
-  calculate_model_error(oa.graph, oata), 
-  calculate_model_error(aa.graph, aata)
+  calculate_model_error(graph_from_edgelist(as.matrix(eia1e.edge[,1:2])), eia1eta), 
+  calculate_model_error(graph_from_edgelist(as.matrix(eia1l.edge[,1:2])), eia1lta), 
+  calculate_model_error(graph_from_edgelist(as.matrix(eia2.edge[,1:2])), eia2ta), 
+  calculate_model_error(graph_from_edgelist(as.matrix(oa.edge[,1:2])), oata), 
+  calculate_model_error(graph_from_edgelist(as.matrix(aa.edge[,1:2])), aata)
 )
 
-me = modelerrors %>% gather(key = "modelerror", value = "value", c(15:20))
-me$network = factor(me$network, levels = c("EIA1E", "EIA1L", "EIA2", "OA", "AA"))
-meplot = ggplot(me, aes(x = num.graphs, y = value, group = network, color = network)) +
-  geom_rect(xmin = -Inf, xmax = Inf, ymin = -1, ymax = 1, alpha = 0.05, color = NA) +
-  geom_hline(yintercept = 0) +
-  geom_smooth(se = F) +
-  facet_wrap(modelerror ~ ., scales = "free_y")
+plot_me = function(modelerrors) {
+  me = modelerrors %>% gather(key = "modelerror", value = "value", c(15:20))
+  me$network = factor(me$network, levels = c("EIA1E", "EIA1L", "EIA2", "OA", "AA"))
+  metric.labs = c("betweenness centrality", "clustering coefficient", "diameter", 
+                  "eigenvector centrality", "modularity", "path length")
+  names(metric.labs) = c("btwn_me", "cc_me", "diam_me", "eigen_me", "mod_me", "pl_me")
+  meplot = ggplot(me, aes(x = num.graphs, y = value, group = network, color = network)) +
+    geom_rect(xmin = -Inf, xmax = Inf, ymin = -1, ymax = 1, alpha = 0.05, color = NA, fill = "grey80") +
+    geom_hline(yintercept = 0) +
+    geom_smooth(se = F) +
+    facet_wrap(~ modelerror, scales = "free_y", labeller = labeller(modelerror = metric.labs)) +
+    labs(x = "number of graphs") +
+    theme(axis.title.y = element_blank()) +
+    scale_color_colorblind()
+  return(meplot)
+}
+ggsave("figures/null-models/me_ta-to-orig.pdf", plot_me(modelerrors), height = 4, width = 7)
 
-#ggsave("figures/null-models/model-error.png", meplot)
-
-#need to think of a better way to iterate through the various edge lists
 me_eia1eta = rbind(
   calculate_model_error(average_two(eia1e.edge, eia1l.edge, groups), (eia1eta %>% filter(names == "ta2"))), 
   calculate_model_error(average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), (eia1eta %>% filter(names == "ta3"))), 
   calculate_model_error(average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), (eia1eta %>% filter(names == "ta4"))), 
   calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), (eia1eta %>% filter(names == "ta5")))
 )
+ggsave("figures/null-models/me_eia1e.pdf", plot_me(me_eia1eta))
 
-me_eia1eta = rbind(
+me_eia1lta = rbind(
   calculate_model_error(average_two(eia1e.edge, eia1l.edge, groups), eia1lta[2,]),
   calculate_model_error(average_two(eia1l.edge, eia2.edge, groups), eia1lta[3,]),
-  calculate_model_error(average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), (eia1eta %>% filter(names == "ta3"))), 
-  calculate_model_error(average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), (eia1eta %>% filter(names == "ta4"))), 
-  calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), (eia1eta %>% filter(names == "ta5")))
+  calculate_model_error(average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), eia1lta[4,]),
+  calculate_model_error(average_three(eia1l.edge, eia2.edge, oa.edge, groups), eia1lta[5,]),
+  calculate_model_error(average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), eia1lta[6,]),
+  calculate_model_error(average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), eia1lta[7,]),
+  calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), eia1lta[8,])
 )
+ggsave("figures/null-models/me_eia1l.pdf", plot_me(me_eia1lta))
+
+me_eia2ta = rbind(
+  calculate_model_error(average_two(eia1l.edge, eia2.edge, groups), eia2ta[2,]),
+  calculate_model_error(average_two(eia2.edge, oa.edge, groups), eia2ta[3,]),
+  calculate_model_error(average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), eia2ta[4,]),
+  calculate_model_error(average_three(eia1l.edge, eia2.edge, oa.edge, groups), eia2ta[5,]),
+  calculate_model_error(average_three(eia2.edge, oa.edge, aa.edge, groups), eia2ta[6,]),
+  calculate_model_error(average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), eia2ta[7,]),
+  calculate_model_error(average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), eia2ta[8,]),
+  calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), eia2ta[9,])
+)
+ggsave("figures/null-models/me_eia2.pdf", plot_me(me_eia2ta))
+
+me_oata = rbind(
+  calculate_model_error(average_two(eia2.edge, oa.edge, groups), oata[2,]),
+  calculate_model_error(average_two(oa.edge, aa.edge, groups), oata[3,]),
+  calculate_model_error(average_three(eia1l.edge, eia2.edge, oa.edge, groups), oata[4,]),
+  calculate_model_error(average_three(eia2.edge, oa.edge, aa.edge, groups), oata[5,]),
+  calculate_model_error(average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), oata[6,]),
+  calculate_model_error(average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), oata[7,]),
+  calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), oata[8,])
+)
+ggsave("figures/null-models/me_oa.pdf", plot_me(me_oata))
+
+me_aata = rbind(
+  calculate_model_error(average_two(oa.edge, aa.edge, groups), aata[2,]),
+  calculate_model_error(average_three(eia2.edge, oa.edge, aa.edge, groups), aata[3,]),
+  calculate_model_error(average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), aata[4,]),
+  calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), aata[5,])
+)
+ggsave("figures/null-models/me_aa.pdf", plot_me(me_aata))
+
+all_me_ta = rbind(me_eia1eta, me_eia1lta, me_eia2ta, me_oata, me_aata)
+ggsave("figures/null-models/all_ta_me.pdf", plot_me(all_me_ta), height = 4, width = 7)
