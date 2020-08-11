@@ -65,7 +65,7 @@ alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L",
 avg = alldata %>% filter(num.graphs != 1)
 orig = alldata %>% filter(num.graphs == 1)
 
-pca_avg = prcomp(avg[,c(1, 4:6, 8)], scale = T)
+pca_avg = prcomp(avg[,c(1, 3:6, 8:9)], scale = T)
 avgdf = data.frame(pca_avg$x)
 avgdf$network = avg$network
 hulls = avgdf %>% group_by(network) %>% dplyr::slice(chull(PC1, PC2))
@@ -76,7 +76,7 @@ ggplot(avgdf, aes(x = PC1, y = PC2, fill = network, color = network)) +
 print(pca_avg)
 biplot(pca_avg)
 
-orig.coord = as.data.frame(predict(pca_avg, orig[,c(1, 4:6, 8)]))
+orig.coord = as.data.frame(predict(pca_avg, orig[,c(1, 3:6, 8:9)]))
 rownames(orig.coord) = as.character(orig$network)
 
 p.pca = fviz_pca_biplot(pca_avg, repel = T, pointsize = 1, pointshape = 20, col.var = "grey30", col.ind = avg$network,
@@ -134,6 +134,17 @@ calculate_model_error = function(graph, df) {
                      (median(null.mod) - df$mod)/(quantile(null.mod, 0.975) - median(null.mod)), 
                      (median(null.mod) - df$mod)/(median(null.mod) - quantile(null.mod, 0.025)))
   
+  # null.ed = get_null_model_values(graph, FUN = calc.edge.dens)
+  # df$ed_me = ifelse(median(null.ed) > df$edge.dens, 
+  #                    (median(null.ed) - df$edge.dens)/(quantile(null.ed, 0.975) - median(null.ed)), 
+  #                    (median(null.ed) - df$edge.dens)/(median(null.ed) - quantile(null.ed, 0.025)))
+  # 
+  # null.deg = get_null_model_values(graph, FUN = calc.mean.deg)
+  # df$deg_me = ifelse(median(null.deg) > df$mean.deg, 
+  #                   (median(null.deg) - df$mean.deg)/(quantile(null.deg, 0.975) - median(null.deg)), 
+  #                   (median(null.deg) - df$mean.deg)/(median(null.deg) - quantile(null.deg, 0.025)))
+  
+  
   return(df)
 }
 
@@ -149,8 +160,9 @@ plot_me = function(modelerrors) {
   me = modelerrors %>% gather(key = "modelerror", value = "value", c(15:20))
   me$network = factor(me$network, levels = c("EIA1E", "EIA1L", "EIA2", "OA", "AA"))
   metric.labs = c("betweenness centrality", "clustering coefficient", "diameter", 
-                  "eigenvector centrality", "modularity", "path length")
-  names(metric.labs) = c("btwn_me", "cc_me", "diam_me", "eigen_me", "mod_me", "pl_me")
+                  "eigenvector centrality", "modularity", "path length", 
+                  "edge density", "degree")
+  names(metric.labs) = c("btwn_me", "cc_me", "diam_me", "eigen_me", "mod_me", "pl_me", "ed_me", "deg_me")
   meplot = ggplot(me, aes(x = num.graphs, y = value, group = network, color = network)) +
     geom_rect(xmin = -Inf, xmax = Inf, ymin = -1, ymax = 1, alpha = 0.05, color = NA, fill = "grey80") +
     geom_hline(yintercept = 0) +
