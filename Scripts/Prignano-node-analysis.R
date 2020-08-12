@@ -1,5 +1,6 @@
 #Prignano dataset node-based analysis
 library(OmicsMarkeR)
+library(ggthemes)
 source("scripts/Prignano-time-average.R")
 source("scripts/node_metrics.R")
 
@@ -9,7 +10,7 @@ source("scripts/node_metrics.R")
 #EIA2 : Early Iron Age 2 (850/825 730/720 BC)
 #OA : Orientalizing Age (730/720 580 BC)
 #AA : Archaic Period (580-500 BC)
-calc_jaccard_similarity_high = function(compdf, num.graphs, label) { #calculate similarity between 
+calc_jaccard_similarity_high = function(compdf, num.graphs) { #calculate similarity between 
   comp.set = as.character(compdf[order(-compdf$metric),]$node[1:5])
   df = data.frame(num.graphs = integer(), 
                   sim = integer())
@@ -17,11 +18,11 @@ calc_jaccard_similarity_high = function(compdf, num.graphs, label) { #calculate 
   for(i in 3:ncol(compdf)) {
     df[nrow(df) + 1, ] = c(num.graphs[i-2], jaccard(comp.set, as.character(compdf[order(-compdf[,i]),]$node[1:5])))
   }
-  df$original = label
+  #df$original = label
   return(df)
 }
 
-calc_jaccard_similarity_low = function(compdf, num.graphs, label) { 
+calc_jaccard_similarity_low = function(compdf, num.graphs) { 
   comp.set = as.character(compdf[order(compdf$metric),]$node[1:5])
   df = data.frame(num.graphs = integer(), 
                   sim = integer())
@@ -29,15 +30,16 @@ calc_jaccard_similarity_low = function(compdf, num.graphs, label) {
   for(i in 3:ncol(compdf)) {
     df[nrow(df) + 1, ] = c(num.graphs[i-2], jaccard(comp.set, as.character(compdf[order(compdf[,i]),]$node[1:5])))
   }
-  df$original = label
+  #df$original = label
   return(df)
 }
 
-get_comparison_dataframe = function(graphlist, suffixes, FUN = calc.btwn) {
+get_comparison_dataframe = function(graphlist, suffixes, label, FUN = calc.btwn) {
   compdf = FUN(graphlist[[1]])
   for(i in 2:length(graphlist)) {
     compdf = compdf %>% full_join(FUN(graphlist[[i]]), by = "node", suffix = c("", suffixes[i-1]))
   }
+  compdf$original = label
   return(compdf)
 }
 
@@ -92,11 +94,11 @@ all_similarity_dataframe_high = function(gl1e, gl1l, gl2, glo, gla, FUN = calc.n
   sf2 = c(".2.1", ".2.2", ".3.1", ".3.2", ".4.1", ".4.2", ".5")
   sf3 = c(".2.1", ".2.2", ".3.1", ".3.2", ".3.3", ".4.1", ".4.2", ".5")
   allsim = rbind(
-    calc_jaccard_similarity_high(get_comparison_dataframe(gl1e, sf1, FUN = FUN), c(2, 3, 4, 5), "EIA1E"), 
-    calc_jaccard_similarity_high(get_comparison_dataframe(gl1l, sf2, FUN = FUN), c(2, 2, 3, 3, 4, 4, 5), "EIA1L"), 
-    calc_jaccard_similarity_high(get_comparison_dataframe(gl2, sf3, FUN = FUN), c(2, 2, 3, 3, 3, 4, 4, 5), "EIA2"), 
-    calc_jaccard_similarity_high(get_comparison_dataframe(glo, sf2, FUN = FUN), c(2, 2, 3, 3, 4, 4, 5), "OA"),
-    calc_jaccard_similarity_high(get_comparison_dataframe(gla, sf1, FUN = FUN), c(2, 3, 4, 5), "AA")
+    calc_jaccard_similarity_high(get_comparison_dataframe(gl1e, sf1, "EIA1E", FUN = FUN), c(2, 3, 4, 5)), 
+    calc_jaccard_similarity_high(get_comparison_dataframe(gl1l, sf2, "EIA1L", FUN = FUN), c(2, 2, 3, 3, 4, 4, 5)), 
+    calc_jaccard_similarity_high(get_comparison_dataframe(gl2, sf3, "EIA2", FUN = FUN), c(2, 2, 3, 3, 3, 4, 4, 5)), 
+    calc_jaccard_similarity_high(get_comparison_dataframe(glo, sf2, "OA", FUN = FUN), c(2, 2, 3, 3, 4, 4, 5)),
+    calc_jaccard_similarity_high(get_comparison_dataframe(gla, sf1, "AA", FUN = FUN), c(2, 3, 4, 5))
   )
   allsim$original = ordered(allsim$original, levels = c("EIA1E", "EIA1L", "EIA2", "OA", "AA"))
   return(allsim)
@@ -141,3 +143,53 @@ plot_jaccard_similarity(btwn.sim.high, "btwn-high")
 plot_jaccard_similarity(deg.sim.low, "deg-low")
 plot_jaccard_similarity(eigen.sim.low, "eigen-low")
 plot_jaccard_similarity(btwn.sim.low, "btwn-low")
+
+####Node Metric Analysis####
+
+calculate_mean_sd = function(gl1e, gl1l, gl2, glo, gla, label, FUN = calc.node.deg) {
+  sf1 = c(".2", ".3", ".4", ".5")
+  sf2 = c(".2.1", ".2.2", ".3.1", ".3.2", ".4.1", ".4.2", ".5")
+  sf3 = c(".2.1", ".2.2", ".3.1", ".3.2", ".3.3", ".4.1", ".4.2", ".5")
+  df1e = get_comparison_dataframe(gl1e, sf1, "EIA1E", FUN = FUN) 
+  colnames(df1e) <- c("1", "node", "2", "3", "4", "5", "original")
+  df1e = df1e %>% gather(key = "network", value = "value", c(1, 3:6))
+  df1l = get_comparison_dataframe(gl1l, sf2, "EIA1L", FUN = FUN)
+  colnames(df1l) <- c("1", "node", "2", "2 ", "3", "3 ", "4", "4 ", "5", "original")
+  df1l = df1l %>% gather(key = "network", value = "value", c(1, 3:9))
+  df2 = get_comparison_dataframe(gl2, sf3, "EIA2", FUN = FUN)
+  colnames(df2) <- c("1", "node", "2", "2 ", "3", "3 ", "3  ", "4", "4 ", "5", "original")
+  df2 = df2 %>% gather(key = "network", value = "value", c(1, 3:10))
+  dfo = get_comparison_dataframe(glo, sf2, "OA", FUN = FUN)
+  colnames(dfo) <- c("1", "node", "2", "2 ", "3", "3 ", "4", "4 ", "5", "original")
+  dfo = dfo %>% gather(key = "network", value = "value", c(1, 3:9))
+  dfa = get_comparison_dataframe(gla, sf1, "AA", FUN = FUN)
+  colnames(dfa) <- c("1", "node", "2", "3", "4", "5", "original")
+  dfa = dfa %>% gather(key = "network", value = "value", c(1, 3:6))
+  
+  allval = rbind(df1e, df1l, df2, dfo, dfa) %>%
+    mutate(network = str_trim(network)) %>% 
+    filter(!is.na(value)) %>%
+    group_by(original, network) %>%
+    summarize(mean = mean(value), 
+              stdv = sd(value))
+  allval$label = label
+  return(allval)
+}
+
+degree.val = calculate_mean_sd(gl1e, gl1l, gl2, glo, gla, "degree", FUN = calc.node.deg)
+btwn.val = calculate_mean_sd(gl1e, gl1l, gl2, glo, gla, "btwn", FUN = calc.btwn)
+eigen.val = calculate_mean_sd(gl1e, gl1l, gl2, glo, gla, "eigen", FUN = calc.eigen)
+all.val = rbind(degree.val, btwn.val, eigen.val)
+all.val$label = ordered(all.val$label, levels = c("degree", "btwn", "eigen"))
+all.val$original = ordered(all.val$original, level = c("EIA1E", "EIA1L", "EIA2", "OA", "AA"))
+metric.labels = c("degree", "betweenness centrality", "eigenvector centrality")
+names(metric.labels) = c("degree", "btwn", "eigen")
+
+p = ggplot(all.val, aes(x = network, y = stdv, group = original, color = original)) +
+  geom_smooth(se = F, size = 0.5) +
+  theme_minimal() +
+  scale_color_colorblind() +
+  facet_wrap(~label, ncol = 1, scales = "free_y", labeller = labeller(label = metric.labels)) +
+  labs(x = "number of networks", y = "standard deviation", color = "")
+
+ggsave(filename = "figures/metrics/stdv.pdf", p, width = 4.5, height = 6)

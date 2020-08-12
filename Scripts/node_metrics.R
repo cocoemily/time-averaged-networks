@@ -1,3 +1,5 @@
+library(igraph)
+
 calc.node.in = function(g) {
   din = as.data.frame(degree(g, mode = "in"))
   din$node = rownames(din)
@@ -38,7 +40,6 @@ calc.btwn = function(g) {
 #   return(closeness(g))
 # }
 
-#need to figure out what to do with this
 calc.deg.dist = function(g) {
   return(degree_distribution(g))
 }
