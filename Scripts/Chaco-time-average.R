@@ -66,7 +66,8 @@ graphs = list(chaco800, chaco825, chaco850, chaco875,
               chaco1000, chaco1025, chaco1050, chaco1075,
               chaco1100, chaco1125, chaco1150, chaco1175,
               chaco1200, chaco1225, chaco1250, chaco1275)
-#up to 25 graphs to be combined together
+
+#'Helper function for creating the time-averaged graphs
 time_average = function(graphs, start, end) {
   el = as_edgelist(graphs[[start]])
   for(i in (start+1):end) {
@@ -74,8 +75,8 @@ time_average = function(graphs, start, end) {
   }
   return(simplify(graph_from_edgelist(el, directed = F)))
 }
-#test = time_average(graphs, 1, 2)
 
+#'Helper function for calculating all relevant network indices
 get_row = function(graph) {
   return(c(calc.cc(graph), calc.diam(graph), calc.edge.dens(graph), 
            calc.mean.between(graph),
@@ -84,8 +85,17 @@ get_row = function(graph) {
            calc.mean.in(graph), calc.mean.out(graph)))
 }
 
-#can do time averaging starting at given graph and moving forward
-Chaco_ta_compare = function(original, index, graphs, o_name) { 
+#' Function for calculating network metrics for original and time-averaged graphs
+#' Can only do time-averaging starting at the original graph and working forward through the list of all graphs
+#' 
+#' @param original starting network that all time-averaged networks will be compared to
+#' @param index index in the graphs list of the original network
+#' @param graphs list of all graphs in order to time-average among them
+#' @param o_name string for identifying the original graph within the produced dataframe
+#' 
+#' @return df containing network metrics for original graph and all time-averaged graphs including the original graph
+#' 
+Chaco_ta_compare = function(original, index, graphs, o_name, backward = FALSE) { 
   df = data.frame(cc = integer(), 
                   diam = integer(), 
                   edge.dens = integer(), 
@@ -98,9 +108,20 @@ Chaco_ta_compare = function(original, index, graphs, o_name) {
                   mean.in = integer(), 
                   mean.out = integer())
   df[nrow(df) + 1, ] = get_row(original)
-  for(i in 1:(length(graphs)-index)) {
-    print(i)
-    df[nrow(df) + 1, ] = get_row(time_average(graphs, index, index+i))
+  if(!backward) { 
+    for(i in 1:(length(graphs)-index)) {
+      #print(i)
+      df[nrow(df) + 1, ] = get_row(time_average(graphs, index, index+i))
+    }
+    df$num_graphs = c(seq(1, nrow(df), by = 1))
+    df$name = c(replicate(nrow(df), o_name))
   }
-  df$name = c(o_name, seq(index+1, nrow(df), by = 1))
+  # else { #TO DO: time-average in opposite direction
+  #   for(i in length(graphs):index)) {
+  #     df[nrow(df) + 1, ] = get_row(time_average(graphs, ))
+  #   }
+  # }
+  return(df)
 }
+
+#test = Chaco_ta_compare(graphs[[1]], 1, graphs, "chaco800")

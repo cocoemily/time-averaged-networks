@@ -80,13 +80,14 @@ orig.coord = as.data.frame(predict(pca_avg, orig[,c(1, 3:6, 8:9)]))
 rownames(orig.coord) = as.character(orig$network)
 
 p.pca = fviz_pca_biplot(pca_avg, repel = T, pointsize = 1, pointshape = 20, col.var = "grey30", col.ind = avg$network,
-                addEllipses = T, ellipse.type = "confidence", palette = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"), 
+                #addEllipses = T, ellipse.type = "confidence", palette = c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2"), 
                 label = "var")
-p.pca = fviz_add(p.pca, orig.coord[1,], shape = 15, color = "#E69F00")
-p.pca = fviz_add(p.pca, orig.coord[2,], shape = 15, color = "#56B4E9")
-p.pca = fviz_add(p.pca, orig.coord[3,], shape = 15, color = "#009E73")
-p.pca = fviz_add(p.pca, orig.coord[4,], shape = 15, color = "#F0E442")
-p.pca = fviz_add(p.pca, orig.coord[5,], shape = 15, color = "#0072B2")
+p.pca = fviz_add(p.pca, orig.coord, shape = 15, labelsize = 0)
+# p.pca = fviz_add(p.pca, orig.coord[1,], shape = 15, color = "#E69F00")
+# p.pca = fviz_add(p.pca, orig.coord[2,], shape = 15, color = "#56B4E9")
+# p.pca = fviz_add(p.pca, orig.coord[3,], shape = 15, color = "#009E73")
+# p.pca = fviz_add(p.pca, orig.coord[4,], shape = 15, color = "#F0E442")
+# p.pca = fviz_add(p.pca, orig.coord[5,], shape = 15, color = "#0072B2")
 plot(p.pca)
 ggsave("figures/pca/pca-biplot.pdf", p.pca)
 
