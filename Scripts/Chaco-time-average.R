@@ -40,26 +40,26 @@ create_network = function(chaco_tp) {
   return(graph_from_adjacency_matrix(mat, mode = "undirected", weighted = T))
 }
 
-chaco800 = create_network(chaco %>% filter(P800 != 0) %>% select(SWSN_ID, SWSN_Ware, P800))
-chaco825 = create_network(chaco %>% filter(P825 != 0) %>% select(SWSN_ID, SWSN_Ware, P825))
-chaco850 = create_network(chaco %>% filter(P850 != 0) %>% select(SWSN_ID, SWSN_Ware, P850))
-chaco875 = create_network(chaco %>% filter(P875 != 0) %>% select(SWSN_ID, SWSN_Ware, P875))
-chaco900 = create_network(chaco %>% filter(P900 != 0) %>% select(SWSN_ID, SWSN_Ware, P900))
-chaco925 = create_network(chaco %>% filter(P925 != 0) %>% select(SWSN_ID, SWSN_Ware, P925))
-chaco950 = create_network(chaco %>% filter(P950 != 0) %>% select(SWSN_ID, SWSN_Ware, P950))
-chaco975 = create_network(chaco %>% filter(P975 != 0) %>% select(SWSN_ID, SWSN_Ware, P975))
-chaco1000 = create_network(chaco %>% filter(P1000 != 0) %>% select(SWSN_ID, SWSN_Ware, P1000))
-chaco1025 = create_network(chaco %>% filter(P1025 != 0) %>% select(SWSN_ID, SWSN_Ware, P1025))
-chaco1050 = create_network(chaco %>% filter(P1050 != 0) %>% select(SWSN_ID, SWSN_Ware, P1050))
-chaco1075 = create_network(chaco %>% filter(P1075 != 0) %>% select(SWSN_ID, SWSN_Ware, P1075))
-chaco1100 = create_network(chaco %>% filter(P1100 != 0) %>% select(SWSN_ID, SWSN_Ware, P1100))
-chaco1125 = create_network(chaco %>% filter(P1125 != 0) %>% select(SWSN_ID, SWSN_Ware, P1125))
-chaco1150 = create_network(chaco %>% filter(P1150 != 0) %>% select(SWSN_ID, SWSN_Ware, P1150))
-chaco1175 = create_network(chaco %>% filter(P1175 != 0) %>% select(SWSN_ID, SWSN_Ware, P1175))
-chaco1200 = create_network(chaco %>% filter(P1200 != 0) %>% select(SWSN_ID, SWSN_Ware, P1200))
-chaco1225 = create_network(chaco %>% filter(P925 != 0) %>% select(SWSN_ID, SWSN_Ware, P1225))
-chaco1250 = create_network(chaco %>% filter(P950 != 0) %>% select(SWSN_ID, SWSN_Ware, P1250))
-chaco1275 = create_network(chaco %>% filter(P975 != 0) %>% select(SWSN_ID, SWSN_Ware, P1275))
+chaco800 = create_network(chaco %>% filter(P800 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P800))
+chaco825 = create_network(chaco %>% filter(P825 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P825))
+chaco850 = create_network(chaco %>% filter(P850 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P850))
+chaco875 = create_network(chaco %>% filter(P875 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P875))
+chaco900 = create_network(chaco %>% filter(P900 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P900))
+chaco925 = create_network(chaco %>% filter(P925 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P925))
+chaco950 = create_network(chaco %>% filter(P950 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P950))
+chaco975 = create_network(chaco %>% filter(P975 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P975))
+chaco1000 = create_network(chaco %>% filter(P1000 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1000))
+chaco1025 = create_network(chaco %>% filter(P1025 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1025))
+chaco1050 = create_network(chaco %>% filter(P1050 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1050))
+chaco1075 = create_network(chaco %>% filter(P1075 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1075))
+chaco1100 = create_network(chaco %>% filter(P1100 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1100))
+chaco1125 = create_network(chaco %>% filter(P1125 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1125))
+chaco1150 = create_network(chaco %>% filter(P1150 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1150))
+chaco1175 = create_network(chaco %>% filter(P1175 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1175))
+chaco1200 = create_network(chaco %>% filter(P1200 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1200))
+chaco1225 = create_network(chaco %>% filter(P925 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1225))
+chaco1250 = create_network(chaco %>% filter(P950 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1250))
+chaco1275 = create_network(chaco %>% filter(P975 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1275))
 
 graphs = list(chaco800, chaco825, chaco850, chaco875, 
               chaco900, chaco925, chaco950, chaco975,
@@ -113,8 +113,8 @@ Chaco_ta_compare = function(original, index, graphs, o_name, backward = FALSE) {
       #print(i)
       df[nrow(df) + 1, ] = get_row(time_average(graphs, index, index+i))
     }
-    df$num_graphs = c(seq(1, nrow(df), by = 1))
-    df$name = c(replicate(nrow(df), o_name))
+    df$num.graphs = c(seq(1, nrow(df), by = 1))
+    df$network = c(replicate(nrow(df), o_name))
   }
   # else { #TO DO: time-average in opposite direction
   #   for(i in length(graphs):index)) {
