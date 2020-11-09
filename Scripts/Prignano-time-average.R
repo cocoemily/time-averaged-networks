@@ -209,11 +209,3 @@ ta_compare = function(edge1, edge2, edge3 = NULL, edge4 = NULL, edge5 = NULL,
   return(df)
 }
 
-get_row = function(graph) {
-  return(c(calc.cc(graph), calc.diam(graph), calc.edge.dens(graph), 
-           calc.mean.between(graph),
-           calc.mean.eigen(graph), calc.mean.path.length(graph), 
-           calc.S(graph), calc.mod(graph), calc.mean.deg(graph), 
-           calc.mean.in(graph), calc.mean.out(graph)))
-}
-

@@ -11,6 +11,12 @@ calc.mean.eigen <- function(g) {
   eigen <- eigen_centrality(g)
   return(mean(eigen$vector))
 }
+#Boncich power centrality
+calc.B.power = function(g) {
+  power = power_centrality(g, rescale = T)
+  return(mean(power))
+}
+
 #average path length normalized by size
 calc.mean.path.length <- function(g) {
   avpath <- igraph::average.path.length(g)

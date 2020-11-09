@@ -1,4 +1,5 @@
 source("scripts/Chaco-time-average.R")
+source("scripts/network-analysis-functions.R")
 theme_set(theme_minimal())
 library(ggthemes)
 library(lme4)
@@ -26,27 +27,53 @@ c1175 = Chaco_ta_compare(graphs[[16]], 16, graphs, "chaco1175")
 c1200 = Chaco_ta_compare(graphs[[17]], 17, graphs, "chaco1200")
 c1225 = Chaco_ta_compare(graphs[[18]], 18, graphs, "chaco1225")
 c1250 = Chaco_ta_compare(graphs[[19]], 19, graphs, "chaco1250")
-#c1275 = Chaco_ta_compare(graphs[[20]], 20, graphs, "chaco1275")
+c1275 = Chaco_ta_compare(graphs[[20]], 20, graphs, "chaco1275")
 
 alldata = rbind(c800, c825, c850, c875, 
                   c900, c925, c950, c975,
                   c1000, c1025, c1050, c1075,
                   c1100, c1125, c1150, c1175,
-                  c1200, c1225, c1250)
+                  c1200, c1225, c1250, c1275)
 
 datalist = list(c800, c825, c850, c875, 
                 c900, c925, c950, c975,
                 c1000, c1025, c1050, c1075,
                 c1100, c1125, c1150, c1175,
-                c1200, c1225, c1250)
+                c1200, c1225, c1250, c1275)
 
 ####PCA Analysis####
+ggsave("figures/pca/Chaco/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "cc", "eigen", "mod", "mean.deg", "path.length")))
 
+####Model Errors####
 ##comparison to original graph
 modelerrors = calculate_model_error(graphs[[1]], c800)
 for(g in 2:(length(graphs)-1)) {
   modelerrors = rbind(modelerrors, calculate_model_error(graphs[[g]], datalist[[g]]))
 }
 #plot(plot_model_errors(modelerrors))
-ggsave("figures/null-models/Chaco/me_ta-to-orig.pdf", plot_model_errors(modelerrors), height = 4, width = 7)
+ggsave("figures/null-models/Chaco/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "pl_me")), height = 4, width = 7)
+
+
 ##need to implement comparison to time-averaged graphs -- look at Prignano script
+for(index in 1:length(graphs)) {
+  modelerrors2 = calculate_model_error(graphs[[1]], c800)
+  if(index == 1) { 
+    for(i in 2:(length(graphs)-index)) {
+      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), datalist[[index]]))
+    }
+  } else if(index == length(graphs)) {
+    for(i in 1:(length(graphs)-1)) {
+      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), datalist[[index]]))
+    }
+    df$num.graphs = c(1, seq(nrow(df), 2 , by = -1))
+    df$network = c(replicate(nrow(df), o_name))
+  } else { #TODO multiple direction time-averaging
+    for(i in 1:(length(graphs)-index)) {
+      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), datalist[[index]]))
+    }
+    for(i in 1:(index-1)) {
+      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), datalist[[index]]))
+    }
+  }
+}
+ggsave("figures/null-models/Chaco/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "pl_me")), height = 4, width = 7)

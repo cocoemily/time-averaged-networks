@@ -1,5 +1,6 @@
 #Prignano dataset network-level analysis
 source("scripts/Prignano-time-average.R")
+source("scripts/network-analysis-functions.R")
 theme_set(theme_minimal())
 library(ggthemes)
 library(lme4)
@@ -61,8 +62,10 @@ alldata = rbind(eia1eta, eia1lta, eia2ta, oata, aata)
 alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L", 
                                                      "EIA2", "OA", "AA"))
 
-##put in PCA analysis here
+####PCA Analysis####
+ggsave("figures/pca/Prignano/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "cc", "eigen", "mod", "mean.deg", "path.length")))
 
+####Model Errors####
 modelerrors = rbind(
   calculate_model_error(graph_from_edgelist(as.matrix(eia1e.edge[,1:2])), eia1eta), 
   calculate_model_error(graph_from_edgelist(as.matrix(eia1l.edge[,1:2])), eia1lta), 
@@ -70,7 +73,7 @@ modelerrors = rbind(
   calculate_model_error(graph_from_edgelist(as.matrix(oa.edge[,1:2])), oata), 
   calculate_model_error(graph_from_edgelist(as.matrix(aa.edge[,1:2])), aata)
 )
-ggsave("figures/null-models/me_ta-to-orig.pdf", plot_me(modelerrors), height = 4, width = 7)
+ggsave("figures/null-models/Prignano/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "deg_me", "cc_me", "mod_me", "pl_me")), height = 4, width = 7)
 
 me_eia1eta = rbind(
   calculate_model_error(average_two(eia1e.edge, eia1l.edge, groups), (eia1eta %>% filter(names == "ta2"))), 
@@ -78,7 +81,7 @@ me_eia1eta = rbind(
   calculate_model_error(average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), (eia1eta %>% filter(names == "ta4"))), 
   calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), (eia1eta %>% filter(names == "ta5")))
 )
-ggsave("figures/null-models/me_eia1e.pdf", plot_me(me_eia1eta))
+#ggsave("figures/null-models/Prignano/me_eia1e.pdf", plot_model_errors(me_eia1eta, c("btwn_me", "eigen_me", "cc_me", "mod_me")))
 
 me_eia1lta = rbind(
   calculate_model_error(average_two(eia1e.edge, eia1l.edge, groups), eia1lta[2,]),
@@ -89,7 +92,7 @@ me_eia1lta = rbind(
   calculate_model_error(average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), eia1lta[7,]),
   calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), eia1lta[8,])
 )
-ggsave("figures/null-models/me_eia1l.pdf", plot_me(me_eia1lta))
+#ggsave("figures/null-models/Prignano/me_eia1l.pdf", plot_model_errors(me_eia1lta, c("btwn_me", "eigen_me", "cc_me", "mod_me")))
 
 me_eia2ta = rbind(
   calculate_model_error(average_two(eia1l.edge, eia2.edge, groups), eia2ta[2,]),
@@ -101,7 +104,7 @@ me_eia2ta = rbind(
   calculate_model_error(average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), eia2ta[8,]),
   calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), eia2ta[9,])
 )
-ggsave("figures/null-models/me_eia2.pdf", plot_me(me_eia2ta))
+#ggsave("figures/null-models/Prignano/me_eia2.pdf", plot_model_errors(me_eia2ta, c("btwn_me", "eigen_me", "cc_me", "mod_me")))
 
 me_oata = rbind(
   calculate_model_error(average_two(eia2.edge, oa.edge, groups), oata[2,]),
@@ -112,7 +115,7 @@ me_oata = rbind(
   calculate_model_error(average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), oata[7,]),
   calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), oata[8,])
 )
-ggsave("figures/null-models/me_oa.pdf", plot_me(me_oata))
+#ggsave("figures/null-models/Prignano/me_oa.pdf", plot_model_errors(me_oata, c("btwn_me", "eigen_me", "cc_me", "mod_me")))
 
 me_aata = rbind(
   calculate_model_error(average_two(oa.edge, aa.edge, groups), aata[2,]),
@@ -120,7 +123,7 @@ me_aata = rbind(
   calculate_model_error(average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), aata[4,]),
   calculate_model_error(average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), aata[5,])
 )
-ggsave("figures/null-models/me_aa.pdf", plot_me(me_aata))
+#ggsave("figures/null-models/Prignano/me_aa.pdf", plot_model_errors(me_aata, c("btwn_me", "eigen_me", "cc_me", "mod_me")))
 
 all_me_ta = rbind(me_eia1eta, me_eia1lta, me_eia2ta, me_oata, me_aata)
-ggsave("figures/null-models/all_ta_me.pdf", plot_me(all_me_ta), height = 4, width = 7)
+ggsave("figures/null-models/Prignano/all_ta_me.pdf", plot_model_errors(all_me_ta, c("btwn_me", "eigen_me", "deg_me", "cc_me", "mod_me", "pl_me")), height = 4, width = 7)

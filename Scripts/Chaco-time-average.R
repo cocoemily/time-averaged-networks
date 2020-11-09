@@ -2,6 +2,7 @@ library(dplyr)
 library(igraph)
 source("scripts/network_metrics.R")
 source("scripts/node_metrics.R")
+source("scripts/network-analysis-functions.R")
 
 chaco = read.csv("Data/Chaco/AllCeramics.csv")
 chaco_id = chaco %>% group_by(SWSN_ID) %>%
@@ -76,15 +77,6 @@ time_average = function(graphs, start, end) {
   return(simplify(graph_from_edgelist(el, directed = F)))
 }
 
-#'Helper function for calculating all relevant network indices
-get_row = function(graph) {
-  return(c(calc.cc(graph), calc.diam(graph), calc.edge.dens(graph), 
-           calc.mean.between(graph),
-           calc.mean.eigen(graph), calc.mean.path.length(graph), 
-           calc.S(graph), calc.mod(graph), calc.mean.deg(graph), 
-           calc.mean.in(graph), calc.mean.out(graph)))
-}
-
 #' Function for calculating network metrics for original and time-averaged graphs
 #' Can only do time-averaging starting at the original graph and working forward through the list of all graphs
 #' 
@@ -95,7 +87,7 @@ get_row = function(graph) {
 #' 
 #' @return df containing network metrics for original graph and all time-averaged graphs including the original graph
 #' 
-Chaco_ta_compare = function(original, index, graphs, o_name, backward = FALSE) { 
+Chaco_ta_compare = function(original, index, graphs, o_name) { 
   df = data.frame(cc = integer(), 
                   diam = integer(), 
                   edge.dens = integer(), 
@@ -106,22 +98,30 @@ Chaco_ta_compare = function(original, index, graphs, o_name, backward = FALSE) {
                   mod = integer(), 
                   mean.deg = integer(), 
                   mean.in = integer(), 
-                  mean.out = integer())
-  df[nrow(df) + 1, ] = get_row(original)
-  if(!backward) { 
+                  mean.out = integer(), 
+                  num.graphs = integer())
+  df[nrow(df) + 1, ] = c(get_row(original), 1)
+  if(index == 1) { 
     for(i in 1:(length(graphs)-index)) {
       #print(i)
-      df[nrow(df) + 1, ] = get_row(time_average(graphs, index, index+i))
+      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, index, index+i)), i+1)
     }
     df$num.graphs = c(seq(1, nrow(df), by = 1))
     df$network = c(replicate(nrow(df), o_name))
+  } else if(index == length(graphs)) {
+    for(i in 1:(length(graphs)-1)) {
+      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, index)), i+1)
+    }
+    df$num.graphs = c(1, seq(nrow(df), 2 , by = -1))
+    df$network = c(replicate(nrow(df), o_name))
+  } else { #TODO multiple direction time-averaging
+    for(i in 1:(length(graphs)-index)) {
+      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, index, index+i)), i+1)
+    }
+    for(i in 1:(index-1)) {
+      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, index)), i+1)
+    }
+    df$network = c(replicate(nrow(df), o_name))
   }
-  # else { #TO DO: time-average in opposite direction
-  #   for(i in length(graphs):index)) {
-  #     df[nrow(df) + 1, ] = get_row(time_average(graphs, ))
-  #   }
-  # }
   return(df)
 }
-
-#test = Chaco_ta_compare(graphs[[1]], 1, graphs, "chaco800")

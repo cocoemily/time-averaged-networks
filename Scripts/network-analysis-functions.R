@@ -1,5 +1,14 @@
 #functions for running network-level analyses
 
+#'Helper function for calculating all relevant network indices
+get_row = function(graph) {
+  return(c(calc.cc(graph), calc.diam(graph), calc.edge.dens(graph), 
+           calc.mean.between(graph),
+           calc.mean.eigen(graph), calc.mean.path.length(graph), 
+           calc.S(graph), calc.mod(graph), calc.mean.deg(graph), 
+           calc.mean.in(graph), calc.mean.out(graph)))
+}
+
 ####PCA Analysis####
 #'
 #'Function produces a PCA biplot based on the time-averaged data on which the original data is plotted
@@ -77,15 +86,15 @@ calculate_model_error = function(graph, df) {
                      (median(null.mod) - df$mod)/(quantile(null.mod, 0.975) - median(null.mod)), 
                      (median(null.mod) - df$mod)/(median(null.mod) - quantile(null.mod, 0.025)))
   
-  # null.ed = get_null_model_values(graph, FUN = calc.edge.dens)
-  # df$ed_me = ifelse(median(null.ed) > df$edge.dens, 
-  #                    (median(null.ed) - df$edge.dens)/(quantile(null.ed, 0.975) - median(null.ed)), 
-  #                    (median(null.ed) - df$edge.dens)/(median(null.ed) - quantile(null.ed, 0.025)))
-  # 
-  # null.deg = get_null_model_values(graph, FUN = calc.mean.deg)
-  # df$deg_me = ifelse(median(null.deg) > df$mean.deg, 
-  #                   (median(null.deg) - df$mean.deg)/(quantile(null.deg, 0.975) - median(null.deg)), 
-  #                   (median(null.deg) - df$mean.deg)/(median(null.deg) - quantile(null.deg, 0.025)))
+  null.ed = get_null_model_values(graph, FUN = calc.edge.dens)
+  df$ed_me = ifelse(median(null.ed) > df$edge.dens,
+                     (median(null.ed) - df$edge.dens)/(quantile(null.ed, 0.975) - median(null.ed)),
+                     (median(null.ed) - df$edge.dens)/(median(null.ed) - quantile(null.ed, 0.025)))
+
+  null.deg = get_null_model_values(graph, FUN = calc.mean.deg)
+  df$deg_me = ifelse(median(null.deg) > df$mean.deg,
+                    (median(null.deg) - df$mean.deg)/(quantile(null.deg, 0.975) - median(null.deg)),
+                    (median(null.deg) - df$mean.deg)/(median(null.deg) - quantile(null.deg, 0.025)))
   
   
   return(df)
@@ -108,10 +117,11 @@ plot_model_errors = function(modelerrors, variables) {
   meplot = ggplot(me, aes(x = num.graphs, y = value, group = network, color = network)) +
     geom_rect(xmin = -Inf, xmax = Inf, ymin = -1, ymax = 1, alpha = 0.05, color = NA, fill = "grey80") +
     geom_hline(yintercept = 0) +
-    geom_line() +
+    geom_smooth(se=F, size=0.5) +
     facet_wrap(~ modelerror, scales = "free_y", labeller = labeller(modelerror = metric.labs)) +
     labs(x = "number of graphs") +
     theme(axis.title.y = element_blank())+
-    guides(color = FALSE)
+    guides(color = FALSE) +
+    theme_minimal()
   return(meplot)
 }
