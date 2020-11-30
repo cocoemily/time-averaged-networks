@@ -1,3 +1,5 @@
+library(ggplot2)
+
 get_nodes = function(graph, top = T, FUN = calc.node.deg) {
   ndf = FUN(graph)
   comp.set = NULL
@@ -24,19 +26,15 @@ jaccard_similarity_df = function(graphlist, numgraphslist, top = T, FUN = calc.n
   return(df)
 }
 
-plot_jaccard_similarity = function(df) {
-  p = ggplot(df, aes(x = num.graphs, y = sim, group = original, color = as.factor(original))) +
-    geom_smooth(se = F) +
-    geom_jitter(width = 0.1, height = 0.1) +
-    labs(x = "number of networks", y = "jaccard similarity") +
+plot_jaccard_similarity = function(df, title) {
+  p = ggplot(df) +
+    geom_jitter(aes(x = num.graphs, y = sim, group = original, color = as.factor(original)), width = 0.5, height = 0.01, size = 0.4, alpha = 0.75) +
+    geom_smooth(aes(x = num.graphs, y = sim, group = original, color = as.factor(original)), se = F, size = 0.5) +
+    labs(x = "number of networks", y = "jaccard similarity", title = title) +
     guides(color = FALSE) +
-    theme_minimal()
+    theme_minimal() +
+    theme(plot.title = element_text(size = 10), 
+          axis.title = element_text(size = 7)) +
+    geom_smooth(aes(x = num.graphs, y = sim), se = F, size = 1, color = "black")
   return(p)
-}
-
-#need to work on this function to create plot grids (use structure for one graph from Prignano node analysis)
-plot_grid_jaccard = function(list.gl, list.ngl) {
-  for(f in list(calc.btwn, calc.node.deg, calc.eigen)) {
-    df = jaccard_similarity_df()
-  }
 }

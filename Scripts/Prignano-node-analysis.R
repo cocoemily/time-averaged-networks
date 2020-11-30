@@ -3,6 +3,7 @@ library(OmicsMarkeR)
 library(ggthemes)
 source("scripts/Prignano-time-average.R")
 source("scripts/node_metrics.R")
+source("scripts/node-analysis-functions.R")
 
 ####Analysis####
 #EIA1E : Early Iron Age 1 Early (950/925 900 BC)
@@ -61,7 +62,6 @@ gla = list(graph_from_edgelist(as.matrix(create_new_edge_list(aa.edge, groups)[,
                  average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
 gla.ngl = list(1, 2, 3, 4, 5)
 
-
 btwn.top = plot_jaccard_similarity(
   rbind(
     jaccard_similarity_df(gl1e, gl1e.ngl, top = T, FUN = calc.btwn, o_name = "EIA1E"),
@@ -69,10 +69,60 @@ btwn.top = plot_jaccard_similarity(
     jaccard_similarity_df(gl2, gl2.ngl, top = T, FUN = calc.btwn, o_name = "EIA2"),
     jaccard_similarity_df(glo, glo.ngl, top = T, FUN = calc.btwn, o_name = "OA"),
     jaccard_similarity_df(gla, gla.ngl, top = T, FUN = calc.btwn, o_name = "AA")
-  )
+  ), "Highest betweenness centrality"
 )
-plot(btwn.top)
+btwn.bottom = plot_jaccard_similarity(
+  rbind(
+    jaccard_similarity_df(gl1e, gl1e.ngl, top = F, FUN = calc.btwn, o_name = "EIA1E"),
+    jaccard_similarity_df(gl1l, gl1l.ngl, top = F, FUN = calc.btwn, o_name = "EIA1L"),
+    jaccard_similarity_df(gl2, gl2.ngl, top = F, FUN = calc.btwn, o_name = "EIA2"),
+    jaccard_similarity_df(glo, glo.ngl, top = F, FUN = calc.btwn, o_name = "OA"),
+    jaccard_similarity_df(gla, gla.ngl, top = F, FUN = calc.btwn, o_name = "AA")
+  ), "Lowest betweenness centrality"
+)
+deg.top = plot_jaccard_similarity(
+  rbind(
+    jaccard_similarity_df(gl1e, gl1e.ngl, top = T, FUN = calc.node.deg, o_name = "EIA1E"),
+    jaccard_similarity_df(gl1l, gl1l.ngl, top = T, FUN = calc.node.deg, o_name = "EIA1L"),
+    jaccard_similarity_df(gl2, gl2.ngl, top = T, FUN = calc.node.deg, o_name = "EIA2"),
+    jaccard_similarity_df(glo, glo.ngl, top = T, FUN = calc.node.deg, o_name = "OA"),
+    jaccard_similarity_df(gla, gla.ngl, top = T, FUN = calc.node.deg, o_name = "AA")
+  ), "Highest degree centrality"
+)
+deg.bottom = plot_jaccard_similarity(
+  rbind(
+    jaccard_similarity_df(gl1e, gl1e.ngl, top = F, FUN = calc.node.deg, o_name = "EIA1E"),
+    jaccard_similarity_df(gl1l, gl1l.ngl, top = F, FUN = calc.node.deg, o_name = "EIA1L"),
+    jaccard_similarity_df(gl2, gl2.ngl, top = F, FUN = calc.node.deg, o_name = "EIA2"),
+    jaccard_similarity_df(glo, glo.ngl, top = F, FUN = calc.node.deg, o_name = "OA"),
+    jaccard_similarity_df(gla, gla.ngl, top = F, FUN = calc.node.deg, o_name = "AA")
+  ), "Lowest degree centrality"
+)
+eigen.top = plot_jaccard_similarity(
+  rbind(
+    jaccard_similarity_df(gl1e, gl1e.ngl, top = T, FUN = calc.eigen, o_name = "EIA1E"),
+    jaccard_similarity_df(gl1l, gl1l.ngl, top = T, FUN = calc.eigen, o_name = "EIA1L"),
+    jaccard_similarity_df(gl2, gl2.ngl, top = T, FUN = calc.eigen, o_name = "EIA2"),
+    jaccard_similarity_df(glo, glo.ngl, top = T, FUN = calc.eigen, o_name = "OA"),
+    jaccard_similarity_df(gla, gla.ngl, top = T, FUN = calc.eigen, o_name = "AA")
+  ), "Highest eigenvector centrality"
+)
+eigen.bottom = plot_jaccard_similarity(
+  rbind(
+    jaccard_similarity_df(gl1e, gl1e.ngl, top = F, FUN = calc.eigen, o_name = "EIA1E"),
+    jaccard_similarity_df(gl1l, gl1l.ngl, top = F, FUN = calc.eigen, o_name = "EIA1L"),
+    jaccard_similarity_df(gl2, gl2.ngl, top = F, FUN = calc.eigen, o_name = "EIA2"),
+    jaccard_similarity_df(glo, glo.ngl, top = F, FUN = calc.eigen, o_name = "OA"),
+    jaccard_similarity_df(gla, gla.ngl, top = F, FUN = calc.eigen, o_name = "AA")
+  ), "Lowest eigenvector centrality"
+)
 
+
+ggsave("figures/node-centrality/Prignano-centrality-similarity.pdf",
+       plot_grid(deg.top, eigen.top, btwn.top, 
+                 deg.bottom, eigen.bottom, btwn.bottom), 
+       width = 8, height = 5
+)
 
 ####Node Metric Analysis####
 

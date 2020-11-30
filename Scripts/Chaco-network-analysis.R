@@ -42,7 +42,7 @@ datalist = list(c800, c825, c850, c875,
                 c1200, c1225, c1250, c1275)
 
 ####PCA Analysis####
-ggsave("figures/pca/Chaco/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "cc", "eigen", "mod", "mean.deg", "path.length")))
+ggsave("figures/pca/Chaco/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")))
 
 ####Model Errors####
 ##comparison to original graph
@@ -51,10 +51,9 @@ for(g in 2:(length(graphs)-1)) {
   modelerrors = rbind(modelerrors, calculate_model_error(graphs[[g]], datalist[[g]]))
 }
 #plot(plot_model_errors(modelerrors))
-ggsave("figures/null-models/Chaco/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "pl_me")), height = 4, width = 7)
+ggsave("figures/null-models/Chaco/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
 
 
-##need to implement comparison to time-averaged graphs -- look at Prignano script
 for(index in 1:length(graphs)) {
   modelerrors2 = calculate_model_error(graphs[[1]], c800)
   if(index == 1) { 
@@ -76,4 +75,4 @@ for(index in 1:length(graphs)) {
     }
   }
 }
-ggsave("figures/null-models/Chaco/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "pl_me")), height = 4, width = 7)
+ggsave("figures/null-models/Chaco/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
