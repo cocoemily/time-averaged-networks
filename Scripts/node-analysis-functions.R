@@ -1,5 +1,12 @@
 library(ggplot2)
 
+#'
+#'Function for getting the nodes with the highest or lowest values based on the provided function
+#'@param graph network to be analyzed
+#'@param top boolean to determine if returning highest values (true) or lowest values (false)
+#'@param FUN function for calculating node-based metric
+#'@return dataframe containing the node IDs of the nodes with the extreme values
+#'
 get_nodes = function(graph, top = T, FUN = calc.node.deg) {
   ndf = FUN(graph)
   comp.set = NULL
@@ -11,6 +18,16 @@ get_nodes = function(graph, top = T, FUN = calc.node.deg) {
   return(comp.set)
 }
 
+#'
+#'Function for calculating the jaccard similarity between the node set with highest/lowest metric
+#'values of an original networks and its associated time-averaged networks
+#'@param graphlist list of networks where the first is the original and the subsequent are time-averaged
+#'@param numgraphslist list of value numerating how many networks are time-average at each index of the graphlist
+#'@param top boolean to determine if looking at highest values (true) or lowest values (false)
+#'@param FUN function for calculating node-based metric
+#'@param o_name string with name for original networks 
+#'@return dataframe with jaccard similarity values by number of networks time-averaged
+#'
 jaccard_similarity_df = function(graphlist, numgraphslist, top = T, FUN = calc.node.deg, o_name) {
   df = data.frame(num.graphs = integer(), 
                   sim = integer())
@@ -26,6 +43,13 @@ jaccard_similarity_df = function(graphlist, numgraphslist, top = T, FUN = calc.n
   return(df)
 }
 
+#'
+#'Creates single plot for jaccard similarity scores by number of networks based on one node metric
+#'@param df jaccard similarity dataframe from above function
+#'@param title string with title of plot
+#'@return plot with overall trend of similarity as time-averaging increases (black line) as well as
+#'trend lines for similarity based on each individual original network 
+#'
 plot_jaccard_similarity = function(df, title) {
   p = ggplot(df) +
     geom_jitter(aes(x = num.graphs, y = sim, group = original, color = as.factor(original)), width = 0.5, height = 0.01, size = 0.4, alpha = 0.75) +
