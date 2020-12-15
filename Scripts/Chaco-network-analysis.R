@@ -41,6 +41,25 @@ datalist = list(c800, c825, c850, c875,
                 c1100, c1125, c1150, c1175,
                 c1200, c1225, c1250, c1275)
 
+####Original graphs analysis####
+name.list = c(
+  "chaco800", "chaco825", "chaco850", "chaco875", 
+  "chaco900", "chaco925", "chaco950", "chaco975",
+  "chaco1000", "chaco1025", "chaco1050", "chaco1075",
+  "chaco1100", "chaco1125", "chaco1150", "chaco1175",
+  "chaco1200", "chaco1225", "chaco1250", "chaco1275"
+)
+metric.list = c("size", "diam", "mean.deg", "mean.in", "mean.out", "edge.dens", "path.length", "cc", "mod", "btwn", "eigen")
+od = alldata %>% filter(num.graphs == 1) %>% gather(key = "metric", value = "value", c(1:11))
+od$network = factor(od$network, levels = name.list)
+od$metric = factor(od$metric, levels = metric.list)
+oplot = ggplot(od, aes(y = value, x = network, color = network)) +
+  geom_point() +
+  facet_wrap(~metric, scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())
+ggsave("figures/metrics/Chaco/original-network-metrics.pdf", oplot, width = 8, height = 5)
+
 ####PCA Analysis####
 ggsave("figures/pca/Chaco/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")))
 

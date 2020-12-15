@@ -5,7 +5,7 @@ source("scripts/Prignano-time-average.R")
 source("scripts/node_metrics.R")
 source("scripts/node-analysis-functions.R")
 
-####Analysis####
+####Graph creation####
 #EIA1E : Early Iron Age 1 Early (950/925 900 BC)
 #EIA1L : Early Iron Age 1 Late (900 850/825 BC)
 #EIA2 : Early Iron Age 2 (850/825 730/720 BC)
@@ -62,6 +62,14 @@ gla = list(graph_from_edgelist(as.matrix(create_new_edge_list(aa.edge, groups)[,
                  average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
 gla.ngl = list(1, 2, 3, 4, 5)
 
+####Original graph analysis####
+ographs = c(gl1e[1], gl1l[1], gl2[1], glo[1], gla[1])
+for(o in ographs) {
+  ##what to do here?
+}
+
+
+####Analysis####
 btwn.top = plot_jaccard_similarity(
   rbind(
     jaccard_similarity_df(gl1e, gl1e.ngl, top = T, FUN = calc.btwn, o_name = "EIA1E"),

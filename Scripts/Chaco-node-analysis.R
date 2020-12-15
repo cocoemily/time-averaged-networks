@@ -6,7 +6,11 @@ library(ggthemes)
 library(rlist)
 library(cowplot)
 
-#probably going to do node metrics on only a subset of graphs, since there would be so many otherwise
+####Original graph analysis####
+##what to do here?
+
+
+####TA analyses####
 get_ta_graphs = function(original, index, graphs) {
   gl = list(original)
   ngl = list(1)

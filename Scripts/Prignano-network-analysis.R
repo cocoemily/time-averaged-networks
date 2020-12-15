@@ -62,6 +62,18 @@ alldata = rbind(eia1eta, eia1lta, eia2ta, oata, aata)
 alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L", 
                                                      "EIA2", "OA", "AA"))
 
+####Original networks analysis####
+metric.list = c("size", "diam", "mean.deg", "mean.in", "mean.out", "edge.dens", "path.length", "cc", "mod", "btwn", "eigen")
+od = alldata %>% filter(num.graphs == 1) %>% gather(key = "metric", value = "value", c(1:11))
+od$metric = factor(od$metric, levels = metric.list)
+oplot = ggplot(od, aes(y = value, x = network, color = network)) +
+  geom_point() +
+  facet_wrap(~metric, scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank())
+ggsave("figures/metrics/Prignano/original-network-metrics.pdf", oplot, width = 8, height = 5)
+
+
 ####PCA Analysis####
 ggsave("figures/pca/Prignano/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")))
 

@@ -41,5 +41,5 @@ calc.btwn = function(g) {
 # }
 
 calc.deg.dist = function(g) {
-  return(degree_distribution(g))
+  return(degree.distribution(g))
 }
