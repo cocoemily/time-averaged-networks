@@ -74,13 +74,40 @@ node_list <- na.omit(node_list)
 write.csv(node_list, "Data/ICRATES/node_list.csv", row.names = FALSE)
 
 # Create edge lists
-edge_list = final_table[, which(colnames(final_table) %in% c("Location_ID", 'Standard_Form_ID', 'Freq'))]
+incidence_list = final_table[, which(colnames(final_table) %in% c("Location_ID", 'Standard_Form_ID', 'Freq'))]
 ## Remove places without coordinates
-edge_list <- edge_list[!(node_list$Longitude == 0.00000 & node_list$Latitude == 0.00000),]
-edge_list = as.data.frame.matrix(xtabs(Freq ~ Location_ID + Standard_Form_ID, edge_list))
+incidence_list <- incidence_list[!(node_list$Longitude == 0.00000 & node_list$Latitude == 0.00000),]
+incidence_list = as.data.frame.matrix(xtabs(Freq ~ Location_ID + Standard_Form_ID, incidence_list))
 
 ## Save .csv file
-write.csv(edge_list, "Data/ICRATES/edge_list.csv", row.names = FALSE)
+write.csv(incidence_list, "Data/ICRATES/incidence_list.csv", row.names = FALSE)
+
+
+# Turn incidence matrix into edge list
+df_incidence = incidence_list
+# rownames(df_incidence)
+# colnames(df_incidence)
+df_incidence = ifelse(df_incidence > 0, TRUE, FALSE)
+df_links = data.frame(matrix(ncol = 3, nrow = 0))
+colnames(df_links) = c("from", "to", "value")
+for (i in 1:(dim(df_incidence)[1]-1)) {
+  df1 = df_incidence[i,]
+  for (j in (i+1):dim(df_incidence)[1]) {  
+    df2 = df_incidence[j,]
+    df_i = cbind.data.frame(rownames(df_incidence)[i], rownames(df_incidence)[j], sum(df1 & df2))
+    colnames(df_i) = c("from", "to", "value")
+    df_links = rbind.data.frame(df_links, df_i)
+  }
+}
+df_links = df_links[df_links$value > 0,]
+df_links$from = as.character(df_links$from)
+df_links$to = as.character(df_links$to)
+str(df_links)
+head(df_links)
+summary(df_links)
+
+## Save .csv file
+write.csv(df_links, "Data/ICRATES/edge_list.csv", row.names = FALSE)
 
 
 #_________________________________________________________________________________________________________________________________________________
