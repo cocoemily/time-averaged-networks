@@ -89,19 +89,19 @@ df_incidence = incidence_list
 # colnames(df_incidence)
 df_incidence = ifelse(df_incidence > 0, TRUE, FALSE)
 df_links = data.frame(matrix(ncol = 3, nrow = 0))
-colnames(df_links) = c("from", "to", "value")
+colnames(df_links) = c("source", "target", "weight")
 for (i in 1:(dim(df_incidence)[1]-1)) {
   df1 = df_incidence[i,]
   for (j in (i+1):dim(df_incidence)[1]) {  
     df2 = df_incidence[j,]
     df_i = cbind.data.frame(rownames(df_incidence)[i], rownames(df_incidence)[j], sum(df1 & df2))
-    colnames(df_i) = c("from", "to", "value")
+    colnames(df_i) = c("source", "target", "weight")
     df_links = rbind.data.frame(df_links, df_i)
   }
 }
-df_links = df_links[df_links$value > 0,]
-df_links$from = as.character(df_links$from)
-df_links$to = as.character(df_links$to)
+df_links = df_links[df_links$weight > 0,]
+df_links$source = as.character(df_links$source)
+df_links$target = as.character(df_links$target)
 str(df_links)
 head(df_links)
 summary(df_links)
