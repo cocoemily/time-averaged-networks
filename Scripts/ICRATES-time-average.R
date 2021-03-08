@@ -1,3 +1,5 @@
+# LOADING SETTINGS
+
 ### set correct working directory
 setwd("C:/Users/daems/OneDrive/Work/Code/GitHub/time-averaged-networks")
 
@@ -18,6 +20,8 @@ library(bbmle)
 library(MASS)
 library(pscl)
 library(stargazer)
+library(ggthemes)
+
 
 ### read in data
 data_catalogue = read.csv("Data/ICRATES/ICRATES_CATALOGUE.csv", header = T, sep = ",")
@@ -28,6 +32,8 @@ loc = read.csv("Data/ICRATES/ICRATES_location.csv")
 #ock = read.csv("Data/ICRATES/ICRATES_ock.csv")
 
 #_______________________________________________________________________________________________________________________________________
+
+#DATA PREP
 
 # check data
 colnames(data_catalogue)
@@ -41,8 +47,9 @@ sum(is.na(data_form$Standard_Typo_chronological_Lower_Date))/dim(data_form)[1] #
 
 # Merge loc and data_catalogue to add coordinates
 locations <- merge(data_catalogue, loc, by = 'Location_ID', all=TRUE, sort=FALSE)
+
 ## Merge data
-merged_data = merge(locations, data_form, by = c("Standard_Form_ID", "Fabric"), all = T) # some mismatches in Fabric of data_form and data_catalogue - investigate further? 
+merged_data = merge(locations, data_form, by = c("Standard_Form_ID", "Fabric"), all = T) # some mismatches in Fabric of data_form and data_catalogue - investigate further?
 
 # retain only the ones with date info
 merged_data_dates = subset(merged_data, !(is.na(merged_data$Standard_Typo_chronological_Lower_Date) | is.na(merged_data$Standard_Typo_chronological_Upper_Date)))
@@ -61,6 +68,8 @@ write.csv(final_table, "Data/ICRATES/final_table.csv", row.names = FALSE)
 
 #_______________________________________________________________________________________________________________________________________
 
+#NODE AND EDGE LISTS FOR GEPHI
+
 # Create node lists
 ## Select relevant columns
 nodes <- final_table[,c(3,4,6,7)] # select(final_table, "Location_ID", "Location_specific", "Longitude", "Latitude")
@@ -73,7 +82,7 @@ node_list <- na.omit(node_list)
 ## Save .csv file
 write.csv(node_list, "Data/ICRATES/node_list.csv", row.names = FALSE)
 
-# Create edge lists
+# Create incidence lists
 incidence_list = final_table[, which(colnames(final_table) %in% c("Location_ID", 'Standard_Form_ID', 'Freq'))]
 ## Remove places without coordinates
 incidence_list <- incidence_list[!(node_list$Longitude == 0.00000 & node_list$Latitude == 0.00000),]
@@ -112,7 +121,41 @@ write.csv(df_links, "Data/ICRATES/edge_list.csv", row.names = FALSE)
 
 #_________________________________________________________________________________________________________________________________________________
 
-# Time slicing
+# OPTIONAL: Sub-networks per pottery ware
+
+## Create datasets per main ware
+count(final_table, wt_var = Fabric) # count instances per ware
+
+ESA <- subset(final_table, Fabric == 'ESA')
+ESB <- subset(final_table, grepl("ESB *", final_table$Fabric)) ## function grepl() --> Groups all ESB subsets
+ESC <- subset(final_table, grepl("ESC *", final_table$Fabric))
+ESD <- subset(final_table, Fabric == 'ESD')
+ARSW <- subset(final_table, grepl("ARSW*", final_table$Fabric))
+ITS <- subset(final_table, grepl("ITS*", final_table$Fabric))
+CRSW  <- subset(final_table, Fabric == 'CRSW')
+PRSW <- subset(final_table, Fabric == 'PRSW')
+# SRSW <- subset(final_table, Fabric == 'SRSW') ## not to be included in analysis, just personal interest
+
+## create node lists by pottery type
+# get_all_nodes = function(fabric) {
+#   sites = final_table %>% filter(Fabric_ID == fabric) %>%
+#     group_by(Location_ID) %>%
+#     summarize(site = first(Location_specific), 
+#               sf.id = first(Standard_Form_ID))
+#   return(sites)
+# }
+
+
+# fabrics <- c("ITS", "ITS Arezzo","ITS Arezzo?", "ITS Pisa", "ITS Pisa?", "ITS Puteoli", "ITS Central Italy?", "ITS Puteoli?", 
+#             "ITS Padana", "ITS Central Italy",  "ITS Campania?", "ITS Arezzo-Pisa-Lyon","ITS Po Valley", "ITS Pisa-Lyon",
+#             "ITS Etruria?", "ITS Arezzo-Pisa", "ESA", "ESBI", "ESBII", "ESC/Candarli", "ESD", "Candarli", "CRSW", "ARSW",
+#             "ARSW-D", "PRSW", "ARSW-A", "ARSW-C", "ARSW-C/E", "ESC", "SRSW","Campana A", "Cypriot", "Pontic Sigillata")
+
+
+#_____________________________________________________________________________________________________________________________________
+
+# TIME SLICING
+
 step = 20 # years for each slice
 slices = (max(final_table$Standard_Typo_chronological_Upper_Date) - min(final_table$Standard_Typo_chronological_Lower_Date))/step # number of slices
 # years = seq(min(final_table$Standard_Typo_chronological_Lower_Date), max(final_table$Standard_Typo_chronological_Upper_Date)+1, 1)
@@ -134,7 +177,7 @@ data_intervals = data.frame("nrow" = 1:length(levels(Ranges)), "Year_Interval" =
 for (i in 1:dim(final_table)[1]) {
   ts = seq(final_table$Standard_Typo_chronological_Lower_Date[i], final_table$Standard_Typo_chronological_Upper_Date[i], 1)
   freqts = as.data.frame(table(cut(ts, breaks = brk, include.lowest = TRUE, right = TRUE)), stringsAsFactors = F)
-  colnames(freqts) = c("Year_Interval", final_table$Form[i])
+  colnames(freqts) = c("Year_Interval", final_table$Standard_Form_ID[i])
   data_intervals = merge(data_intervals, freqts, by = "Year_Interval", all = T)
 }
 
@@ -144,18 +187,18 @@ colSums(data_intervals[,-c(1,2)])
 data_intervals_estimated = t(data_intervals)
 
 for(i in 3:dim(data_intervals)[2]) {
-  data_intervals_estimated[i,] = final_table$Frequency[i-2]*as.numeric(data_intervals_estimated[i,])/sum(as.numeric(data_intervals_estimated[i,]))  
+  data_intervals_estimated[i,] = final_table$Freq[i - 2] * as.numeric(data_intervals_estimated[i,])/sum(as.numeric(data_intervals_estimated[i,]))  
 }
 
 data_intervals_estimated_2 = cbind(rownames(data_intervals_estimated), data_intervals_estimated)
 data_intervals_estimated_2 = data_intervals_estimated_2[-2,]
 colnames(data_intervals_estimated_2) = data_intervals_estimated_2[1,]
-colnames(data_intervals_estimated_2)[1] = "Form"
+colnames(data_intervals_estimated_2)[1] = "Standard_Form_ID"
 data_intervals_estimated_2 = data_intervals_estimated_2[-1,]
 
 data_timeslices = merge(final_table, data_intervals_estimated_2, by = "Standard_Form_ID", all = T)
 data_timeslices = data_timeslices[,c(2,3,1,4:dim(data_timeslices)[2])]
-data_timeslices = data_timeslices[order(data_timeslices$Ware, decreasing = FALSE),]
+data_timeslices = data_timeslices[order(data_timeslices$Fabric, decreasing = FALSE),]
 
 
 # plot all
@@ -169,27 +212,9 @@ for (i in 2:dim(dataplot_timeslices)[1]){
 write.csv(data_timeslices, "data_slices_default.csv", row.names = FALSE)
 
 
-
-
 #_______________________________________________________________________________________________________________________________________
-#OTHER CODE
-## Create datasets per main ware
-ESA <- subset(catalogue, Fabric == 'ESA')
-ESB <- subset(catalogue, grepl("ESB *", catalogue$Fabric)) ## function grepl() --> Groups all ESB subsets
-ESC <- subset(catalogue, grepl("ESC *", catalogue$Fabric))
-ESD <- subset(catalogue, Fabric == 'ESD')
-ARSW <- subset(catalogue, grepl("ARSW*", catalogue$Fabric))
-ITS <- subset(catalogue, grepl("ITS*", catalogue$Fabric))
-# SRSW <- subset(catalogue, Fabric == 'SRSW') ## not to be included in analysis, just personal interest
 
-## create node lists by pottery type
-get_all_nodes = function(fabric) {
-  sites = catalogue %>% filter(Fabric_ID == fabric) %>%
-    group_by(Location_ID) %>%
-    summarize(site = first(Location_specific), 
-              sf.id = first(Standard_Form_ID))
-  return(sites)
-}
+#OTHER CODE
 
 ##ALTERNATIVE NODE LIST: turn Location_specific into rownames and drop 2 columns to leave only coordinates --> needed for weighted networks
 node_list2 <- node_list
@@ -319,7 +344,6 @@ plot(dist.net, edge.col='gray', edge.lwd=0.25, vertex.cex=0.5, coord=node_list2)
 
 
 ## Weighted networks
-
 
 
 #_________________________________________________________________________________________________________________________________________________
