@@ -60,11 +60,73 @@ head(merged_data_dates)
 merged_data_dates$Fabric = as.character(merged_data_dates$Fabric) # no factors
 str(merged_data_dates)
 
-data_table = as.data.frame(table(merged_data_dates$Standard_Form_ID), stingsAsFactors = F)
+data_table = as.data.frame(table(merged_data_dates$Standard_Form_ID), stringsAsFactors = F)
 colnames(data_table)[1] = "Standard_Form_ID"
 
 final_table = unique(merge(merged_data_dates, data_table, by = "Standard_Form_ID", all = T))
 write.csv(final_table, "Data/ICRATES/final_table.csv", row.names = FALSE)
+
+
+#_________________________________________________________________________________________________________________________________________________
+
+
+# TIME SLICING
+
+step = 20 # years for each slice
+slices = (max(final_table$Standard_Typo_chronological_Upper_Date) - min(final_table$Standard_Typo_chronological_Lower_Date))/step # number of slices
+# years = seq(min(final_table$Standard_Typo_chronological_Lower_Date), max(final_table$Standard_Typo_chronological_Upper_Date)+1, 1)
+brk = seq(min(final_table$Standard_Typo_chronological_Lower_Date), max(final_table$Standard_Typo_chronological_Upper_Date)+1, step); brk
+
+# cut to ranges
+Ranges = cut(final_table$Standard_Typo_chronological_Lower_Date, breaks = brk, include.lowest = TRUE, right = TRUE) # Set the cutpoints
+# Ranges = cut(years, breaks = brk, include.lowest = TRUE, right = TRUE) # Set the cutpoints
+head(Ranges)
+levels(Ranges)
+
+# i = 1
+# time_span = lapply(final_table, function(x){x$Standard_Typo_chronological_Upper_Date - x$Standard_Typo_chronological_Lower_Date})
+# time_span = final_table$Standard_Typo_chronological_Upper_Date - final_table$Standard_Typo_chronological_Lower_Date
+# summary(time_span)
+# final_table$Standard_Typo_chronological_Lower_Date[1]; final_table$Standard_Typo_chronological_Upper_Date[1]; Ranges[1]; time_span[1]
+
+data_intervals = data.frame("nrow" = 1:length(levels(Ranges)), "Year_Interval" = levels(Ranges))
+for (i in 1:dim(final_table)[1]) {
+  ts = seq(final_table$Standard_Typo_chronological_Lower_Date[i], final_table$Standard_Typo_chronological_Upper_Date[i], 1)
+  freqts = as.data.frame(table(cut(ts, breaks = brk, include.lowest = TRUE, right = TRUE)), stringsAsFactors = F)
+  colnames(freqts) = c("Year_Interval", final_table$Standard_Form_ID[i])
+  data_intervals = merge(data_intervals, freqts, by = "Year_Interval", all = T)
+}
+
+data_intervals = data_intervals[order(data_intervals$nrow, decreasing = FALSE),]
+data_intervals$Year_Interval[which(!(data_intervals$Year_Interval %in% Ranges) == TRUE)]
+colSums(data_intervals[,-c(1,2)])
+data_intervals_estimated = t(data_intervals)
+
+for(i in 3:dim(data_intervals)[2]) {
+  data_intervals_estimated[i,] = final_table$Freq[i - 2] * as.numeric(data_intervals_estimated[i,])/sum(as.numeric(data_intervals_estimated[i,]))  
+}
+
+data_intervals_estimated_2 = cbind(rownames(data_intervals_estimated), data_intervals_estimated)
+data_intervals_estimated_2 = data_intervals_estimated_2[-2,]
+colnames(data_intervals_estimated_2) = data_intervals_estimated_2[1,]
+colnames(data_intervals_estimated_2)[1] = "Standard_Form_ID"
+data_intervals_estimated_2 = data_intervals_estimated_2[-1,]
+
+data_timeslices = merge(final_table, data_intervals_estimated_2, by = "Standard_Form_ID", all = T)
+data_timeslices = data_timeslices[,c(2,3,1,4:dim(data_timeslices)[2])]
+data_timeslices = data_timeslices[order(data_timeslices$Fabric, decreasing = FALSE),]
+
+
+# plot all
+dataplot_timeslices = data_timeslices[,-c(1:10)]
+plot(1:dim(dataplot_timeslices)[2], dataplot_timeslices[1,], type = "l", ylim = c(0,300), ylab = "frequency", xlab = "slice")
+for (i in 2:dim(dataplot_timeslices)[1]){
+  lines(1:dim(dataplot_timeslices)[2], dataplot_timeslices[i,], type = "l", ylim = c(0,300))  
+}
+
+# write data
+write.csv(data_timeslices, "data_slices_default.csv", row.names = FALSE)
+
 
 #_______________________________________________________________________________________________________________________________________
 
@@ -119,9 +181,30 @@ summary(df_links)
 write.csv(df_links, "Data/ICRATES/edge_list.csv", row.names = FALSE)
 
 
-#_________________________________________________________________________________________________________________________________________________
+#_______________________________________________________________________________________________________________________________________
 
-# OPTIONAL: Sub-networks per pottery ware
+#OTHER CODE- IRRELEVANT
+
+##ALTERNATIVE NODE LIST: turn Location_specific into rownames and drop 2 columns to leave only coordinates --> needed for weighted networks
+node_list2 <- node_list
+rownames(node_list2) <- node_list2[,2]
+node_list2 = subset(node_list2, select = -c(Location_ID, Location_specific))
+
+
+##Create edge list for Vistorian
+vist_columns = c("Location_specific", 'Location_specific', "TO", "TARGET_LOCATION", "Freq", "Fabric")
+vist_edge_list = final_table[, which(colnames(final_table) %in% c("Location_ID", 'Standard_Form_ID', "Fabric", 'Freq'))]
+##attempt
+library(netdiffuseR)
+vist_edge_list2 <- adjmat_to_edgelist(
+  as.matrix(edge_list),
+  undirected = getOption("diffnet.undirected", TRUE),
+  keep.isolates = getOption("diffnet.keep.isolates", TRUE)
+)
+
+
+
+## OPTIONAL: Sub-networks per pottery ware
 
 ## Create datasets per main ware
 count(final_table, wt_var = Fabric) # count instances per ware
@@ -153,86 +236,6 @@ PRSW <- subset(final_table, Fabric == 'PRSW')
 
 
 #_____________________________________________________________________________________________________________________________________
-
-# TIME SLICING
-
-step = 20 # years for each slice
-slices = (max(final_table$Standard_Typo_chronological_Upper_Date) - min(final_table$Standard_Typo_chronological_Lower_Date))/step # number of slices
-# years = seq(min(final_table$Standard_Typo_chronological_Lower_Date), max(final_table$Standard_Typo_chronological_Upper_Date)+1, 1)
-brk = seq(min(final_table$Standard_Typo_chronological_Lower_Date), max(final_table$Standard_Typo_chronological_Upper_Date)+1, step); brk
-
-# cut to ranges
-Ranges = cut(final_table$Standard_Typo_chronological_Lower_Date, breaks = brk, include.lowest = TRUE, right = TRUE) # Set the cutpoints
-# Ranges = cut(years, breaks = brk, include.lowest = TRUE, right = TRUE) # Set the cutpoints
-head(Ranges)
-levels(Ranges)
-
-# i = 1
-# time_span = lapply(final_table, function(x){x$Standard_Typo_chronological_Upper_Date - x$Standard_Typo_chronological_Lower_Date})
-# time_span = final_table$Standard_Typo_chronological_Upper_Date - final_table$Standard_Typo_chronological_Lower_Date
-# summary(time_span)
-# final_table$Standard_Typo_chronological_Lower_Date[1]; final_table$Standard_Typo_chronological_Upper_Date[1]; Ranges[1]; time_span[1]
-
-data_intervals = data.frame("nrow" = 1:length(levels(Ranges)), "Year_Interval" = levels(Ranges))
-for (i in 1:dim(final_table)[1]) {
-  ts = seq(final_table$Standard_Typo_chronological_Lower_Date[i], final_table$Standard_Typo_chronological_Upper_Date[i], 1)
-  freqts = as.data.frame(table(cut(ts, breaks = brk, include.lowest = TRUE, right = TRUE)), stringsAsFactors = F)
-  colnames(freqts) = c("Year_Interval", final_table$Standard_Form_ID[i])
-  data_intervals = merge(data_intervals, freqts, by = "Year_Interval", all = T)
-}
-
-data_intervals = data_intervals[order(data_intervals$nrow, decreasing = FALSE),]
-data_intervals$Year_Interval[which(!(data_intervals$Year_Interval %in% Ranges) == TRUE)]
-colSums(data_intervals[,-c(1,2)])
-data_intervals_estimated = t(data_intervals)
-
-for(i in 3:dim(data_intervals)[2]) {
-  data_intervals_estimated[i,] = final_table$Freq[i - 2] * as.numeric(data_intervals_estimated[i,])/sum(as.numeric(data_intervals_estimated[i,]))  
-}
-
-data_intervals_estimated_2 = cbind(rownames(data_intervals_estimated), data_intervals_estimated)
-data_intervals_estimated_2 = data_intervals_estimated_2[-2,]
-colnames(data_intervals_estimated_2) = data_intervals_estimated_2[1,]
-colnames(data_intervals_estimated_2)[1] = "Standard_Form_ID"
-data_intervals_estimated_2 = data_intervals_estimated_2[-1,]
-
-data_timeslices = merge(final_table, data_intervals_estimated_2, by = "Standard_Form_ID", all = T)
-data_timeslices = data_timeslices[,c(2,3,1,4:dim(data_timeslices)[2])]
-data_timeslices = data_timeslices[order(data_timeslices$Fabric, decreasing = FALSE),]
-
-
-# plot all
-dataplot_timeslices = data_timeslices[,-c(1:6)]
-plot(1:dim(dataplot_timeslices)[2], dataplot_timeslices[1,], type = "l", ylim = c(0,300), ylab = "frequency", xlab = "slice")
-for (i in 2:dim(dataplot_timeslices)[1]){
-  lines(1:dim(dataplot_timeslices)[2], dataplot_timeslices[i,], type = "l", ylim = c(0,300))  
-}
-
-# write data
-write.csv(data_timeslices, "data_slices_default.csv", row.names = FALSE)
-
-
-#_______________________________________________________________________________________________________________________________________
-
-#OTHER CODE
-
-##ALTERNATIVE NODE LIST: turn Location_specific into rownames and drop 2 columns to leave only coordinates --> needed for weighted networks
-node_list2 <- node_list
-rownames(node_list2) <- node_list2[,2]
-node_list2 = subset(node_list2, select = -c(Location_ID, Location_specific))
-
-
-##Create edge list for Vistorian
-vist_columns = c("Location_specific", 'Location_specific', "TO", "TARGET_LOCATION", "Freq", "Fabric")
-vist_edge_list = final_table[, which(colnames(final_table) %in% c("Location_ID", 'Standard_Form_ID', "Fabric", 'Freq'))]
-##attempt
-library(netdiffuseR)
-vist_edge_list2 <- adjmat_to_edgelist(
-  as.matrix(edge_list),
-  undirected = getOption("diffnet.undirected", TRUE),
-  keep.isolates = getOption("diffnet.keep.isolates", TRUE)
-)
-
 
 # FUNCTIONS < Matt Peeples tutorial
 ## co-presence of types based on threshold of 25% (a category must represent 25% of a row to be considered present)
