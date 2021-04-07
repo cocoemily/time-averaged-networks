@@ -128,7 +128,8 @@ for (i in 2:dim(dataplot_timeslices)[1]){
 write.csv(data_timeslices, "data_slices_default.csv", row.names = FALSE)
 
 
-#_______________________________________________________________________________________________________________________________________
+
+#_________________________________________________________________________________________________________________________________
 
 #NODE AND EDGE LISTS FOR GEPHI
 
@@ -233,6 +234,94 @@ PRSW <- subset(final_table, Fabric == 'PRSW')
 #             "ITS Padana", "ITS Central Italy",  "ITS Campania?", "ITS Arezzo-Pisa-Lyon","ITS Po Valley", "ITS Pisa-Lyon",
 #             "ITS Etruria?", "ITS Arezzo-Pisa", "ESA", "ESBI", "ESBII", "ESC/Candarli", "ESD", "Candarli", "CRSW", "ARSW",
 #             "ARSW-D", "PRSW", "ARSW-A", "ARSW-C", "ARSW-C/E", "ESC", "SRSW","Campana A", "Cypriot", "Pontic Sigillata")
+
+
+##create network slices
+data_timeslices_networks = data_timeslices[,-c(2, 3, 5:10)] ## remove unnecessary columns
+network_variables <- c('Fabric', 'Location_specific', 'icrates_1', 'icrates_2', 'icrates_3', 'icrates_4',
+                       'icrates_5', 'icrates_6', 'icrates_7', 'icrates_8', 'icrates_9', 'icrates_10',
+                       'icrates_11', 'icrates_12', 'icrates_13', 'icrates_14', 'icrates_15',
+                       'icrates_16', 'icrates_17', 'icrates_18', 'icrates_19', 'icrates_20',
+                       'icrates_21', 'icrates_22', 'icrates_23', 'icrates_24', 'icrates_25',
+                       'icrates_26', 'icrates_27', 'icrates_28', 'icrates_29', 'icrates_30',
+                       'icrates_31', 'icrates_32', 'icrates_33', 'icrates_34', 'icrates_35',
+                       'icrates_36', 'icrates_37', 'icrates_38', 'icrates_39', 'icrates_40',
+                       'icrates_41', 'icrates_42', 'icrates_43', 'icrates_44', 'icrates_45',
+                       'icrates_46', 'icrates_47', 'icrates_48', 'icrates_49', 'icrates_50')
+
+colnames(data_timeslices_networks) <- network_variables
+data_timeslices_networks <- na.omit(data_timeslices_networks)
+
+create_network = function(data_timeslices_networks) {
+  wares = as.character(unique(data_timeslices_networks$Fabric))
+  sites = as.character(unique(data_timeslices_networks$Location_specific))
+  mat = matrix(0, nrow = length(sites), ncol = length(sites))
+  rownames(mat) = sites
+  colnames(mat) = sites
+  for(w in wares) {
+    nodes = data_timeslices_networks%>% filter(Location_specific == w)
+    for(i in 1:nrow(nodes)){
+      for(j in 1:nrow(nodes)) {
+        if(i != j) {
+          mat[as.character(nodes$Location_specific[i]), as.character(nodes$Location_specific[j])] =
+            as.numeric(mat[as.character(nodes$Location_specific[i]), as.character(nodes$Location_specific[j])] + 1)
+        }
+      }
+    }
+  }
+  return(graph_from_adjacency_matrix(mat, mode = "undirected", weighted = T))
+}
+
+icrates_1 <- create_network(data_timeslices_networks %>% filter(icrates_1 != 0) %>% dplyr::select(Location_specific, Fabric, icrates_1))
+icrates_2 <- create_network(data_timeslices_networks %>% filter(icrates_2 != 0) %>% dplyr::select(Location_specific, Fabric, icrates_2))
+icrates_3 <- create_network(data_timeslices_networks %>% filter(icrates_3 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_3))
+icrates_4 <- create_network(data_timeslices_networks %>% filter(icrates_4 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_4))
+icrates_5 <- create_network(data_timeslices_networks %>% filter(icrates_5 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_5))
+icrates_6 <- create_network(data_timeslices_networks %>% filter(icrates_6 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_6))
+icrates_7 <- create_network(data_timeslices_networks %>% filter(icrates_7 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_7))
+icrates_8 <- create_network(data_timeslices_networks %>% filter(icrates_8 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_8))
+icrates_9 <- create_network(data_timeslices_networks %>% filter(icrates_9 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_9))
+icrates_10 <- create_network(data_timeslices_networks %>% filter(icrates_10 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_10))
+icrates_11 <- create_network(data_timeslices_networks %>% filter(icrates_11 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_11))
+icrates_12 <- create_network(data_timeslices_networks %>% filter(icrates_12 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_12))
+icrates_13 <- create_network(data_timeslices_networks %>% filter(icrates_13 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_13))
+icrates_14 <- create_network(data_timeslices_networks %>% filter(icrates_14 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_14))
+icrates_15 <- create_network(data_timeslices_networks %>% filter(icrates_15 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_15))
+icrates_16 <- create_network(data_timeslices_networks %>% filter(icrates_16 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_16))
+icrates_17 <- create_network(data_timeslices_networks %>% filter(icrates_17 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_17))
+icrates_18 <- create_network(data_timeslices_networks %>% filter(icrates_18 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_18))
+icrates_19 <- create_network(data_timeslices_networks %>% filter(icrates_19 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_19))
+icrates_20 <- create_network(data_timeslices_networks %>% filter(icrates_20 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_20))
+icrates_21 <- create_network(data_timeslices_networks %>% filter(icrates_21 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_21))
+icrates_22 <- create_network(data_timeslices_networks %>% filter(icrates_22 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_22))
+icrates_23 <- create_network(data_timeslices_networks %>% filter(icrates_23 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_23))
+icrates_24 <- create_network(data_timeslices_networks %>% filter(icrates_24 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_24))
+icrates_25 <- create_network(data_timeslices_networks %>% filter(icrates_25 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_25))
+icrates_26 <- create_network(data_timeslices_networks %>% filter(icrates_26 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_26))
+icrates_27 <- create_network(data_timeslices_networks %>% filter(icrates_27 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_27))
+icrates_28 <- create_network(data_timeslices_networks %>% filter(icrates_28 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_28))
+icrates_29 <- create_network(data_timeslices_networks %>% filter(icrates_29 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_29))
+icrates_30 <- create_network(data_timeslices_networks %>% filter(icrates_30 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_30))
+icrates_31 <- create_network(data_timeslices_networks %>% filter(icrates_31 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_31))
+icrates_32 <- create_network(data_timeslices_networks %>% filter(icrates_32 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_32))
+icrates_33 <- create_network(data_timeslices_networks %>% filter(icrates_33 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_33))
+icrates_34 <- create_network(data_timeslices_networks %>% filter(icrates_34 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_34))
+icrates_35 <- create_network(data_timeslices_networks %>% filter(icrates_35 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_35))
+icrates_36 <- create_network(data_timeslices_networks %>% filter(icrates_36 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_36))
+icrates_37 <- create_network(data_timeslices_networks %>% filter(icrates_37 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_37))
+icrates_38 <- create_network(data_timeslices_networks %>% filter(icrates_38 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_38))
+icrates_39 <- create_network(data_timeslices_networks %>% filter(icrates_39 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_39))
+icrates_40 <- create_network(data_timeslices_networks %>% filter(icrates_40 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_40))
+icrates_41 <- create_network(data_timeslices_networks %>% filter(icrates_41 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_41))
+icrates_42 <- create_network(data_timeslices_networks %>% filter(icrates_42 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_42))
+icrates_43 <- create_network(data_timeslices_networks %>% filter(icrates_43 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_43))
+icrates_44 <- create_network(data_timeslices_networks %>% filter(icrates_44 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_44))
+icrates_45 <- create_network(data_timeslices_networks %>% filter(icrates_45 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_45))
+icrates_46 <- create_network(data_timeslices_networks %>% filter(icrates_46 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_46))
+icrates_47 <- create_network(data_timeslices_networks %>% filter(icrates_47 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_47))
+icrates_48 <- create_network(data_timeslices_networks %>% filter(icrates_48 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_48))
+icrates_49 <- create_network(data_timeslices_networks %>% filter(icrates_49 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_49))
+icrates_50 <- create_network(data_timeslices_networks %>% filter(icrates_50 != NA) %>% dplyr::select(Location_specific, Fabric, icrates_50))
 
 
 #_____________________________________________________________________________________________________________________________________
