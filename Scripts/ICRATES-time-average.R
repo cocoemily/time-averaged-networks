@@ -2,15 +2,10 @@ library(dplyr)
 library(igraph)
 library(reshape2)
 library(utils)
-source("scripts/network_metrics.R")
-source("scripts/node_metrics.R")
-source("scripts/network-analysis-functions.R")
+
+source("scripts/time-average-functions.R")
 
 ##read in all data slices and make list of them
-# slice1 = read.table("Data/ICRATES/time-slices/ICRATES_slice_1_range_-300to-280.csv", header = TRUE, row.names = 1, 
-#                     sep = ",", check.names = FALSE)
-# timeslices = list(slice1)
-
 files = list.files("Data/ICRATES/time-slices", "*.csv", full.names = TRUE)
 timeslices = list()
 for(f in 1:length(files)) {
@@ -18,7 +13,6 @@ for(f in 1:length(files)) {
                         sep = ",", check.names = FALSE)
   timeslices[[f]] = newslice
 }
-
 
 
 create_edge_list = function(slice) {
@@ -71,63 +65,6 @@ for(s in 41:length(timeslices)) {
   graphs[[s]] = igraph::simplify(graph_from_edgelist(as.matrix(el[,1:2]), directed=FALSE))
 }
 
-#'Helper function for creating the time-averaged graphs
-time_average = function(graphs, start, end) {
-  el = as_edgelist(graphs[[start]])
-  for(i in (start+1):end) {
-    el = rbind(el, as_edgelist(graphs[[i]]))
-  }
-  return(igraph::simplify(graph_from_edgelist(el, directed = F)))
-}
-
-#' Function for calculating network metrics for original and time-averaged graphs
-#' Can only do time-averaging starting at the original graph and working forward through the list of all graphs
-#' 
-#' @param original starting network that all time-averaged networks will be compared to
-#' @param index index in the graphs list of the original network
-#' @param graphs list of all graphs in order to time-average among them
-#' @param o_name string for identifying the original graph within the produced dataframe
-#' 
-#' @return df containing network metrics for original graph and all time-averaged graphs including the original graph
-#' 
-ICRATES_ta_compare = function(original, index, graphs, o_name) { 
-  df = data.frame(cc = integer(), 
-                  diam = integer(), 
-                  edge.dens = integer(), 
-                  btwn = integer(), 
-                  eigen = integer(), 
-                  path.length = integer(), 
-                  size = integer(), 
-                  mod = integer(), 
-                  mean.deg = integer(), 
-                  mean.in = integer(), 
-                  mean.out = integer(), 
-                  num.graphs = integer())
-  df[nrow(df) + 1, ] = c(get_row(original), 1)
-  if(index == 1) { 
-    for(i in 1:(length(graphs)-index)) {
-      #print(i)
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, index, index+i)), i+1)
-    }
-    df$num.graphs = c(seq(1, nrow(df), by = 1))
-    df$network = c(replicate(nrow(df), o_name))
-  } else if(index == length(graphs)) {
-    for(i in 1:(length(graphs)-1)) {
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, index)), i+1)
-    }
-    df$num.graphs = c(1, seq(nrow(df), 2 , by = -1))
-    df$network = c(replicate(nrow(df), o_name))
-  } else { #TODO multiple direction time-averaging
-    for(i in 1:(length(graphs)-index)) {
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, index, index+i)), i+1)
-    }
-    for(i in 1:(index-1)) {
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, index)), i+1)
-    }
-    df$network = c(replicate(nrow(df), o_name))
-  }
-  return(df)
-}
 
 names = as.data.frame(list.files("Data/ICRATES/time-slices", "*.csv"))
 colnames(names) = "file"
@@ -135,4 +72,10 @@ names = names %>% tidyr::separate(file, into = c("i", "s", "n", "r", "dates"), s
 names$dates = substr(names$dates, 1, nchar(names$dates)-4)
 names = as.vector(names$dates)
 
+
+#ICRATES time-averaged graphs
+tagraphs = get_ta_graphs(graphs[[1]], 1, graphs)
+for(i in 2:length(graphs)) {
+  tagraphs = get_ta_graphs(graphs[[i]], i, graphs)
+}
 

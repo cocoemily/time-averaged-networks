@@ -1,4 +1,5 @@
-#source("scripts/ICRATES-time-average.R")
+source("scripts/time-average-functions.R")
+source("scripts/ICRATES-time-average.R")
 source("scripts/network-analysis-functions.R")
 theme_set(theme_minimal())
 library(ggthemes)

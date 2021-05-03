@@ -6,8 +6,8 @@ library(bbmle)
 library(MASS)
 library(pscl)
 library(stargazer)
-source("scripts/network_metrics.R")
-source("scripts/node_metrics.R")
+
+source("scripts/time-average-functions.R")
 
 #read in data and clean
 aa = read.csv("Data/Prignano/AA.gdf")
@@ -82,130 +82,75 @@ create_new_edge_list = function(edges, groups) {
   return(edges)
 }
 
-#### time averaging functions to create combined graphs ####
-average_two = function(e1, e2, groups) {
-  edge1 = create_new_edge_list(e1, groups)
-  edge2 = create_new_edge_list(e2, groups)
-  edges = rbind(edge1, edge2)
-  graph = graph_from_edgelist(as.matrix(edges[,5:6]))
-  edges$remove = which_multiple(graph)
-  new.edges = edges %>% filter(remove == FALSE)
-  graph2 = graph_from_edgelist(as.matrix(new.edges[,5:6]))
-  return(graph2)
-}
+####Graphs####
+#EIA1E : Early Iron Age 1 Early (950/925 900 BC)
+#EIA1L : Early Iron Age 1 Late (900 850/825 BC)
+#EIA2 : Early Iron Age 2 (850/825 730/720 BC)
+#OA : Orientalizing Age (730/720 580 BC)
+#AA : Archaic Period (580-500 BC)
+name.list = c("EIA1E", "EIA1L", "EIA2", "OA", "AA")
 
-average_three = function(e1, e2, e3, groups) {
-  edge1 = create_new_edge_list(e1, groups)
-  edge2 = create_new_edge_list(e2, groups)
-  edge3 = create_new_edge_list(e3, groups)
-  e = rbind(edge1, edge2, edge3)
-  graph = simplify(graph_from_edgelist(as.matrix(e[,5:6])))
-  e$remove = which_multiple(graph)
-  new.edges = e %>% filter(remove == FALSE)
-  graph2 = graph_from_edgelist(as.matrix(new.edges[,5:6]))
-  return(graph2)
-}
+original_graphs = list(
+  graph_from_edgelist(as.matrix(create_new_edge_list(eia1e.edge, groups)[,5:6])),
+  graph_from_edgelist(as.matrix(create_new_edge_list(eia1l.edge, groups)[,5:6])), 
+  graph_from_edgelist(as.matrix(create_new_edge_list(eia2.edge, groups)[,5:6])), 
+  graph_from_edgelist(as.matrix(create_new_edge_list(oa.edge, groups)[,5:6])),
+  graph_from_edgelist(as.matrix(create_new_edge_list(aa.edge, groups)[,5:6])) 
+)
 
-average_four = function(e1, e2, e3, e4, groups) {
-  edge1 = create_new_edge_list(e1, groups)
-  edge2 = create_new_edge_list(e2, groups)
-  edge3 = create_new_edge_list(e3, groups)
-  edge4 = create_new_edge_list(e4, groups)
-  e = rbind(edge1, edge2, edge3, edge4)
-  graph = simplify(graph_from_edgelist(as.matrix(e[,5:6])))
-  e$remove = which_multiple(graph)
-  new.edges = e %>% filter(remove == FALSE)
-  graph2 = graph_from_edgelist(as.matrix(new.edges[,5:6]))
-  return(graph2)
-}
+#EIA1E time-averaged graphs
+gl1e = list(graph_from_edgelist(as.matrix(create_new_edge_list(eia1e.edge, groups)[,5:6])), 
+            average_two(eia1e.edge, eia1l.edge, groups), 
+            average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), 
+            average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), 
+            average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
+gl1e.ngl = list(1, 2, 3, 4, 5)
 
-average_five = function(e1, e2, e3, e4, e5, groups) {
-  edge1 = create_new_edge_list(e1, groups)
-  edge2 = create_new_edge_list(e2, groups)
-  edge3 = create_new_edge_list(e3, groups)
-  edge4 = create_new_edge_list(e4, groups)
-  edge5 = create_new_edge_list(e5, groups)
-  e = rbind(edge1, edge2, edge3, edge4, edge5)
-  graph = simplify(graph_from_edgelist(as.matrix(e[,5:6])))
-  e$remove = which_multiple(graph)
-  new.edges = e %>% filter(remove == FALSE)
-  graph2 = graph_from_edgelist(as.matrix(new.edges[,5:6]))
-  return(graph2)
-}
+#EIA1L time-averaged graphs
+gl1l = list(graph_from_edgelist(as.matrix(create_new_edge_list(eia1l.edge, groups)[,5:6])), 
+            average_two(eia1e.edge, eia1l.edge, groups), 
+            average_two(eia1l.edge, eia2.edge, groups), 
+            average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), 
+            average_three(eia1l.edge, eia2.edge, oa.edge, groups), 
+            average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), 
+            average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
+            average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
+gl1l.ngl = list(1, 2, 2, 3, 3, 4, 4, 5)
 
-#functions to create dataframe for comparison
-ta_compare = function(edge1, edge2, edge3 = NULL, edge4 = NULL, edge5 = NULL, 
-                      groups) {
-  df = data.frame(cc = integer(), 
-                  diam = integer(), 
-                  edge.dens = integer(), 
-                  btwn = integer(), 
-                  eigen = integer(), 
-                  path.length = integer(), 
-                  size = integer(), 
-                  mod = integer(), 
-                  mean.deg = integer(), 
-                  mean.in = integer(), 
-                  mean.out = integer())
-  g1 = NULL
-  g2 = NULL
-  g3 = NULL
-  g4 = NULL
-  g5 = NULL
-  ga = NULL
-  
-  if(is.null(edge3) & is.null(edge4) & is.null(edge5)) {
-    g1 = graph_from_edgelist(as.matrix(create_new_edge_list(edge1, groups)[,5:6]))
-    g2 = graph_from_edgelist(as.matrix(create_new_edge_list(edge2, groups)[,5:6]))
-    ga = average_two(edge1, edge2, groups)
-  }else if(is.null(edge4) & is.null(edge5)) {
-    g1 = graph_from_edgelist(as.matrix(create_new_edge_list(edge1, groups)[,5:6]))
-    g2 = graph_from_edgelist(as.matrix(create_new_edge_list(edge2, groups)[,5:6]))
-    g3 = graph_from_edgelist(as.matrix(create_new_edge_list(edge3, groups)[,5:6]))
-    ga = average_three(edge1, edge2, edge3, groups)
-  }else if(is.null(edge5)) {
-    g1 = graph_from_edgelist(as.matrix(create_new_edge_list(edge1, groups)[,5:6]))
-    g2 = graph_from_edgelist(as.matrix(create_new_edge_list(edge2, groups)[,5:6]))
-    g3 = graph_from_edgelist(as.matrix(create_new_edge_list(edge3, groups)[,5:6]))
-    g4 = graph_from_edgelist(as.matrix(create_new_edge_list(edge4, groups)[,5:6]))
-    ga = average_four(edge1, edge2, edge3, edge4, groups)
-  }else {
-    g1 = graph_from_edgelist(as.matrix(create_new_edge_list(edge1, groups)[,5:6]))
-    g2 = graph_from_edgelist(as.matrix(create_new_edge_list(edge2, groups)[,5:6]))
-    g3 = graph_from_edgelist(as.matrix(create_new_edge_list(edge3, groups)[,5:6]))
-    g4 = graph_from_edgelist(as.matrix(create_new_edge_list(edge4, groups)[,5:6]))
-    g5 = graph_from_edgelist(as.matrix(create_new_edge_list(edge5, groups)[,5:6]))
-    ga = average_five(edge1, edge2, edge3, edge4, edge5, groups)
-  }
-  
-  if(is.null(g3) & is.null(g4) & is.null(g5)) {
-    df[nrow(df) + 1, ] = get_row(g1)
-    df[nrow(df) + 1, ] = get_row(g2)
-    df[nrow(df) + 1, ] = get_row(ga)
-    df$names = c(edge1$age[1], edge2$age[1], "ta2")
-  }else if (is.null(g4) & is.null(g5)) {
-    df[nrow(df) + 1, ] = get_row(g1)
-    df[nrow(df) + 1, ] = get_row(g2)
-    df[nrow(df) + 1, ] = get_row(g3)
-    df[nrow(df) + 1, ] = get_row(ga)
-    df$names = c(edge1$age[1], edge2$age[1], edge3$age[1], "ta3")
-  }else if(is.null(g5)){
-    df[nrow(df) + 1, ] = get_row(g1)
-    df[nrow(df) + 1, ] = get_row(g2)
-    df[nrow(df) + 1, ] = get_row(g3)
-    df[nrow(df) + 1, ] = get_row(g4)
-    df[nrow(df) + 1, ] = get_row(ga)
-    df$names = c(edge1$age[1], edge2$age[1], edge3$age[1], edge4$age[1], "ta4")
-  }else {
-    df[nrow(df) + 1, ] = get_row(g1)
-    df[nrow(df) + 1, ] = get_row(g2)
-    df[nrow(df) + 1, ] = get_row(g3)
-    df[nrow(df) + 1, ] = get_row(g4)
-    df[nrow(df) + 1, ] = get_row(g5)
-    df[nrow(df) + 1, ] = get_row(ga)
-    df$names = c(edge1$age[1], edge2$age[1], edge3$age[1], 
-                 edge4$age[1], edge5$age[1], "ta5")
-  }
-  return(df)
-}
+#EIA2 time-averaged graphs
+gl2 = list(graph_from_edgelist(as.matrix(create_new_edge_list(eia2.edge, groups)[,5:6])), 
+           average_two(eia1l.edge, eia2.edge, groups), 
+           average_two(eia2.edge, oa.edge, groups), 
+           average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), 
+           average_three(eia1l.edge, eia2.edge, oa.edge, groups), 
+           average_three(eia2.edge, oa.edge, aa.edge, groups), 
+           average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), 
+           average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
+           average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
+gl2.ngl = list(1, 2, 2, 3, 3, 3, 4, 4, 5)
+
+#OA time-averaged graphs
+glo = list(graph_from_edgelist(as.matrix(create_new_edge_list(oa.edge, groups)[,5:6])), 
+           average_two(oa.edge, aa.edge, groups), 
+           average_two(eia2.edge, oa.edge, groups), 
+           average_three(eia1l.edge, eia2.edge, oa.edge, groups), 
+           average_three(eia2.edge, oa.edge, aa.edge, groups), 
+           average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), 
+           average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
+           average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
+glo.ngl = list(1, 2, 2, 3, 3, 4, 4, 5)
+
+#AA time-averaged graphs
+gla = list(graph_from_edgelist(as.matrix(create_new_edge_list(aa.edge, groups)[,5:6])), 
+           average_two(oa.edge, aa.edge, groups),
+           average_three(eia2.edge, oa.edge, aa.edge, groups),
+           average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
+           average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
+gla.ngl = list(1, 2, 3, 4, 5)
+
+
+#all time-averaged graphs
+ta_graphs = list(gl1e, gl1l, gl2, glo, gla)
+ta_numbers = list(gl1e.ngl, gl1l.ngl, gl2.ngl, glo.ngl, gla.ngl)
+Prignano_ta = list(ta_graphs, ta_numbers)
 

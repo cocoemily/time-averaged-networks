@@ -1,3 +1,4 @@
+source("scripts/time-average-functions.R")
 source("scripts/ICRATES-time-average.R")
 #load("Data/ICRATES/workspace_image.RData")
 source("scripts/node_metrics.R")
@@ -29,35 +30,7 @@ ggsave("figures/metrics/ICRATES/original-eigenvector-density.pdf", eigen,
 
 
 ####TA analyses####
-get_ta_graphs = function(original, index, graphs) {
-  gl = list(original)
-  ngl = list(1)
-  if(index == 1) { 
-    for(i in 1:(length(graphs)-index)) {
-      gl = list.append(gl, time_average(graphs, index, index+i))
-      ngl = list.append(ngl, i+1)
-    }
-  } else if(index == length(graphs)) {
-    for(i in 1:(length(graphs)-1)) {
-      gl = list.append(gl, time_average(graphs, i, index))
-      ngl = list.append(ngl, i+1)
-    }
-  } else { 
-    for(i in 1:(length(graphs)-index)) {
-      gl = list.append(gl, time_average(graphs, index, index+i))
-      ngl = list.append(ngl, i+1)
-    }
-    for(i in 1:(index-1)) {
-      gl = list.append(gl, time_average(graphs, i, index))
-      ngl = list.append(ngl, i+1)
-    }
-  }
-  return(list(gl, ngl))
-  #return(gl)
-}
-
-
-tagraphs = get_ta_graphs(graphs[[1]], 1, graphs)
+#tagraphs = get_ta_graphs(graphs[[1]], 1, graphs)
 ds.top = jaccard_similarity_df(tagraphs[[1]], tagraphs[[2]], top = T, FUN = calc.node.deg, name.list[[1]])
 es.top = jaccard_similarity_df(tagraphs[[1]], tagraphs[[2]], top = T, FUN = calc.eigen, name.list[[1]])
 bs.top = jaccard_similarity_df(tagraphs[[1]], tagraphs[[2]], top = T, FUN = calc.btwn, name.list[[1]])
@@ -65,7 +38,7 @@ ds.bot = jaccard_similarity_df(tagraphs[[1]], tagraphs[[2]], top = F, FUN = calc
 es.bot = jaccard_similarity_df(tagraphs[[1]], tagraphs[[2]], top = F, FUN = calc.eigen, name.list[[1]])
 bs.bot = jaccard_similarity_df(tagraphs[[1]], tagraphs[[2]], top = F, FUN = calc.btwn, name.list[[1]])
 for(i in 2:length(graphs)) {
-  tagraphs = get_ta_graphs(graphs[[i]], i, graphs)
+  #tagraphs = get_ta_graphs(graphs[[i]], i, graphs)
   ds.top = rbind(ds.top, jaccard_similarity_df(tagraphs[[1]], tagraphs[[2]], top = T, FUN = calc.node.deg, name.list[[i]]))
   es.top = rbind(es.top, jaccard_similarity_df(tagraphs[[1]], tagraphs[[2]], top = T, FUN = calc.eigen, name.list[[i]]))
   bs.top = rbind(bs.top, jaccard_similarity_df(tagraphs[[1]], tagraphs[[2]], top = T, FUN = calc.btwn, name.list[[i]]))

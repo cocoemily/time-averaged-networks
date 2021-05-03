@@ -1,3 +1,4 @@
+source("scripts/time-average-functions.R")
 source("scripts/Chaco-time-average.R")
 source("scripts/network-analysis-functions.R")
 

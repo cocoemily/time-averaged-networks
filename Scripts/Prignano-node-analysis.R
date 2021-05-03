@@ -1,26 +1,12 @@
 #Prignano dataset node-based analysis
 library(OmicsMarkeR)
 library(ggthemes)
+source("scripts/time-average-functions.R")
 source("scripts/Prignano-time-average.R")
 source("scripts/node_metrics.R")
 source("scripts/node-analysis-functions.R")
 
-####Graphs####
-#EIA1E : Early Iron Age 1 Early (950/925 900 BC)
-#EIA1L : Early Iron Age 1 Late (900 850/825 BC)
-#EIA2 : Early Iron Age 2 (850/825 730/720 BC)
-#OA : Orientalizing Age (730/720 580 BC)
-#AA : Archaic Period (580-500 BC)
-name.list = c("EIA1E", "EIA1L", "EIA2", "OA", "AA")
-
 ####Original graph analysis####
-original_graphs = list(
-  graph_from_edgelist(as.matrix(create_new_edge_list(eia1e.edge, groups)[,5:6])),
-  graph_from_edgelist(as.matrix(create_new_edge_list(eia1l.edge, groups)[,5:6])), 
-  graph_from_edgelist(as.matrix(create_new_edge_list(eia2.edge, groups)[,5:6])), 
-  graph_from_edgelist(as.matrix(create_new_edge_list(oa.edge, groups)[,5:6])),
-  graph_from_edgelist(as.matrix(create_new_edge_list(aa.edge, groups)[,5:6])) 
-)
 
 ##plot original degree distributions
 ddplot = plot_original_degree_distributions(original_graphs, name.list)
@@ -38,62 +24,6 @@ ggsave("figures/metrics/Prignano/original-degree-density.pdf", deg,
 eigen = plot_original_value_density_plot(original_graphs, name.list, FUN = calc.eigen)
 ggsave("figures/metrics/Prignano/original-eigenvector-density.pdf", eigen, 
        width = 10, height = 7)
-
-#EIA1E analysis
-gl1e = list(graph_from_edgelist(as.matrix(create_new_edge_list(eia1e.edge, groups)[,5:6])), 
-               average_two(eia1e.edge, eia1l.edge, groups), 
-               average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), 
-               average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), 
-               average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
-gl1e.ngl = list(1, 2, 3, 4, 5)
-
-#EIA1L analysis
-gl1l = list(graph_from_edgelist(as.matrix(create_new_edge_list(eia1l.edge, groups)[,5:6])), 
-            average_two(eia1e.edge, eia1l.edge, groups), 
-            average_two(eia1l.edge, eia2.edge, groups), 
-            average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), 
-            average_three(eia1l.edge, eia2.edge, oa.edge, groups), 
-            average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), 
-            average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
-            average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
-gl1l.ngl = list(1, 2, 2, 3, 3, 4, 4, 5)
-
-#EIA2 analysis
-gl2 = list(graph_from_edgelist(as.matrix(create_new_edge_list(eia2.edge, groups)[,5:6])), 
-                 average_two(eia1l.edge, eia2.edge, groups), 
-                 average_two(eia2.edge, oa.edge, groups), 
-                 average_three(eia1e.edge, eia1l.edge, eia2.edge, groups), 
-                 average_three(eia1l.edge, eia2.edge, oa.edge, groups), 
-                 average_three(eia2.edge, oa.edge, aa.edge, groups), 
-                 average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), 
-                 average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
-                 average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
-gl2.ngl = list(1, 2, 2, 3, 3, 3, 4, 4, 5)
-
-#OA analysis
-glo = list(graph_from_edgelist(as.matrix(create_new_edge_list(oa.edge, groups)[,5:6])), 
-                 average_two(oa.edge, aa.edge, groups), 
-                 average_two(eia2.edge, oa.edge, groups), 
-                 average_three(eia1l.edge, eia2.edge, oa.edge, groups), 
-                 average_three(eia2.edge, oa.edge, aa.edge, groups), 
-                 average_four(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, groups), 
-                 average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
-                 average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
-glo.ngl = list(1, 2, 2, 3, 3, 4, 4, 5)
-
-#AA analysis
-gla = list(graph_from_edgelist(as.matrix(create_new_edge_list(aa.edge, groups)[,5:6])), 
-                 average_two(oa.edge, aa.edge, groups),
-                 average_three(eia2.edge, oa.edge, aa.edge, groups),
-                 average_four(eia1l.edge, eia2.edge, oa.edge, aa.edge, groups), 
-                 average_five(eia1e.edge, eia1l.edge, eia2.edge, oa.edge, aa.edge, groups))
-gla.ngl = list(1, 2, 3, 4, 5)
-
-####Original graph analysis####
-ographs = c(gl1e[1], gl1l[1], gl2[1], glo[1], gla[1])
-for(o in ographs) {
-  ##what to do here?
-}
 
 
 ####Analysis####
