@@ -41,5 +41,8 @@ calc.btwn = function(g) {
 # }
 
 calc.deg.dist = function(g) {
-  return(degree.distribution(g))
+  ddist = as.data.frame(degree.distribution(g))
+  ddist$degree = as.numeric(rownames(ddist))
+  colnames(ddist) = c("freq", "degree")
+  return(ddist)
 }

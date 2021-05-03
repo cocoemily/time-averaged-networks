@@ -5,12 +5,39 @@ source("scripts/Prignano-time-average.R")
 source("scripts/node_metrics.R")
 source("scripts/node-analysis-functions.R")
 
-####Graph creation####
+####Graphs####
 #EIA1E : Early Iron Age 1 Early (950/925 900 BC)
 #EIA1L : Early Iron Age 1 Late (900 850/825 BC)
 #EIA2 : Early Iron Age 2 (850/825 730/720 BC)
 #OA : Orientalizing Age (730/720 580 BC)
 #AA : Archaic Period (580-500 BC)
+name.list = c("EIA1E", "EIA1L", "EIA2", "OA", "AA")
+
+####Original graph analysis####
+original_graphs = list(
+  graph_from_edgelist(as.matrix(create_new_edge_list(eia1e.edge, groups)[,5:6])),
+  graph_from_edgelist(as.matrix(create_new_edge_list(eia1l.edge, groups)[,5:6])), 
+  graph_from_edgelist(as.matrix(create_new_edge_list(eia2.edge, groups)[,5:6])), 
+  graph_from_edgelist(as.matrix(create_new_edge_list(oa.edge, groups)[,5:6])),
+  graph_from_edgelist(as.matrix(create_new_edge_list(aa.edge, groups)[,5:6])) 
+)
+
+##plot original degree distributions
+ddplot = plot_original_degree_distributions(original_graphs, name.list)
+ggsave("figures/metrics/Prignano/original-degree-dist.pdf", ddplot, 
+       width = 10, height = 7)
+
+btwn = plot_original_value_density_plot(original_graphs, name.list, FUN = calc.btwn)
+ggsave("figures/metrics/Prignano/original-betweenness-density.pdf", btwn, 
+       width = 10, height = 7)
+
+deg = plot_original_value_density_plot(original_graphs, name.list, FUN = calc.node.deg)
+ggsave("figures/metrics/Prignano/original-degree-density.pdf", deg, 
+       width = 10, height = 7)
+
+eigen = plot_original_value_density_plot(original_graphs, name.list, FUN = calc.eigen)
+ggsave("figures/metrics/Prignano/original-eigenvector-density.pdf", eigen, 
+       width = 10, height = 7)
 
 #EIA1E analysis
 gl1e = list(graph_from_edgelist(as.matrix(create_new_edge_list(eia1e.edge, groups)[,5:6])), 

@@ -62,3 +62,51 @@ plot_jaccard_similarity = function(df, title) {
     geom_smooth(aes(x = num.graphs, y = sim), se = F, size = 1, color = "black")
   return(p)
 }
+
+#'
+#'Plots degree distribution histograms for each original network
+#'@param original_graphs a list of the original graph from the data
+#'@param name.list a list of graph names in chronological order
+#'@return a plot with histograms of degree distributions
+#'
+#'
+plot_original_degree_distributions = function(original_graphs, name.list) {
+  ddist = calc.deg.dist(original_graphs[[1]])
+  ddist$network = name.list[[1]]
+  for(i in 2:length(original_graphs)) {
+    temp = calc.deg.dist(original_graphs[[i]])
+    temp$network = name.list[[i]]
+    ddist = rbind(ddist, temp)
+  }
+  ddist$network = factor(ddist$network, levels = name.list)
+  
+  ddplot = ggplot(ddist, aes(x = degree, y = freq)) +
+    geom_col() +
+    facet_wrap(~ network, scale = "free_x")
+  
+  return(ddplot)
+}
+
+#'
+#'Plots density function of a given node metric for each original network
+#'@param original_graphs a list of the original graph from the data
+#'@param name.list a list of graph names in chronological order
+#'@return a plot with density functions facetted by original network name
+#'
+#'
+plot_original_value_density_plot = function(original_graphs, name.list, FUN = calc.node.deg) {
+  val = FUN(original_graphs[[1]])
+  val$network = name.list[[1]]
+  for(i in 2:length(original_graphs)) {
+    temp = FUN(original_graphs[[i]])
+    temp$network = name.list[[i]]
+    val = rbind(val, temp)
+  }
+  val$network = factor(val$network, levels = name.list)
+  
+  p = ggplot(val, aes(metric, fill = network)) + 
+    geom_density() + facet_wrap(~ network, scale = "free_x") +
+    theme(legend.position = "none")
+  
+  return(p)
+}
