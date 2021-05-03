@@ -1,6 +1,6 @@
 #Prignano dataset network-level analysis
-source("scripts/Prignano-time-average.R")
-source("scripts/network-analysis-functions.R")
+source("Scripts/Prignano-time-average.R")
+source("Scripts/network-analysis-functions.R")
 theme_set(theme_minimal())
 library(ggthemes)
 library(lme4)

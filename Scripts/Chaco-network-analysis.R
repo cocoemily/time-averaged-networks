@@ -1,6 +1,6 @@
-source("scripts/time-average-functions.R")
-source("scripts/Chaco-time-average.R")
-source("scripts/network-analysis-functions.R")
+source("Scripts/time-average-functions.R")
+source("Scripts/Chaco-time-average.R")
+source("Scripts/network-analysis-functions.R")
 
 library(ggthemes)
 library(lme4)

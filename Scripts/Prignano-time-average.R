@@ -7,7 +7,7 @@ library(MASS)
 library(pscl)
 library(stargazer)
 
-source("scripts/time-average-functions.R")
+source("Scripts/time-average-functions.R")
 
 #read in data and clean
 aa = read.csv("Data/Prignano/AA.gdf")

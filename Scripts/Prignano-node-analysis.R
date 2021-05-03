@@ -1,10 +1,10 @@
 #Prignano dataset node-based analysis
 library(OmicsMarkeR)
 library(ggthemes)
-source("scripts/time-average-functions.R")
-source("scripts/Prignano-time-average.R")
-source("scripts/node_metrics.R")
-source("scripts/node-analysis-functions.R")
+source("Scripts/time-average-functions.R")
+source("Scripts/Prignano-time-average.R")
+source("Scripts/node_metrics.R")
+source("Scripts/node-analysis-functions.R")
 
 ####Original graph analysis####
 
