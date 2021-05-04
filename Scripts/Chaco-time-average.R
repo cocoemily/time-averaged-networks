@@ -1,7 +1,7 @@
+source("Scripts/time-average-functions.R")
+
 library(dplyr)
 library(igraph)
-
-source("Scripts/time-average-functions.R")
 
 chaco = read.csv("Data/Chaco/AllCeramics.csv")
 chaco_id = chaco %>% group_by(SWSN_ID) %>%

@@ -1,9 +1,8 @@
+source("Scripts/time-average-functions.R")
+
 library(dplyr)
 library(igraph)
-library(reshape2)
 library(utils)
-
-source("Scripts/time-average-functions.R")
 
 ##read in all data slices and make list of them
 files = list.files("Data/ICRATES/time-slices", "*.csv", full.names = TRUE)

@@ -3,9 +3,7 @@ source("Scripts/ICRATES-time-average.R")
 #load("Data/ICRATES/workspace_image.RData")
 source("Scripts/node_metrics.R")
 source("Scripts/node-analysis-functions.R")
-library(OmicsMarkeR)
-library(ggthemes)
-library(rlist)
+
 library(cowplot)
 
 load("Data/ICRATES/timeslice_levels.RData")

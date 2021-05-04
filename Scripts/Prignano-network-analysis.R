@@ -1,11 +1,13 @@
 #Prignano dataset network-level analysis
 source("Scripts/Prignano-time-average.R")
 source("Scripts/network-analysis-functions.R")
-theme_set(theme_minimal())
+
 library(ggthemes)
-library(lme4)
 library(dplyr)
-library(factoextra)
+library(ggplot2)
+library(tidyverse)
+
+theme_set(theme_minimal())
 
 ####Analysis####
 #EIA1E : Early Iron Age 1 Early (950/925 900 BC)

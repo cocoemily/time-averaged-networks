@@ -1,13 +1,13 @@
 source("Scripts/time-average-functions.R")
 source("Scripts/ICRATES-time-average.R")
 source("Scripts/network-analysis-functions.R")
-theme_set(theme_minimal())
+
 library(ggthemes)
-library(lme4)
 library(dplyr)
-library(factoextra)
 library(ggplot2)
 library(tidyverse)
+
+theme_set(theme_minimal())
 
 load("Data/ICRATES/timeslice_levels.RData")
 

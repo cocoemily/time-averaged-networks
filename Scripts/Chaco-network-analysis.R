@@ -3,11 +3,10 @@ source("Scripts/Chaco-time-average.R")
 source("Scripts/network-analysis-functions.R")
 
 library(ggthemes)
-library(lme4)
 library(dplyr)
-library(factoextra)
 library(ggplot2)
 library(tidyverse)
+
 theme_set(theme_minimal())
 
 c800 = Chaco_ta_compare(graphs[[1]], 1, graphs, "chaco800")

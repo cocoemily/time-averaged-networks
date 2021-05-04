@@ -1,13 +1,7 @@
-library(igraph)
-library(tidyverse)
-library(censReg)
-library(tidyverse)
-library(bbmle)
-library(MASS)
-library(pscl)
-library(stargazer)
-
 source("Scripts/time-average-functions.R")
+
+library(dplyr)
+library(igraph)
 
 #read in data and clean
 aa = read.csv("Data/Prignano/AA.gdf")

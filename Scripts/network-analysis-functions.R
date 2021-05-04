@@ -1,3 +1,6 @@
+source("Scripts/network_metrics.R")
+source("Scripts/node_metrics.R")
+
 #functions for running network-level analyses
 
 #'Helper function for calculating all relevant network indices

@@ -1,10 +1,12 @@
-#Prignano dataset node-based analysis
-library(OmicsMarkeR)
-library(ggthemes)
+
 source("Scripts/time-average-functions.R")
 source("Scripts/Prignano-time-average.R")
 source("Scripts/node_metrics.R")
 source("Scripts/node-analysis-functions.R")
+
+library(cowplot)
+
+theme_set(theme_minimal())
 
 ####Original graph analysis####
 

@@ -2,9 +2,7 @@ source("Scripts/time-average-functions.R")
 source("Scripts/Chaco-time-average.R")
 source("Scripts/node_metrics.R")
 source("Scripts/node-analysis-functions.R")
-library(OmicsMarkeR)
-library(ggthemes)
-library(rlist)
+
 library(cowplot)
 
 theme_set(theme_minimal())
