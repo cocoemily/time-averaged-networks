@@ -53,14 +53,14 @@ jaccard_similarity_df = function(graphlist, numgraphslist, top = T, FUN = calc.n
 #'
 plot_jaccard_similarity = function(df, title) {
   p = ggplot(df) +
-    geom_jitter(aes(x = num.graphs, y = sim, group = original, color = as.factor(original)), width = 0.5, height = 0.01, size = 0.4, alpha = 0.75) +
+    #geom_jitter(aes(x = num.graphs, y = sim, group = original, color = as.factor(original)), width = 0.5, height = 0.01, size = 0.4, alpha = 0.75) +
     geom_smooth(aes(x = num.graphs, y = sim, group = original, color = as.factor(original)), se = F, size = 0.5) +
     labs(x = "number of networks", y = "jaccard similarity", title = title) +
     guides(color = FALSE) +
     theme_minimal() +
     theme(plot.title = element_text(size = 10), 
           axis.title = element_text(size = 7)) +
-    geom_smooth(aes(x = num.graphs, y = sim), se = F, size = 1, color = "black")
+    geom_smooth(aes(x = num.graphs, y = sim), se = F, size = 0.75, color = "black", linetype = "dashed")
   return(p)
 }
 
