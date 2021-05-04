@@ -1,0 +1,411 @@
+---
+title: "Sensitivity Analysis"
+author: "Andrew Gillreath-Brown"
+date: "4/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(igraph)
+library(statnet)
+library(tnet)
+library(ggraph)
+
+```
+
+# Sensitivity Analysis
+Here, we run a variety of sensitivity analyses on the original and time-averaged networks. This code has been adapted from Peeples, Matthew A. 2017. Network Science and Statistical Techniques for Dealing with Uncertainties in Archaeological Datasets. [online]. Available: [www.mattpeeples.net/netstats.html](http://www.mattpeeples.net/netstats.html).
+
+Currently, most of the rmd focuses only on 1 Chaco dataset (i.e., AD 1050). It also doesn't fit into the current workflow, but should be relatively easy to do. So, it doesn't really work with the other scripts right now. The main point is either having our data in a similar format or adapting the code to run on our variables, which have a slightly different structure (partially because the use of different packages).
+
+## Load and prepare data for sensitivity analysis.
+
+```{r load_data}
+
+# Load data.
+# chaco = read.csv("Data/Chaco/AllCeramics.csv")
+# chaco_id = chaco %>% group_by(SWSN_ID) %>%
+#   summarize(Site = first(Site))
+
+#ad1050 = read.csv("Data/Chaco/AD1050cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+chaco_ad1050 <- read.csv(here::here("./Data/Chaco/AD1050cer.csv"), row.names = 1)
+
+# Temporarily (until I figure out the best way to work into current work flow), create a Brainerd-Robinson Similarity matrix for the ad1050 ceramic data.
+sim.mat <- function(x) {
+    # get names of sites
+    names <- row.names(x)
+    x <- na.omit(x)  # remove any rows with missing data
+    x <- prop.table(as.matrix(x), 1)  # convert to row proportions
+    rd <- dim(x)[1]
+    # create an empty symmetric matrix of 0s
+    results <- matrix(0, rd, rd)
+    # the following dreaded double for loop goes through every cell in the
+    # output data table and calculates the BR value as descried above
+    for (s1 in 1:rd) {
+        for (s2 in 1:rd) {
+            x1Temp <- as.numeric(x[s1, ])
+            x2Temp <- as.numeric(x[s2, ])
+            results[s1, s2] <- 2 - (sum(abs(x1Temp - x2Temp)))
+        }
+    }
+    row.names(results) <- names  # assign row names to output
+    colnames(results) <- names  # assign column names to output
+    results <- results/2  # rescale results between 0 and 1
+    results <- round(results, 3)  # round results
+    return(results)
+}  # return the final output table
+
+# Run the function above on to the ad1050 data.
+chacoBR <- sim.mat(chaco_ad1050)
+
+# Define binary network object from BR similarity.
+BRnet <- network(event2dichot(chacoBR, method = "absolute", thresh = 0.75), 
+    directed = F)
+# Add names for the nodes based on the row names of original matrix.
+BRnet %v% "vertex.names" <- row.names(chacoBR)
+
+
+```
+
+## Centrality scores for binary and weighted networks.
+This is just a temporary section that introduces a couple of functions for doing the analysis below.
+```{r centrality, echo=FALSE}
+
+# Calculate centrality scores for binary networks
+net.stats <- function(y) {
+    # calculate degree centrality
+    dg <- as.matrix(sna::degree(y, gmode = "graph"))
+    # calculate and scale eigenvector centrality
+    eg <- as.matrix(sna::evcent(y))
+    eg <- sqrt((eg^2) * length(eg))
+    # calculate betweenness centrality
+    bw <- sna::betweenness(y, gmode = "graph")
+    # combine centrality scores into matrix
+    output <- cbind(dg, eg, bw)
+    rownames(output) <- rownames(as.matrix(y))
+    colnames(output) <- c("dg", "eg", "bw")
+    return(output)
+}  # return results of this function
+
+# Calculate centrality scores for weighted networks (similarity matrices)
+net.stats.wt <- function(y) {
+    # calculate weighted degree as the sum of weights - 1
+    dg.wt <- as.matrix(rowSums(y) - 1)
+    # calculate weighted eigenvector centrality and rescale
+    eg.wt <- as.matrix(sna::evcent(y))
+    eg.wt <- sqrt((eg.wt^2) * length(eg.wt))
+    # calculate weighted betweenness from the tnet package (we use the
+    # suppressWarnings package to avoid notifications)
+    bw.wt <- suppressWarnings(betweenness_w(y, directed = F))[, 2]
+    output <- cbind(dg.wt, eg.wt, bw.wt)
+    rownames(output) <- rownames(as.matrix(y))
+    colnames(output) <- c("dg.wt", "eg.wt", "bw.wt")
+    return(output)
+}  # return results of this function
+```
+
+## Potential impact of missing nodes
+
+### For Single Centrality (or centralization measure)
+
+```{r missing_nodes_single, echo=FALSE}
+
+# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ? for better results)
+nsim <- 25
+
+# Define function for testing betweenness centrality stability across sub-samples.
+resamp.test <- function(x) {
+    # Can do any centrality measure here (i.e., doesn't have to be betweenness).
+    bw.g <- sna::betweenness(x, gmode = "graph")
+    mat <- as.matrix(x)
+    dim.x <- dim(mat)[1]
+    # Create matrix for output and then name.
+    out.mat <- matrix(NA, nsim, 9)
+    colnames(out.mat) <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", 
+        "S20", "S10")
+    # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's rho correlation between the resulting centrality values and the original sample.
+    for (j in 1:9) {
+        for (i in 1:nsim) {
+            # This sampling procedure samples without replacement from a sequence from 1 to the total number of nodes, the size of the sample being determined by 10-j/10. For example, if j=1, 10-1/10 = 0.9 or a 90% sub-sample.
+            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
+                0), replace = F)
+            # Calculate the betweenness statistic for the matrix reduced to only include the sub-sampled rows/columns.
+            temp.stats <- sna::betweenness(mat[sub.samp, sub.samp], gmode = "graph")
+            # Calculate Spearman's rho for replicate
+            out.mat[i, j] <- suppressWarnings(cor(temp.stats, bw.g[sub.samp], 
+                method = "spearman"))
+        }
+    }
+    return(out.mat)
+}  # return the result
+
+# Display results as boxplot by sampling fraction.
+boxplot(resamp.test(BRnet), ylim = c(0, 1), main = "BR - betweenness", xlab = "sampling fraction", 
+    ylab = "Spearmans rho")
+
+```
+
+### Over multiple centrality measures and/or networks
+
+The 2 function defined below are for binary and weighted networks.
+
+```{r missing_nodes_multiple, echo=FALSE}
+
+# The following function does the same calculation as above but is set up to work with the output of net.stats and net.stats.wt.
+nsim <- 25
+samp.frac <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
+
+# This function is for a binary network.
+cv.resamp.bin <- function(x) {
+    # Calculate all network stats for the original network
+    stats.g <- net.stats(x)
+    mat <- as.matrix(x)
+    # Count number of rows (nodes)
+    dim.x <- dim(mat)[1]
+    # Define empty matrices for output
+    dg.mat <- matrix(NA, nsim, 9)
+    ev.mat <- matrix(NA, nsim, 9)
+    bw.mat <- matrix(NA, nsim, 9)
+    # Add column names based on sampling fraction
+    colnames(dg.mat) <- samp.frac
+    colnames(ev.mat) <- samp.frac
+    colnames(bw.mat) <- samp.frac
+    
+    # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's rho correlation between the resulting centrality values and the original sample.
+    for (j in 1:9) {
+        for (i in 1:nsim) {
+            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
+                0), replace = F)
+            temp.stats <- net.stats(mat[sub.samp, sub.samp])
+            dg.mat[i, j] <- suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp, 
+                1], method = "spearman"))
+            ev.mat[i, j] <- suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp, 
+                2], method = "spearman"))
+            bw.mat[i, j] <- suppressWarnings(cor(temp.stats[, 3], stats.g[sub.samp, 
+                3], method = "spearman"))
+        }
+    }
+    # Create list for output and populate it
+    out.list <- list()  
+    out.list[[1]] <- dg.mat
+    out.list[[2]] <- ev.mat
+    out.list[[3]] <- bw.mat
+    return(out.list)
+}  # return the resulting list
+
+# This function is for weighted networks (similarity matrices).
+cv.resamp.wt <- function(x) {
+    # Calculate network stats for the original network
+    stats.g <- net.stats.wt(x)
+    mat <- as.matrix(x)
+    dim.x <- dim(mat)[1]
+    # Create empty matrices for output
+    dg.mat <- matrix(NA, nsim, 9)
+    ev.mat <- matrix(NA, nsim, 9)
+    bw.mat <- matrix(NA, nsim, 9)
+    # Add column names by sampling fraction
+    colnames(dg.mat) <- samp.frac
+    colnames(ev.mat) <- samp.frac
+    colnames(bw.mat) <- samp.frac
+    
+    # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's rho correlation between the resulting centrality values and the original sample.
+    for (j in 1:9) {
+        for (i in 1:nsim) {
+            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
+                0), replace = F)
+            temp.stats <- net.stats.wt(mat[sub.samp, sub.samp])
+            dg.mat[i, j] <- suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp, 
+                1], method = "spearman"))
+            ev.mat[i, j] <- suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp, 
+                2], method = "spearman"))
+            bw.mat[i, j] <- suppressWarnings(cor(temp.stats[, 3], stats.g[sub.samp, 
+                3], method = "spearman"))
+        }
+    }
+    # Create list for output
+    out.list <- list()  
+    out.list[[1]] <- dg.mat
+    out.list[[2]] <- ev.mat
+    out.list[[3]] <- bw.mat
+    return(out.list)
+}  # return the results
+
+
+# Run function on binary network (the Brainerd-Robinson Similarity one).
+BR.rs <- cv.resamp.bin(BRnet)
+
+# Run function on weighted network (the Brainerd-Robinson Similarity one).
+BRw.rs <- cv.resamp.wt(chacoBR)
+
+# set up for 1 by 3 plotting for the binary network
+par(mfrow = c(1, 3))
+boxplot(BR.rs[[1]], ylim = c(0, 1), main = "BR - degree", xlab = "sampling fraction", 
+    ylab = "Spearmans rho")
+boxplot(BR.rs[[2]], ylim = c(0, 1), main = "BR - eigenvector", xlab = "sampling fraction")
+boxplot(BR.rs[[3]], ylim = c(0, 1), main = "BR - betweenness", xlab = "sampling fraction")
+
+# set up for 1 by 3 plotting for the binary network
+par(mfrow = c(1, 3))
+boxplot(BRw.rs[[1]], ylim = c(0, 1), main = "BR - degree", xlab = "sampling fraction", 
+    ylab = "Spearmans rho")
+boxplot(BRw.rs[[2]], ylim = c(0, 1), main = "BR - eigenvector", xlab = "sampling fraction")
+boxplot(BRw.rs[[3]], ylim = c(0, 1), main = "BR - betweenness", xlab = "sampling fraction")
+
+```
+
+### Node specific assessment
+Here, we determine whether the most central node is consistently the most central.
+
+```{r node_specific, echo=FALSE}
+
+nsim <- 1000  #set number of replicates
+
+resamp.node <- function(x, samp.frac) {
+    mat <- as.matrix(x)
+    dim.x <- dim(mat)[1]
+    out.mat <- matrix(NA, dim.x, nsim)
+    for (i in 1:nsim) {
+        sub.samp <- sample(seq(1, dim.x), size = round(dim.x * samp.frac, 0), 
+            replace = F)
+        # calculate centrality statistic for a given sub-sample and put in output
+        # matrix
+        temp.stats <- sna::degree(mat[sub.samp, sub.samp], gmode = "graph")
+        out.mat[sub.samp, i] <- temp.stats
+    }
+    return(out.mat)
+}
+
+# calculate the rank order of degree centrality in the BR network
+top.dg <- rank(-sna::degree(BRnet), ties.method = "min")
+par(mfrow = c(2, 2))
+BR.resamp <- resamp.node(BRnet, samp.frac = 0.8)  #samp.frac is 80%
+# calculate the rank order of the replicates and plot the top 4 as barplots
+# showing rank across all replicates
+for (i in 1:4) {
+    barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
+        ]), main = paste("samp.frac=80%, rank = ", top.dg[order(top.dg)[i]]))
+}
+
+par(mfrow = c(2, 2))
+BR.resamp <- resamp.node(BRnet, samp.frac = 0.5)  #samp.frac is 50%
+# calculate the rank order of the replicates and plot the top 4 as barplots
+# showing rank across all replicates
+for (i in 1:4) {
+    barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
+        ]), main = paste("samp.frac=50%, original rank = ", top.dg[order(top.dg)[i]]))
+}
+
+
+
+resamp.bw <- function(x, samp.frac) {
+    mat <- as.matrix(x)
+    dim.x <- dim(mat)[1]
+    out.mat <- matrix(NA, dim.x, nsim)
+    for (i in 1:nsim) {
+        sub.samp <- sample(seq(1, dim.x), size = round(dim.x * samp.frac, 0), 
+            replace = F)
+        temp.stats <- sna::betweenness(mat[sub.samp, sub.samp], gmode = "graph")
+        out.mat[sub.samp, i] <- temp.stats
+    }
+    return(out.mat)
+}
+
+# calculate the rank order of betweenness centrality in the BR network
+top.bw <- rank(-sna::betweenness(BRnet), ties.method = "min")
+par(mfrow = c(2, 2))
+BR.resamp <- resamp.bw(BRnet, samp.frac = 0.5)
+for (i in 1:4) {
+    barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
+        ]), main = paste("samp.frac=50%, rank = ", top.bw[order(top.bw)[i]]))
+}
+
+```
+
+## Potential impact of missing edges
+```{r missing_edges, echo=FALSE}
+
+# Set up a function to sub-sample network edges at sampling fractions from 90% to 10% and assess the rank order correlation of nodes.
+nsim <- 25  # set number of replicates
+
+# set up function for edge deletion for eigenvector centrality
+resamp.edge <- function(x) {
+    # the next line can be replaced with any centrality measure you'd like
+    ev.g <- sna::evcent(x, gmode = "graph")
+    mat <- as.matrix(x)
+    dim.x <- dim(mat)[1]
+    out.mat <- matrix(NA, nsim, 9)  # create matrix for output and then name
+    colnames(out.mat) <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", 
+        "S20", "S10")
+    # this double loop goes through each sampling fraction and each random
+    # replicate to calculate centrality statistics and
+    for (j in 1:9) {
+        for (i in 1:nsim) {
+            # our sampling fraction is defined here using the network.edgecount function
+            # which tells us the total number of active edges in a network object.
+            sub.samp <- sample(seq(1, network.edgecount(x)), size = round(network.edgecount(x) * 
+                (j/10), 0), replace = F)
+            temp.net <- x
+            net.reduced <- network::delete.edges(temp.net, sub.samp)
+            temp.stats <- sna::evcent(net.reduced, gmode = "graph")
+            # calculate spearman's rho for replicate and output result
+            out.mat[i, j] <- cor(temp.stats, ev.g, method = "spearman")
+        }
+    }
+    return(out.mat)
+}  # return results
+
+# display results as boxplot
+boxplot(resamp.edge(BRnet), ylim = c(0, 1), main = "BR - eigenvector", xlab = "sampling fraction", 
+    ylab = "Spearmans rho")
+
+
+
+# Create a function that calculates correlations between our original and sub-sampled replicates for all three of our primary measures of centrality using the format form the net.stats function
+# The following function does the same calculation as above but is set up to work with the output of net.stats.
+nsim <- 25
+samp.frac <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
+
+cv.resamp.edge <- function(x) {
+    stats.g <- net.stats(x)
+    mat <- as.matrix(x)
+    dim.x <- dim(mat)[1]
+    dg.mat <- matrix(NA, nsim, 9)
+    ev.mat <- matrix(NA, nsim, 9)
+    bw.mat <- matrix(NA, nsim, 9)
+    colnames(dg.mat) <- samp.frac
+    colnames(ev.mat) <- samp.frac
+    colnames(bw.mat) <- samp.frac
+    
+    for (j in 1:9) {
+        for (i in 1:nsim) {
+            sub.samp <- sample(seq(1, network.edgecount(x)), size = round(network.edgecount(x) * 
+                (j/10), 0), replace = F)
+            temp.net <- x
+            net.reduced <- network::delete.edges(temp.net, sub.samp)
+            temp.stats <- net.stats(net.reduced)
+            dg.mat[i, j] <- cor(temp.stats[, 1], stats.g[, 1], method = "spearman")
+            ev.mat[i, j] <- cor(temp.stats[, 2], stats.g[, 2], method = "spearman")
+            bw.mat[i, j] <- cor(temp.stats[, 3], stats.g[, 3], method = "spearman")
+        }
+    }
+    out.list <- list()
+    out.list[[1]] <- dg.mat
+    out.list[[2]] <- ev.mat
+    out.list[[3]] <- bw.mat
+    return(out.list)
+}
+
+# run the script for the binary network
+BR.edge <- cv.resamp.edge(BRnet)
+
+#Plot the results.
+par(mfrow = c(1, 3))
+boxplot(BR.edge[[1]], ylim = c(0, 1), main = "BR - degree", xlab = "sampling fraction", 
+    ylab = "Spearmans rho")
+boxplot(BR.edge[[2]], ylim = c(0, 1), main = "BR - eigenvector", xlab = "sampling fraction")
+boxplot(BR.edge[[3]], ylim = c(0, 1), main = "BR - betweenness", xlab = "sampling fraction")
+
+```
