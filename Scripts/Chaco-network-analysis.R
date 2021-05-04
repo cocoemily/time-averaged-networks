@@ -86,8 +86,6 @@ for(index in 1:length(graphs)) {
     for(i in 1:(length(graphs)-1)) {
       modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), datalist[[index]]))
     }
-    df$num.graphs = c(1, seq(nrow(df), 2 , by = -1))
-    df$network = c(replicate(nrow(df), o_name))
   } else {
     modelerrors2 = rbind(modelerrors2, calculate_model_error(graphs[[index]], datalist[[index]]))
     for(i in 1:(length(graphs)-index)) {

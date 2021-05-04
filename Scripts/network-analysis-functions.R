@@ -45,7 +45,7 @@ pca_biplot = function(alldata, variables) {
 #' 
 get_null_model_values = function(graph, FUN = calc.diam) {
   values = c()
-  for(i in 1:10) {
+  for(i in 1:100) {
     ngraph = rewire(graph, each_edge(p = 1))
     values = c(values, FUN(ngraph))
   }

@@ -57,7 +57,7 @@ oa.edge$age = "oa"
 #list of all nodes
 all.nodes = rbind(aa.node, eia1e.node, eia1l.node, eia2.node, oa.node)
 groups = all.nodes %>% group_by(lat, long) %>% 
-  mutate(group = group_indices()) #group variable tells us if two nodes are the same
+  mutate(group = cur_group_id()) #group variable tells us if two nodes are the same
 
 create_new_edge_list = function(edges, groups) {
   edges$node1 = as.character(edges$node1)
