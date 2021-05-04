@@ -11,7 +11,7 @@ name.list = lvls
 
 ####Original graph analysis####
 ddplot = plot_original_degree_distributions(graphs, name.list)
-ggsave("figures/metrics/ICRATES/original-degree-dist.pdf", ddplot, 
+ggsave("figures/metrics/ICRATES/original-degree-dist.pdf", ddplot,
        width = 10, height = 7)
 
 btwn = plot_original_value_density_plot(graphs, name.list, FUN = calc.btwn)
