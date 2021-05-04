@@ -1,4 +1,5 @@
 library(ggplot2)
+library(OmicsMarkeR)
 
 #'
 #'Function for getting the nodes with the highest or lowest values based on the provided function

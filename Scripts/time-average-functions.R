@@ -139,11 +139,8 @@ average_two = function(e1, e2, groups) {
   edge1 = create_new_edge_list(e1, groups)
   edge2 = create_new_edge_list(e2, groups)
   edges = rbind(edge1, edge2)
-  graph = graph_from_edgelist(as.matrix(edges[,5:6]))
-  edges$remove = which_multiple(graph)
-  new.edges = edges %>% filter(remove == FALSE)
-  graph2 = graph_from_edgelist(as.matrix(new.edges[,5:6]))
-  return(graph2)
+  graph = simplify(graph_from_edgelist(as.matrix(edges[,5:6])))
+  return(graph)
 }
 
 average_three = function(e1, e2, e3, groups) {
@@ -152,10 +149,7 @@ average_three = function(e1, e2, e3, groups) {
   edge3 = create_new_edge_list(e3, groups)
   e = rbind(edge1, edge2, edge3)
   graph = simplify(graph_from_edgelist(as.matrix(e[,5:6])))
-  e$remove = which_multiple(graph)
-  new.edges = e %>% filter(remove == FALSE)
-  graph2 = graph_from_edgelist(as.matrix(new.edges[,5:6]))
-  return(graph2)
+  return(graph)
 }
 
 average_four = function(e1, e2, e3, e4, groups) {
@@ -165,10 +159,7 @@ average_four = function(e1, e2, e3, e4, groups) {
   edge4 = create_new_edge_list(e4, groups)
   e = rbind(edge1, edge2, edge3, edge4)
   graph = simplify(graph_from_edgelist(as.matrix(e[,5:6])))
-  e$remove = which_multiple(graph)
-  new.edges = e %>% filter(remove == FALSE)
-  graph2 = graph_from_edgelist(as.matrix(new.edges[,5:6]))
-  return(graph2)
+  return(graph)
 }
 
 average_five = function(e1, e2, e3, e4, e5, groups) {
@@ -179,10 +170,7 @@ average_five = function(e1, e2, e3, e4, e5, groups) {
   edge5 = create_new_edge_list(e5, groups)
   e = rbind(edge1, edge2, edge3, edge4, edge5)
   graph = simplify(graph_from_edgelist(as.matrix(e[,5:6])))
-  e$remove = which_multiple(graph)
-  new.edges = e %>% filter(remove == FALSE)
-  graph2 = graph_from_edgelist(as.matrix(new.edges[,5:6]))
-  return(graph2)
+  return(graph)
 }
 
 #functions to create dataframe for comparison
