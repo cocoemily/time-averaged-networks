@@ -73,8 +73,8 @@ names = as.vector(names$dates)
 
 
 #ICRATES time-averaged graphs
-tagraphs = get_ta_graphs(graphs[[1]], 1, graphs)
+icrates_tagraphs = list(get_ta_graphs(graphs[[1]], 1, graphs))
 for(i in 2:length(graphs)) {
-  tagraphs = get_ta_graphs(graphs[[i]], i, graphs)
+  icrates_tagraphs[[i]] = get_ta_graphs(graphs[[i]], i, graphs)
 }
 

@@ -69,7 +69,7 @@ graphs = list(chaco800, chaco825, chaco850, chaco875,
 
 
 #time-averaged graphs
-tagraphs = get_ta_graphs(graphs[[1]], 1, graphs)
+chaco_tagraphs = list(get_ta_graphs(graphs[[1]], 1, graphs))
 for(i in 2:length(graphs)) {
-  tagraphs = get_ta_graphs(graphs[[i]], i, graphs)
+  chaco_tagraphs[[i]] = get_ta_graphs(graphs[[i]], i, graphs)
 }
