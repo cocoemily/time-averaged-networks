@@ -15,6 +15,14 @@ get_row = function(graph) {
 }
 
 ####PCA Analysis####
+get_pca_variable_contribs = function(alldata, variables) {
+  avg = alldata %>% filter(num.graphs != 1)
+  pca_avg = prcomp(avg %>% dplyr::select(c(variables)), scale = T)
+  res.var = get_pca_var(pca_avg)
+  return(as.data.frame(res.var$contrib))
+}
+
+
 #'
 #'Function produces a PCA biplot based on the time-averaged data on which the original data is plotted
 #' @param alldata all of the network metric values for each original/time-averaged network
@@ -32,8 +40,8 @@ pca_biplot = function(alldata, variables) {
   
   orig.coord = as.data.frame(predict(pca_avg, orig %>% dplyr::select(c(variables))))
   rownames(orig.coord) = as.character(orig$network)
-  p.pca = fviz_pca_biplot(pca_avg, repel = T, pointsize = 1, pointshape = 20, col.var = "grey30", col.ind = avg$network,
-                          label = "var")
+  p.pca = fviz_pca_biplot(pca_avg, repel = T, pointsize = 1, pointshape = 21, col.var = "contrib", fill.ind = avg$network,
+                          label = "var", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"))
   p.pca = fviz_add(p.pca, orig.coord, shape = 15, labelsize = 0)
   return(p.pca)
 }
@@ -113,8 +121,6 @@ calculate_model_error = function(graph, df) {
 #' 
 plot_model_errors = function(modelerrors, variables) {
   me = modelerrors %>% gather(key = "modelerror", value = "value", variables)
-  #me$network = factor(me$network, levels = levels)
-  #me$name = factor(me$name, levels = c("chaco800", ....)) ##need to update levels
   metric.labs = c("betweenness centrality", "clustering coefficient", "diameter", 
                   "eigenvector centrality", "modularity", "path length", 
                   "edge density", "degree")
@@ -122,7 +128,7 @@ plot_model_errors = function(modelerrors, variables) {
   meplot = ggplot(me, aes(x = num.graphs, y = value, group = network, color = network)) +
     geom_rect(xmin = -Inf, xmax = Inf, ymin = -1, ymax = 1, alpha = 0.05, color = NA, fill = "grey80") +
     geom_hline(yintercept = 0) +
-    geom_smooth(se=F, size=0.5) +
+    geom_smooth(se=F, size=0.5, span=0.4) +
     facet_wrap(~ modelerror, scales = "free_y", labeller = labeller(modelerror = metric.labs)) +
     labs(x = "number of graphs") +
     theme(axis.title.y = element_blank())+

@@ -62,6 +62,7 @@ oplot = ggplot(od, aes(y = value, x = network, color = network)) +
 ggsave("figures/metrics/Chaco/original-network-metrics.pdf", oplot, width = 8, height = 5)
 
 ####PCA Analysis####
+write.csv(get_pca_variable_contribs(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "figures/pca/Chaco/pca-dim-contribs.csv")
 ggsave("figures/pca/Chaco/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")))
 
 ####Model Errors####
@@ -70,7 +71,7 @@ modelerrors = calculate_model_error(graphs[[1]], c800)
 for(g in 2:(length(graphs)-1)) {
   modelerrors = rbind(modelerrors, calculate_model_error(graphs[[g]], datalist[[g]]))
 }
-#plot(plot_model_errors(modelerrors))
+#plot(plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")))
 ggsave("figures/null-models/Chaco/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
 
 

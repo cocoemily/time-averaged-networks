@@ -70,6 +70,7 @@ ggsave("figures/metrics/ICRATES/original-network-metrics.pdf", ioplot, width = 8
 # ggsave("figures/metrics/ICRATES/noncomplete_original-network-metrics.pdf", ioplot2, width = 8, height = 5)
 
 ####PCA Analysis####
+write.csv(get_pca_variable_contribs(i_alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "figures/pca/ICRATES/pca-dim-contribs.csv")
 ipca = pca_biplot(i_alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")) +
   theme(legend.title = element_text(size = 5), 
         legend.text = element_text(size = 5))
@@ -83,7 +84,7 @@ modelerrors = calculate_model_error(graphs[[1]], comp.dfs[[1]])
 for(g in 2:(length(graphs)-1)) {
   modelerrors = rbind(modelerrors, calculate_model_error(graphs[[g]], comp.dfs[[g]]))
 }
-ggsave("figures/null-models/ICRATES/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me")), height = 4, width = 7)
+ggsave("figures/null-models/ICRATES/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
 
 # ncmodelerrors = calculate_model_error(ncgraphs[[1]], comp.dfs2[[1]])
 # for(g in 2:(length(ncgraphs)-1)) {

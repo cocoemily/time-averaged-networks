@@ -77,6 +77,7 @@ ggsave("figures/metrics/Prignano/original-network-metrics.pdf", oplot, width = 8
 
 
 ####PCA Analysis####
+write.csv(get_pca_variable_contribs(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "figures/pca/Prignano/pca-dim-contribs.csv")
 ggsave("figures/pca/Prignano/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")))
 
 ####Model Errors####
