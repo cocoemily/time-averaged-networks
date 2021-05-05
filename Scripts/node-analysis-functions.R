@@ -1,5 +1,5 @@
 library(ggplot2)
-library(OmicsMarkeR)
+#library(OmicsMarkeR)
 
 #'
 #'Function for getting the nodes with the highest or lowest values based on the provided function
@@ -17,6 +17,18 @@ get_nodes = function(graph, top = T, FUN = calc.node.deg) {
     comp.set = as.character(ndf[order(ndf$metric),]$node[1:5])
   }
   return(comp.set)
+}
+
+#'
+#'Function for calculating Jaccard similarity
+#'@param a list of nodes
+#'@param b list of nodes
+#'@return jaccard similarity
+#'
+jaccard = function(a, b) {
+  intersection = length(intersect(a,b))
+  union = length(a) + length(b) - intersection
+  return(intersection/union)
 }
 
 #'
