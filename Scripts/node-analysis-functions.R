@@ -85,12 +85,12 @@ plot_jaccard_similarity = function(df, title) {
 #'
 plot_original_degree_distributions = function(original_graphs, name.list) {
   ddist = data.frame()
-  if(vcount(graphs[[1]]) != 0) {
+  if(vcount(original_graphs[[1]]) != 0) {
     ddist = calc.deg.dist(original_graphs[[1]])
     ddist$network = name.list[[1]]
   }
   for(i in 2:length(original_graphs)) {
-    if(vcount(graphs[[i]]) != 0) {
+    if(vcount(original_graphs[[i]]) != 0) {
       temp = calc.deg.dist(original_graphs[[i]])
       temp$network = name.list[[i]]
       ddist = rbind(ddist, temp)
@@ -114,12 +114,12 @@ plot_original_degree_distributions = function(original_graphs, name.list) {
 #'
 plot_original_value_density_plot = function(original_graphs, name.list, FUN = calc.node.deg) {
   val = data.frame()
-  if(vcount(graphs[[1]]) != 0) {
+  if(vcount(original_graphs[[1]]) != 0) {
     val = FUN(original_graphs[[1]])
     val$network = name.list[[1]]
   }
   for(i in 2:length(original_graphs)) {
-    if(vcount(graphs[[i]]) != 0) {
+    if(vcount(original_graphs[[i]]) != 0) {
       temp = FUN(original_graphs[[i]])
       temp$network = name.list[[i]]
       val = rbind(val, temp)
