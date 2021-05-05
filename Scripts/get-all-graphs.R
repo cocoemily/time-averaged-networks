@@ -17,8 +17,8 @@ rm(list = setdiff(ls(), c("Chaco_original_graphs", "Chaco_ta_graphs",
                           "Prignano_original_graphs", "Prignano_ta_graphs",
                           "ICRATES_original_graphs", "ICRATES_ta_graphs")))
 
-save(Chaco_original_graphs, Chaco_ta_graphs,
-     Prignano_original_graphs, Prignano_ta_graphs,
-     ICRATES_original_graphs, ICRATES_ta_graphs, file = "Data/graph_objects.RData")
+save(Chaco_original_graphs, Chaco_ta_graphs, file = "Data/Chaco_graph_objects.RData")
+save(Prignano_original_graphs, Prignano_ta_graphs, file = "Data/Prignano_graph_objects.RData")
+save(ICRATES_original_graphs, ICRATES_ta_graphs, file = "Data/ICRATES_graph_objects.RData")
 
 
