@@ -119,7 +119,7 @@ calculate_model_error = function(graph, df) {
 #' @param variables list of variables of interest (must specific with "_me" suffix)
 #' @return facetted graph looking at change in model error as number of graphs included in time-averaging increases
 #' 
-plot_model_errors = function(modelerrors, variables) {
+plot_model_errors = function(modelerrors, variables, span = 0.4) {
   me = modelerrors %>% gather(key = "modelerror", value = "value", variables)
   metric.labs = c("betweenness centrality", "clustering coefficient", "diameter", 
                   "eigenvector centrality", "modularity", "path length", 
@@ -128,7 +128,7 @@ plot_model_errors = function(modelerrors, variables) {
   meplot = ggplot(me, aes(x = num.graphs, y = value, group = network, color = network)) +
     geom_rect(xmin = -Inf, xmax = Inf, ymin = -1, ymax = 1, alpha = 0.05, color = NA, fill = "grey80") +
     geom_hline(yintercept = 0) +
-    geom_smooth(se=F, size=0.5, span=0.4) +
+    geom_smooth(se=F, size=0.5, span=span) +
     facet_wrap(~ modelerror, scales = "free_y", labeller = labeller(modelerror = metric.labs)) +
     labs(x = "number of graphs") +
     theme(axis.title.y = element_blank())+
