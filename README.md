@@ -63,4 +63,8 @@ For each dataset, the following figure is available:
 * pca-biplot  
    PCA based on the network metric values for the time-averaged graphs with the original graphs (blue squares) plotted on  
 
-   
+
+ 
+**ICRATES and Chaco scripts were run using the NYU Greene HPC Cluster on 2x Intel Xeon Platinum 8268 24C 205W 2.9GHz processors**  
+   https://sites.google.com/a/nyu.edu/nyu-hpc/systems/greene-cluster  
+**Prignano scripts were run on Emily Coco's personal MacBook Air on a 1.4 GHz Dual-Core Intel Core i5 processor**  
