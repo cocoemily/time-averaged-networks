@@ -35,6 +35,7 @@ alldata = rbind(c800, c825, c850, c875,
                   c1000, c1025, c1050, c1075,
                   c1100, c1125, c1150, c1175,
                   c1200, c1225, c1250, c1275)
+write.csv(alldata, file = "output/Chaco/ta-network-metrics.csv")
 
 datalist = list(c800, c825, c850, c875, 
                 c900, c925, c950, c975,
@@ -71,6 +72,8 @@ modelerrors = calculate_model_error(graphs[[1]], c800)
 for(g in 2:(length(graphs)-1)) {
   modelerrors = rbind(modelerrors, calculate_model_error(graphs[[g]], datalist[[g]]))
 }
+write.csv(modelerrors, file = "output/Chaco/model-errors_ta-to-orig.csv")
+
 #plot(plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")))
 ggsave("figures/null-models/Chaco/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
 
@@ -97,4 +100,5 @@ for(index in 1:length(graphs)) {
     }
   }
 }
+write.csv(modelerrors2, file = "output/Chaco/model-errors_ta-to-ta.csv")
 ggsave("figures/null-models/Chaco/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)

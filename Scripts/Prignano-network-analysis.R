@@ -64,6 +64,8 @@ alldata = rbind(eia1eta, eia1lta, eia2ta, oata, aata)
 alldata$network = factor(alldata$network, levels = c("EIA1E", "EIA1L", 
                                                      "EIA2", "OA", "AA"))
 
+write.csv(alldata, file = "output/Prignano/ta-network-metrics.csv")
+
 ####Original networks analysis####
 metric.list = c("size", "diam", "mean.deg", "mean.in", "mean.out", "edge.dens", "path.length", "cc", "mod", "btwn", "eigen")
 od = alldata %>% filter(num.graphs == 1) %>% gather(key = "metric", value = "value", c(1:11))
@@ -77,7 +79,7 @@ ggsave("figures/metrics/Prignano/original-network-metrics.pdf", oplot, width = 8
 
 
 ####PCA Analysis####
-write.csv(get_pca_variable_contribs(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "figures/pca/Prignano/pca-dim-contribs.csv")
+write.csv(get_pca_variable_contribs(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "output/Prignano/pca-dim-contribs.csv")
 ggsave("figures/pca/Prignano/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")))
 
 ####Model Errors####
@@ -88,6 +90,7 @@ modelerrors = rbind(
   calculate_model_error(graph_from_edgelist(as.matrix(oa.edge[,1:2])), oata), 
   calculate_model_error(graph_from_edgelist(as.matrix(aa.edge[,1:2])), aata)
 )
+write.csv(modelerrors, file = "output/Prignano/model-errors_ta-to-orig.csv")
 ggsave("figures/null-models/Prignano/me_ta-to-orig.pdf", plot_model_errors(modelerrors,  c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), span=0.75), height = 4, width = 7)
 
 me_eia1eta = rbind(
@@ -141,4 +144,5 @@ me_aata = rbind(
 #ggsave("figures/null-models/Prignano/me_aa.pdf", plot_model_errors(me_aata, c("btwn_me", "eigen_me", "cc_me", "mod_me")))
 
 all_me_ta = rbind(me_eia1eta, me_eia1lta, me_eia2ta, me_oata, me_aata)
+write.csv(all_me_ta, file = "output/Prignano/model-errors_ta-to-ta.csv")
 ggsave("figures/null-models/Prignano/all_ta_me.pdf", plot_model_errors(all_me_ta, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), span = 0.75), height = 4, width = 7)
