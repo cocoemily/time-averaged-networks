@@ -63,7 +63,7 @@ oplot = ggplot(od, aes(y = value, x = network, color = network)) +
 ggsave("figures/metrics/Chaco/original-network-metrics.pdf", oplot, width = 8, height = 5)
 
 ####PCA Analysis####
-write.csv(get_pca_variable_contribs(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "figures/pca/Chaco/pca-dim-contribs.csv")
+write.csv(get_pca_variable_contribs(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "output/Chaco/pca-dim-contribs.csv")
 ggsave("figures/pca/Chaco/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")))
 
 ####Model Errors####
