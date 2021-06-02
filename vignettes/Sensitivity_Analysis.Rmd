@@ -196,18 +196,18 @@ top.dg <- rank(-igraph::degree(tn), ties.method = "min")
 
 # Call the resamp.node function with a sampling fraction of 80% (samp.frac=0.8). Then, produce a barplot of the results for the first 4 nodes from the original network.
 BR.resamp <- resamp.node(tn, samp.frac = 0.8)  #samp.frac is 80%
-par(mfrow = c(2, 2))
+par(mfrow = c(2, 3))
 # Calculate the rank order of the replicates and plot the top 4 as barplots showing rank across all replicates.
-for (i in 1:4) {
+for (i in 1:5) {
     barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
         ]), main = paste("samp.frac=80%, rank = ", top.dg[order(top.dg)[i]]))
 }
 
 # Now, try with a sampling fraction of 50%.
 BR.resamp <- resamp.node(tn, samp.frac = 0.5)  #samp.frac is 50%
-par(mfrow = c(2, 2))
+par(mfrow = c(2, 3))
 # Calculate the rank order of the replicates and plot the top 4 as barplots showing rank across all replicates.
-for (i in 1:4) {
+for (i in 1:5) {
     barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
         ]), main = paste("samp.frac=50%, original rank = ", top.dg[order(top.dg)[i]]))
 }
@@ -231,8 +231,8 @@ resamp.bw <- function(x, samp.frac) {
 top.bw <- rank(-igraph::betweenness(tn), ties.method = "min")
 BR.resamp <- resamp.bw(tn, samp.frac = 0.5)
 
-par(mfrow = c(2, 2))
-for (i in 1:4) {
+par(mfrow = c(2, 3))
+for (i in 1:5) {
     barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
         ]), main = paste("samp.frac=50%, rank = ", top.bw[order(top.bw)[i]]))
 }
