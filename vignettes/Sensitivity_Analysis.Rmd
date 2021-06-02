@@ -51,7 +51,7 @@ net.stats.igraph <- function(y) {
     eg <- as.matrix(igraph::evcent(y)$vector)
     #eg <- sqrt((eg^2) * length(eg))
     # Calculate betweenness centrality
-    bw <- igraph::betweenness(y, normalized = TRUE, directed = TRUE)
+    bw <- igraph::betweenness(y, normalized = TRUE, directed = FALSE)
     # Combine centrality scores into matrix
     output <- cbind(dg, eg, bw)
     colnames(output) <- c("dg", "eg", "bw")
@@ -86,7 +86,7 @@ resamp.test <- function(x) {
             sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
                 0), replace = F)
             # Calculate the betweenness statistic for the matrix reduced to only include the sub-sampled rows/columns.
-            temp.stats <- igraph::betweenness(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp], gmode = "graph"))
+            temp.stats <- igraph::betweenness(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]), normalized = TRUE)
             # Calculate Spearman's rho for replicate
             out.mat[i, j] <- suppressWarnings(cor(temp.stats, bw.g[sub.samp], 
                 method = "spearman"))
@@ -174,65 +174,68 @@ Here, we determine whether the most central node is consistently the most centra
 nsim <- 1000  #set number of replicates
 
 resamp.node <- function(x, samp.frac) {
-    mat <- as.matrix(x)
+    mat <- as.matrix(igraph::get.adjacency(x))
     dim.x <- dim(mat)[1]
     out.mat <- matrix(NA, dim.x, nsim)
     for (i in 1:nsim) {
         sub.samp <- sample(seq(1, dim.x), size = round(dim.x * samp.frac, 0), 
             replace = F)
-        # calculate centrality statistic for a given sub-sample and put in output
-        # matrix
-        temp.stats <- sna::degree(mat[sub.samp, sub.samp], gmode = "graph")
+        # Calculate centrality statistic for a given sub-sample and put in output matrix.
+        temp.stats <- igraph::degree(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]), normalized = TRUE)
         out.mat[sub.samp, i] <- temp.stats
     }
     return(out.mat)
 }
 
-# calculate the rank order of degree centrality in the BR network
-top.dg <- rank(-sna::degree(BRnet), ties.method = "min")
+
+# Calculate the rank order of degree centrality scores in the original network.
+top.dg <- rank(-igraph::degree(tn), ties.method = "min")
+
+# Call the resamp.node function with a sampling fraction of 80% (samp.frac=0.8). Then, produce a barplot of the results for the first 4 nodes from the original network.
+BR.resamp <- resamp.node(tn, samp.frac = 0.8)  #samp.frac is 80%
 par(mfrow = c(2, 2))
-BR.resamp <- resamp.node(BRnet, samp.frac = 0.8)  #samp.frac is 80%
-# calculate the rank order of the replicates and plot the top 4 as barplots
-# showing rank across all replicates
+# Calculate the rank order of the replicates and plot the top 4 as barplots showing rank across all replicates.
 for (i in 1:4) {
     barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
         ]), main = paste("samp.frac=80%, rank = ", top.dg[order(top.dg)[i]]))
 }
 
+# Now, try with a sampling fraction of 50%.
+BR.resamp <- resamp.node(tn, samp.frac = 0.5)  #samp.frac is 50%
 par(mfrow = c(2, 2))
-BR.resamp <- resamp.node(BRnet, samp.frac = 0.5)  #samp.frac is 50%
-# calculate the rank order of the replicates and plot the top 4 as barplots
-# showing rank across all replicates
+# Calculate the rank order of the replicates and plot the top 4 as barplots showing rank across all replicates.
 for (i in 1:4) {
     barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
         ]), main = paste("samp.frac=50%, original rank = ", top.dg[order(top.dg)[i]]))
 }
 
-
+par(mfrow = c(1, 1))
 
 resamp.bw <- function(x, samp.frac) {
-    mat <- as.matrix(x)
+    mat <- as.matrix(igraph::get.adjacency(x))
     dim.x <- dim(mat)[1]
     out.mat <- matrix(NA, dim.x, nsim)
     for (i in 1:nsim) {
         sub.samp <- sample(seq(1, dim.x), size = round(dim.x * samp.frac, 0), 
             replace = F)
-        temp.stats <- sna::betweenness(mat[sub.samp, sub.samp], gmode = "graph")
+        temp.stats <- igraph::betweenness(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]), normalized = TRUE)
         out.mat[sub.samp, i] <- temp.stats
     }
     return(out.mat)
 }
 
-# calculate the rank order of betweenness centrality in the BR network
-top.bw <- rank(-sna::betweenness(BRnet), ties.method = "min")
+# Calculate the rank order of betweenness centrality in the original network.
+top.bw <- rank(-igraph::betweenness(tn), ties.method = "min")
+BR.resamp <- resamp.bw(tn, samp.frac = 0.5)
+
 par(mfrow = c(2, 2))
-BR.resamp <- resamp.bw(BRnet, samp.frac = 0.5)
 for (i in 1:4) {
     barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
         ]), main = paste("samp.frac=50%, rank = ", top.bw[order(top.bw)[i]]))
 }
 
 ```
+
 
 ## Potential impact of missing edges
 ```{r missing_edges, echo=FALSE}
