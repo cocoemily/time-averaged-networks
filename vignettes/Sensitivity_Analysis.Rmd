@@ -17,9 +17,6 @@ library(tnet)
 library(ggraph)
 library(intergraph)
 
-# First, load in all of the the igraph objects.
-load("Data/Chaco_graph_objects.RData")
-
 ```
 
 # Sensitivity Analysis
@@ -31,47 +28,14 @@ Currently, most of the rmd focuses only on 1 Chaco dataset (i.e., AD 1050). It a
 
 ```{r load_data}
 
-# Load data.
-# chaco = read.csv("Data/Chaco/AllCeramics.csv")
-# chaco_id = chaco %>% group_by(SWSN_ID) %>%
-#   summarize(Site = first(Site))
+# First, load in all of the the igraph objects.
+load("Data/Chaco_graph_objects.RData")
 
-#ad1050 = read.csv("Data/Chaco/AD1050cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-chaco_ad1050 <- read.csv(here::here("./Data/Chaco/AD1050cer.csv"), row.names = 1)
+#I will simply get 1 original network that was created in 'Chaco_time_average.R', and use that to build the basis for the analysis. 
+tn <- Chaco_original_graphs[[1]]
 
-# Temporarily (until I figure out the best way to work into current work flow), create a Brainerd-Robinson Similarity matrix for the ad1050 ceramic data.
-sim.mat <- function(x) {
-    # get names of sites
-    names <- row.names(x)
-    x <- na.omit(x)  # remove any rows with missing data
-    x <- prop.table(as.matrix(x), 1)  # convert to row proportions
-    rd <- dim(x)[1]
-    # create an empty symmetric matrix of 0s
-    results <- matrix(0, rd, rd)
-    # the following dreaded double for loop goes through every cell in the
-    # output data table and calculates the BR value as descried above
-    for (s1 in 1:rd) {
-        for (s2 in 1:rd) {
-            x1Temp <- as.numeric(x[s1, ])
-            x2Temp <- as.numeric(x[s2, ])
-            results[s1, s2] <- 2 - (sum(abs(x1Temp - x2Temp)))
-        }
-    }
-    row.names(results) <- names  # assign row names to output
-    colnames(results) <- names  # assign column names to output
-    results <- results/2  # rescale results between 0 and 1
-    results <- round(results, 3)  # round results
-    return(results)
-}  # return the final output table
-
-# Run the function above on to the ad1050 data.
-chacoBR <- sim.mat(chaco_ad1050)
-
-# Define binary network object from BR similarity.
-BRnet <- network(event2dichot(chacoBR, method = "absolute", thresh = 0.75), 
-    directed = F)
-# Add names for the nodes based on the row names of original matrix.
-BRnet %v% "vertex.names" <- row.names(chacoBR)
+# If needed to convert to network object. But mostly can get into same format from igraph.
+# tn2 <- intergraph::asNetwork(tn)
 
 
 ```
@@ -94,22 +58,6 @@ net.stats <- function(y) {
     return(output)
 }  # return results of this function
 
-#REMOVE THIS ONE
-# Calculate centrality scores for weighted networks (similarity matrices)
-net.stats.wt <- function(y) {
-    # calculate weighted degree as the sum of weights - 1
-    dg.wt <- as.matrix(rowSums(y) - 1)
-    # calculate weighted eigenvector centrality and rescale
-    eg.wt <- as.matrix(sna::evcent(y))
-    eg.wt <- sqrt((eg.wt^2) * length(eg.wt))
-    # calculate weighted betweenness from the tnet package (we use the
-    # suppressWarnings package to avoid notifications)
-    bw.wt <- suppressWarnings(betweenness_w(y, directed = F))[, 2]
-    output <- cbind(dg.wt, eg.wt, bw.wt)
-    rownames(output) <- rownames(as.matrix(y))
-    colnames(output) <- c("dg.wt", "eg.wt", "bw.wt")
-    return(output)
-}  # return results of this function
 ```
 
 ## Potential impact of missing nodes
@@ -118,21 +66,14 @@ net.stats.wt <- function(y) {
 
 ```{r missing_nodes_single, echo=FALSE}
 
-#I will simply get 1 original network that was created in 'Chaco_time_average.R', and use that to build the basis for the analysis. 
-tn <- Chaco_original_graphs[[1]]
-
-# For simplicity sake (of adapting code), both igraph and network objects will be used via intergraph conversion for this analysis.
-tn2 <- intergraph::asNetwork(tn)
-
-
 # Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?10,000 for better results)
 nsim <- 100
 
 # Define function for testing betweenness centrality stability across sub-samples.
-resamp.test <- function(x.igraph, x.network) {
+resamp.test <- function(x) {
     # Can do any centrality measure here (i.e., doesn't have to be betweenness).
-    bw.g <- igraph::betweenness(x.igraph, normalized = TRUE, directed = FALSE)
-    mat <- as.matrix(x.network)
+    bw.g <- igraph::betweenness(x, normalized = TRUE, directed = FALSE)
+    mat <- as.matrix(igraph::get.adjacency(x))
     dim.x <- dim(mat)[1]
     # Create matrix for output and then name.
     out.mat <- matrix(NA, nsim, 9)
@@ -155,7 +96,7 @@ resamp.test <- function(x.igraph, x.network) {
 }  # return the result
 
 # Display results as boxplot by sampling fraction.
-boxplot(resamp.test(x.igraph = tn, x.network = tn2), main = "BR - betweenness", xlab = "sampling fraction", 
+boxplot(resamp.test(tn), main = "BR - betweenness", xlab = "sampling fraction", 
     ylab = "Spearmans rho")
 
 ```
@@ -179,9 +120,9 @@ samp.frac <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 cv.resamp.bin <- function(x) {
     # Calculate all network stats for the original network
     stats.g <- net.stats(x)
-    #mat <- as.matrix(y)
+    mat <- as.matrix(igraph::get.adjacency(x))
     # Count number of nodes
-    dim.x <- igraph::gorder(x)
+    dim.x <- dim(mat)[1]  # count number of rows (nodes)
     # Define empty matrices for output
     dg.mat <- matrix(NA, nsim, 9)
     ev.mat <- matrix(NA, nsim, 9)
@@ -213,49 +154,9 @@ cv.resamp.bin <- function(x) {
     return(out.list)
 }  # return the resulting list
 
-# This function is for weighted networks (similarity matrices).
-cv.resamp.wt <- function(x) {
-    # Calculate network stats for the original network
-    stats.g <- net.stats.wt(x)
-    mat <- as.matrix(x)
-    dim.x <- dim(mat)[1]
-    # Create empty matrices for output
-    dg.mat <- matrix(NA, nsim, 9)
-    ev.mat <- matrix(NA, nsim, 9)
-    bw.mat <- matrix(NA, nsim, 9)
-    # Add column names by sampling fraction
-    colnames(dg.mat) <- samp.frac
-    colnames(ev.mat) <- samp.frac
-    colnames(bw.mat) <- samp.frac
-    
-    # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's rho correlation between the resulting centrality values and the original sample.
-    for (j in 1:9) {
-        for (i in 1:nsim) {
-            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
-                0), replace = F)
-            temp.stats <- net.stats.wt(mat[sub.samp, sub.samp])
-            dg.mat[i, j] <- suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp, 
-                1], method = "spearman"))
-            ev.mat[i, j] <- suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp, 
-                2], method = "spearman"))
-            bw.mat[i, j] <- suppressWarnings(cor(temp.stats[, 3], stats.g[sub.samp, 
-                3], method = "spearman"))
-        }
-    }
-    # Create list for output
-    out.list <- list()  
-    out.list[[1]] <- dg.mat
-    out.list[[2]] <- ev.mat
-    out.list[[3]] <- bw.mat
-    return(out.list)
-}  # return the results
-
 
 # Run function on binary network (the Brainerd-Robinson Similarity one).
 BR.rs <- cv.resamp.bin(BRnet)
-
-# Run function on weighted network (the Brainerd-Robinson Similarity one).
-BRw.rs <- cv.resamp.wt(chacoBR)
 
 # set up for 1 by 3 plotting for the binary network
 par(mfrow = c(1, 3))
@@ -263,13 +164,6 @@ boxplot(BR.rs[[1]], ylim = c(0, 1), main = "BR - degree", xlab = "sampling fract
     ylab = "Spearmans rho")
 boxplot(BR.rs[[2]], ylim = c(0, 1), main = "BR - eigenvector", xlab = "sampling fraction")
 boxplot(BR.rs[[3]], ylim = c(0, 1), main = "BR - betweenness", xlab = "sampling fraction")
-
-# set up for 1 by 3 plotting for the binary network
-par(mfrow = c(1, 3))
-boxplot(BRw.rs[[1]], ylim = c(0, 1), main = "BR - degree", xlab = "sampling fraction", 
-    ylab = "Spearmans rho")
-boxplot(BRw.rs[[2]], ylim = c(0, 1), main = "BR - eigenvector", xlab = "sampling fraction")
-boxplot(BRw.rs[[3]], ylim = c(0, 1), main = "BR - betweenness", xlab = "sampling fraction")
 
 ```
 
