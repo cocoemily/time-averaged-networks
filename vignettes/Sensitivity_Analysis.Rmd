@@ -3,6 +3,8 @@ title: "Sensitivity Analysis"
 author: "Andrew Gillreath-Brown"
 date: "4/21/2021"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -13,6 +15,10 @@ library(igraph)
 library(statnet)
 library(tnet)
 library(ggraph)
+library(intergraph)
+
+# First, load in all of the the igraph objects.
+load("Data/Chaco_graph_objects.RData")
 
 ```
 
@@ -71,25 +77,24 @@ BRnet %v% "vertex.names" <- row.names(chacoBR)
 ```
 
 ## Centrality scores for binary and weighted networks.
-This is just a temporary section that introduces a couple of functions for doing the analysis below.
 ```{r centrality, echo=FALSE}
 
 # Calculate centrality scores for binary networks
 net.stats <- function(y) {
-    # calculate degree centrality
-    dg <- as.matrix(sna::degree(y, gmode = "graph"))
-    # calculate and scale eigenvector centrality
-    eg <- as.matrix(sna::evcent(y))
-    eg <- sqrt((eg^2) * length(eg))
-    # calculate betweenness centrality
-    bw <- sna::betweenness(y, gmode = "graph")
-    # combine centrality scores into matrix
+    # Calculate degree centrality
+    dg <- as.matrix(igraph::degree(y))
+    # Calculate and scale eigenvector centrality
+    eg <- as.matrix(igraph::evcent(y)$vector)
+    #eg <- sqrt((eg^2) * length(eg))
+    # Calculate betweenness centrality
+    bw <- igraph::betweenness(y, normalized = TRUE, directed = FALSE)
+    # Combine centrality scores into matrix
     output <- cbind(dg, eg, bw)
-    rownames(output) <- rownames(as.matrix(y))
     colnames(output) <- c("dg", "eg", "bw")
     return(output)
 }  # return results of this function
 
+#REMOVE THIS ONE
 # Calculate centrality scores for weighted networks (similarity matrices)
 net.stats.wt <- function(y) {
     # calculate weighted degree as the sum of weights - 1
@@ -113,14 +118,21 @@ net.stats.wt <- function(y) {
 
 ```{r missing_nodes_single, echo=FALSE}
 
-# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ? for better results)
-nsim <- 25
+#I will simply get 1 original network that was created in 'Chaco_time_average.R', and use that to build the basis for the analysis. 
+tn <- Chaco_original_graphs[[1]]
+
+# For simplicity sake (of adapting code), both igraph and network objects will be used via intergraph conversion for this analysis.
+tn2 <- intergraph::asNetwork(tn)
+
+
+# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?10,000 for better results)
+nsim <- 100
 
 # Define function for testing betweenness centrality stability across sub-samples.
-resamp.test <- function(x) {
+resamp.test <- function(x.igraph, x.network) {
     # Can do any centrality measure here (i.e., doesn't have to be betweenness).
-    bw.g <- sna::betweenness(x, gmode = "graph")
-    mat <- as.matrix(x)
+    bw.g <- igraph::betweenness(x.igraph, normalized = TRUE, directed = FALSE)
+    mat <- as.matrix(x.network)
     dim.x <- dim(mat)[1]
     # Create matrix for output and then name.
     out.mat <- matrix(NA, nsim, 9)
@@ -143,16 +155,21 @@ resamp.test <- function(x) {
 }  # return the result
 
 # Display results as boxplot by sampling fraction.
-boxplot(resamp.test(BRnet), ylim = c(0, 1), main = "BR - betweenness", xlab = "sampling fraction", 
+boxplot(resamp.test(x.igraph = tn, x.network = tn2), main = "BR - betweenness", xlab = "sampling fraction", 
     ylab = "Spearmans rho")
 
 ```
 
 ### Over multiple centrality measures and/or networks
-
 The 2 function defined below are for binary and weighted networks.
 
 ```{r missing_nodes_multiple, echo=FALSE}
+
+# Get original network analysis data.
+# orig.network <- read.csv("output/Chaco/original_network_metrics.csv",row.names=1) %>% 
+#     dplyr::select(!num.graphs) %>% 
+#     tidyr::spread(metric, value) %>% 
+#     dplyr::select(network, btwn, eigen, mean.deg, size)
 
 # The following function does the same calculation as above but is set up to work with the output of net.stats and net.stats.wt.
 nsim <- 25
@@ -162,9 +179,9 @@ samp.frac <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 cv.resamp.bin <- function(x) {
     # Calculate all network stats for the original network
     stats.g <- net.stats(x)
-    mat <- as.matrix(x)
-    # Count number of rows (nodes)
-    dim.x <- dim(mat)[1]
+    #mat <- as.matrix(y)
+    # Count number of nodes
+    dim.x <- igraph::gorder(x)
     # Define empty matrices for output
     dg.mat <- matrix(NA, nsim, 9)
     ev.mat <- matrix(NA, nsim, 9)

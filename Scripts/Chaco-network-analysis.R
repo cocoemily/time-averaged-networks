@@ -55,6 +55,8 @@ metric.list = c("size", "diam", "mean.deg", "mean.in", "mean.out", "edge.dens", 
 od = alldata %>% filter(num.graphs == 1) %>% gather(key = "metric", value = "value", c(1:11))
 od$network = factor(od$network, levels = name.list)
 od$metric = factor(od$metric, levels = metric.list)
+write.csv(od, file = "output/Chaco/original_network_metrics.csv")
+
 oplot = ggplot(od, aes(y = value, x = network, color = network)) +
   geom_point() +
   facet_wrap(~metric, scales = "free_y") +
