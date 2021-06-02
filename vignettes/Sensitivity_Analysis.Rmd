@@ -35,9 +35,6 @@ load("Data/Chaco_graph_objects.RData")
 tn <- Chaco_original_graphs[[1]]
 #tn <- Chaco_ta_graphs[[1]][[1]][[1]]
 
-# If needed to convert to network object. But mostly can get into same format from igraph.
-# tn2 <- intergraph::asNetwork(tn)
-
 
 ```
 
@@ -79,117 +76,79 @@ net.stats.single <- function(y) {
 
 ## Potential impact of missing nodes
 
-### For Single Centrality (or centralization measure)
-
-```{r missing_nodes_single, echo=FALSE}
-
-# Not necessary to run this code block if planning on running multiple centrality measures, which can be done in the next code block.
-
-# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?10,000 for better results)
-nsim <- 100
-
-# Define function for testing betweenness centrality stability across sub-samples.
-resamp.test <- function(x) {
-    # Can do any centrality measure here (i.e., doesn't have to be betweenness).
-    bw.g <- igraph::betweenness(x, normalized = TRUE, directed = FALSE)
-    mat <- as.matrix(igraph::get.adjacency(x))
-    dim.x <- dim(mat)[1]
-    # Create matrix for output and then name.
-    out.mat <- matrix(NA, nsim, 9)
-    colnames(out.mat) <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", 
-        "S20", "S10")
-    # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's Rho correlation between the resulting centrality values and the original sample.
-    for (j in 1:9) {
-        for (i in 1:nsim) {
-            # This sampling procedure samples without replacement from a sequence from 1 to the total number of nodes, the size of the sample being determined by 10-j/10. For example, if j=1, 10-1/10 = 0.9 or a 90% sub-sample.
-            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
-                0), replace = F)
-            # Calculate the betweenness statistic for the matrix reduced to only include the sub-sampled rows/columns.
-            temp.stats <- igraph::betweenness(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]), normalized = TRUE)
-            # Calculate Spearman's Rho for replicate
-            out.mat[i, j] <- suppressWarnings(cor(temp.stats, bw.g[sub.samp], 
-                method = "spearman"))
-        }
-    }
-    return(out.mat)
-}  # return the result
-
-# Display results as boxplot by sampling fraction.
-boxplot(resamp.test(tn), main = "BR - betweenness", xlab = "sampling fraction", 
-    ylab = "Spearmans rho")
-
-```
-
 ### Over multiple centrality measures and/or networks
 
 ```{r missing_nodes_multiple, echo=FALSE}
 
-# Get original network analysis data.
-# orig.network <- read.csv("output/Chaco/original_network_metrics.csv",row.names=1) %>% 
-#     dplyr::select(!num.graphs) %>% 
-#     tidyr::spread(metric, value) %>% 
-#     dplyr::select(network, btwn, eigen, mean.deg, size)
-
 # Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?10,000 for better results)
 nsim <- 100
-samp.frac <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
+samp.frac <-
+  c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
 # This function is for a binary network. This function does the same calculation as above but is set up to work with the output of net.stats.
 cv.resamp.bin <- function(x) {
-    # Calculate all network stats for the original network.
-    stats.g <- net.stats(x)
-    stats.g.single <- net.stats.single(x)
-    mat <- as.matrix(igraph::get.adjacency(x))
-    # Count number of rows (nodes).
-    dim.x <- dim(mat)[1]
-    # Define empty matrices for output.
-    dg.mat <- matrix(NA, nsim, 9)
-    ev.mat <- matrix(NA, nsim, 9)
-    bw.mat <- matrix(NA, nsim, 9)
-    cc.mat <- matrix(NA, 1, 9)
-    mod.mat <- matrix(NA, 1, 9)
-    # Add column names based on sampling fraction.
-    colnames(dg.mat) <- samp.frac
-    colnames(ev.mat) <- samp.frac
-    colnames(bw.mat) <- samp.frac
-    colnames(cc.mat) <- samp.frac
-    colnames(mod.mat) <- samp.frac
-    
-# This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's Rho correlation between the resulting centrality values and the original sample.
-    for (j in 1:9) {
-        for (i in 1:nsim) {
-            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
-                0), replace = F)
-            temp.stats <- net.stats(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
-            temp.stats.single <- net.stats.single(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
-            dg.mat[i, j] <- suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp,
-                1], method = "spearman"))
-            ev.mat[i, j] <- suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp,
-                2], method = "spearman"))
-            bw.mat[i, j] <- suppressWarnings(cor(temp.stats[, 3], stats.g[sub.samp,
-                3], method = "spearman"))
-            cc.mat[1, j] <- temp.stats.single[, 1]
-            mod.mat[1, j] <- temp.stats.single[, 2]
-        }
+  # Calculate all network stats for the original network.
+  stats.g <- net.stats(x)
+  stats.g.single <- net.stats.single(x)
+  mat <- as.matrix(igraph::get.adjacency(x))
+  # Count number of rows (nodes).
+  dim.x <- dim(mat)[1]
+  # Define empty matrices for output.
+  dg.mat <- matrix(NA, nsim, 9)
+  ev.mat <- matrix(NA, nsim, 9)
+  bw.mat <- matrix(NA, nsim, 9)
+  cc.mat <- matrix(NA, 1, 9)
+  mod.mat <- matrix(NA, 1, 9)
+  # Add column names based on sampling fraction.
+  colnames(dg.mat) <- samp.frac
+  colnames(ev.mat) <- samp.frac
+  colnames(bw.mat) <- samp.frac
+  colnames(cc.mat) <- samp.frac
+  colnames(mod.mat) <- samp.frac
+  
+  # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's Rho correlation between the resulting centrality values and the original sample.
+  for (j in 1:9) {
+    for (i in 1:nsim) {
+      sub.samp <-
+        sample(seq(1, dim.x),
+               size = round(dim.x * ((10 - j) / 10),
+                            0),
+               replace = F)
+      temp.stats <-
+        net.stats(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
+      temp.stats.single <-
+        net.stats.single(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
+      dg.mat[i, j] <-
+        suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp,
+                                                      1], method = "spearman"))
+      ev.mat[i, j] <-
+        suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp,
+                                                      2], method = "spearman"))
+      bw.mat[i, j] <-
+        suppressWarnings(cor(temp.stats[, 3], stats.g[sub.samp,
+                                                      3], method = "spearman"))
+      cc.mat[1, j] <- temp.stats.single[, 1]
+      mod.mat[1, j] <- temp.stats.single[, 2]
     }
-# Add original to cc.mat and mod.mat (i.e,. 100% sampling).
-    cc.mat <- as.data.frame(cc.mat) %>% 
-        dplyr::mutate(S100 = stats.g.single[1]) %>% 
-        dplyr::select(S100, everything()) %>% 
-        as.matrix()
-    mod.mat <- as.data.frame(mod.mat) %>% 
-        dplyr::mutate(S100 = stats.g.single[2]) %>% 
-        dplyr::select(S100, everything()) %>% 
-        as.matrix()
-    # Create list for output and populate it.
-    out.list <- list()
-    out.list[[1]] <- dg.mat
-    out.list[[2]] <- ev.mat
-    out.list[[3]] <- bw.mat
-    out.list[[4]] <- cc.mat
-    out.list[[5]] <- mod.mat
-    
-    return(out.list)
+  }
+  # Add original to cc.mat and mod.mat (i.e,. 100% sampling).
+  cc.mat <- as.data.frame(cc.mat) %>%
+    dplyr::mutate(S100 = stats.g.single[1]) %>%
+    dplyr::select(S100, everything()) %>%
+    as.matrix()
+  mod.mat <- as.data.frame(mod.mat) %>%
+    dplyr::mutate(S100 = stats.g.single[2]) %>%
+    dplyr::select(S100, everything()) %>%
+    as.matrix()
+  # Create list for output and populate it.
+  out.list <- list()
+  out.list[[1]] <- dg.mat
+  out.list[[2]] <- ev.mat
+  out.list[[3]] <- bw.mat
+  out.list[[4]] <- cc.mat
+  out.list[[5]] <- mod.mat
+  
+  return(out.list)
 }  # return the resulting list
 
 # Run function on binary network.
@@ -197,22 +156,64 @@ BR.rs <- cv.resamp.bin(tn)
 
 # Setup modularity and clustering coefficient for plotting.
 cc.mat.long <- as.data.frame(BR.rs[[4]]) %>%
-  tidyr::gather("S100", "S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10", key = sample.perc, value = cc.score) %>% 
-    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>% 
-    dplyr::arrange(sample.perc)
+  tidyr::gather(
+    "S100",
+    "S90",
+    "S80",
+    "S70",
+    "S60",
+    "S50",
+    "S40",
+    "S30",
+    "S20",
+    "S10",
+    key = sample.perc,
+    value = cc.score
+  ) %>%
+  dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
+  dplyr::arrange(sample.perc)
 mod.mat.long <- as.data.frame(BR.rs[[5]]) %>%
-  tidyr::gather("S100", "S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10", key = sample.perc, value = mod.score) %>% 
-    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>% 
-    dplyr::arrange(sample.perc)
+  tidyr::gather(
+    "S100",
+    "S90",
+    "S80",
+    "S70",
+    "S60",
+    "S50",
+    "S40",
+    "S30",
+    "S20",
+    "S10",
+    key = sample.perc,
+    value = mod.score
+  ) %>%
+  dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
+  dplyr::arrange(sample.perc)
 
 # Set up for 2 by 3 plotting for the binary network.
 par(mfrow = c(2, 3))
-boxplot(BR.rs[[1]], main = "BR - degree", xlab = "sampling fraction", 
-    ylab = "Spearmans rho")
+boxplot(BR.rs[[1]],
+        main = "BR - degree",
+        xlab = "sampling fraction",
+        ylab = "Spearmans rho")
 boxplot(BR.rs[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
 boxplot(BR.rs[[3]], main = "BR - betweenness", xlab = "sampling fraction")
-plot(cc.mat.long$sample.perc, cc.mat.long$cc.score, type="l", lwd=5, xlab="Sampling Percentage", ylab="Clustering Coefficient")
-plot(mod.mat.long$sample.perc, mod.mat.long$mod.score, type="l", lwd=5, xlab="Sampling Percentage", ylab="Modularity Score")
+plot(
+  cc.mat.long$sample.perc,
+  cc.mat.long$cc.score,
+  type = "l",
+  lwd = 5,
+  xlab = "Sampling Percentage",
+  ylab = "Clustering Coefficient"
+)
+plot(
+  mod.mat.long$sample.perc,
+  mod.mat.long$mod.score,
+  type = "l",
+  lwd = 5,
+  xlab = "Sampling Percentage",
+  ylab = "Modularity Score"
+)
 
 ```
 
@@ -224,17 +225,20 @@ Here, we determine whether the most central node is consistently the most centra
 nsim <- 1000  #set number of replicates
 
 resamp.node <- function(x, samp.frac) {
-    mat <- as.matrix(igraph::get.adjacency(x))
-    dim.x <- dim(mat)[1]
-    out.mat <- matrix(NA, dim.x, nsim)
-    for (i in 1:nsim) {
-        sub.samp <- sample(seq(1, dim.x), size = round(dim.x * samp.frac, 0), 
-            replace = F)
-        # Calculate centrality statistic for a given sub-sample and put in output matrix.
-        temp.stats <- igraph::degree(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]), normalized = TRUE)
-        out.mat[sub.samp, i] <- temp.stats
-    }
-    return(out.mat)
+  mat <- as.matrix(igraph::get.adjacency(x))
+  dim.x <- dim(mat)[1]
+  out.mat <- matrix(NA, dim.x, nsim)
+  for (i in 1:nsim) {
+    sub.samp <-
+      sample(seq(1, dim.x),
+             size = round(dim.x * samp.frac, 0),
+             replace = F)
+    # Calculate centrality statistic for a given sub-sample and put in output matrix.
+    temp.stats <-
+      igraph::degree(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]), normalized = TRUE)
+    out.mat[sub.samp, i] <- temp.stats
+  }
+  return(out.mat)
 }
 
 
@@ -246,8 +250,15 @@ BR.resamp <- resamp.node(tn, samp.frac = 0.8)  #samp.frac is 80%
 par(mfrow = c(2, 3))
 # Calculate the rank order of the replicates and plot the top 4 as barplots showing rank across all replicates.
 for (i in 1:5) {
-    barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
-        ]), main = paste("samp.frac=80%, rank = ", top.dg[order(top.dg)[i]]))
+  barplot(table(
+    apply(
+      -BR.resamp,
+      2,
+      rank,
+      ties.method = "random",
+      na.last = "keep"
+    )[order(top.dg)[i],]
+  ), main = paste("samp.frac=80%, rank = ", top.dg[order(top.dg)[i]]))
 }
 
 # Now, try with a sampling fraction of 50%.
@@ -255,23 +266,34 @@ BR.resamp <- resamp.node(tn, samp.frac = 0.5)  #samp.frac is 50%
 par(mfrow = c(2, 3))
 # Calculate the rank order of the replicates and plot the top 4 as barplots showing rank across all replicates.
 for (i in 1:5) {
-    barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
-        ]), main = paste("samp.frac=50%, original rank = ", top.dg[order(top.dg)[i]]))
+  barplot(table(
+    apply(
+      -BR.resamp,
+      2,
+      rank,
+      ties.method = "random",
+      na.last = "keep"
+    )[order(top.dg)[i],]
+  ),
+  main = paste("samp.frac=50%, original rank = ", top.dg[order(top.dg)[i]]))
 }
 
 par(mfrow = c(1, 1))
 
 resamp.bw <- function(x, samp.frac) {
-    mat <- as.matrix(igraph::get.adjacency(x))
-    dim.x <- dim(mat)[1]
-    out.mat <- matrix(NA, dim.x, nsim)
-    for (i in 1:nsim) {
-        sub.samp <- sample(seq(1, dim.x), size = round(dim.x * samp.frac, 0), 
-            replace = F)
-        temp.stats <- igraph::betweenness(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]), normalized = TRUE)
-        out.mat[sub.samp, i] <- temp.stats
-    }
-    return(out.mat)
+  mat <- as.matrix(igraph::get.adjacency(x))
+  dim.x <- dim(mat)[1]
+  out.mat <- matrix(NA, dim.x, nsim)
+  for (i in 1:nsim) {
+    sub.samp <-
+      sample(seq(1, dim.x),
+             size = round(dim.x * samp.frac, 0),
+             replace = F)
+    temp.stats <-
+      igraph::betweenness(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]), normalized = TRUE)
+    out.mat[sub.samp, i] <- temp.stats
+  }
+  return(out.mat)
 }
 
 # Calculate the rank order of betweenness centrality in the original network.
@@ -280,8 +302,15 @@ BR.resamp <- resamp.bw(tn, samp.frac = 0.5)
 
 par(mfrow = c(2, 3))
 for (i in 1:5) {
-    barplot(table(apply(-BR.resamp, 2, rank, ties.method = "random", na.last = "keep")[order(top.dg)[i], 
-        ]), main = paste("samp.frac=50%, rank = ", top.bw[order(top.bw)[i]]))
+  barplot(table(
+    apply(
+      -BR.resamp,
+      2,
+      rank,
+      ties.method = "random",
+      na.last = "keep"
+    )[order(top.dg)[i],]
+  ), main = paste("samp.frac=50%, rank = ", top.bw[order(top.bw)[i]]))
 }
 
 ```
@@ -290,94 +319,68 @@ for (i in 1:5) {
 ## Potential impact of missing edges
 ```{r missing_edges, echo=FALSE}
 
-# Not necessary to run this first part of the code block if planning on running multiple centrality measures, which can be done down below with cv.resamp.edge.
-
-# Set up a function to sub-sample network edges at sampling fractions from 90% to 10% and assess the rank order correlation of nodes.
-nsim <- 25  # set number of replicates
-
-# Set up function for edge deletion for eigenvector centrality.
-resamp.edge <- function(x) {
-    # The next line could be replaced with any centrality measure.
-    ev.g <- igraph::evcent(x)$vector
-    mat <- as.matrix(igraph::get.adjacency(x))
-    dim.x <- dim(mat)[1]
-    out.mat <- matrix(NA, nsim, 9)  # create matrix for output and then name
-    colnames(out.mat) <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", 
-        "S20", "S10")
-    # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and
-    for (j in 1:9) {
-        for (i in 1:nsim) {
-            # The sampling fraction is defined here using the gsize function, which gives the total number of active edges in a network object.
-            sub.samp <- sample(seq(1, igraph::gsize(x)), size = round(igraph::gsize(x) * 
-                (j/10), 0), replace = F)
-            temp.net <- x
-            net.reduced <- igraph::delete.edges(temp.net, sub.samp)
-            temp.stats <- igraph::evcent(net.reduced)$vector
-            # Calculate Spearman's Rho for replicate and output result
-            out.mat[i, j] <- cor(temp.stats, ev.g, method = "spearman")
-        }
-    }
-    return(out.mat)
-}  # return results
-
-# display results as boxplot
-boxplot(resamp.edge(tn), main = "BR - eigenvector", xlab = "sampling fraction", 
-    ylab = "Spearmans rho")
-
-# Create a function that calculates correlations between the original and sub-sampled replicates for all three of the primary measures of centrality using the format from the net.stats function.
-# The following function does the same calculation as above but is set up to work with the output of net.stats.
+# Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
 nsim <- 25
-samp.frac <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
+samp.frac <-
+  c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
 cv.resamp.edge <- function(x) {
-    stats.g <- net.stats(x)
-    stats.g.single <- net.stats.single(x)
-    mat <- as.matrix(igraph::get.adjacency(x))
-    dim.x <- dim(mat)[1]
-    dg.mat <- matrix(NA, nsim, 9)
-    ev.mat <- matrix(NA, nsim, 9)
-    bw.mat <- matrix(NA, nsim, 9)
-    cc.mat <- matrix(NA, 1, 9)
-    mod.mat <- matrix(NA, 1, 9)
-    colnames(dg.mat) <- samp.frac
-    colnames(ev.mat) <- samp.frac
-    colnames(bw.mat) <- samp.frac
-    colnames(cc.mat) <- samp.frac
-    colnames(mod.mat) <- samp.frac
-    
-    for (j in 1:9) {
-        for (i in 1:nsim) {
-            sub.samp <- sample(seq(1, igraph::gsize(x)), size = round(igraph::gsize(x) * 
-                (j/10), 0), replace = F)
-            temp.net <- x
-            net.reduced <- igraph::delete.edges(temp.net, sub.samp)
-            temp.stats <- net.stats(net.reduced)
-            temp.stats.single <- net.stats.single(net.reduced)
-            dg.mat[i, j] <- cor(temp.stats[, 1], stats.g[, 1], method = "spearman")
-            ev.mat[i, j] <- cor(temp.stats[, 2], stats.g[, 2], method = "spearman")
-            bw.mat[i, j] <- cor(temp.stats[, 3], stats.g[, 3], method = "spearman")
-            cc.mat[1, j] <- temp.stats.single[, 1]
-            mod.mat[1, j] <- temp.stats.single[, 2]
-
-        }
+  stats.g <- net.stats(x)
+  stats.g.single <- net.stats.single(x)
+  mat <- as.matrix(igraph::get.adjacency(x))
+  dim.x <- dim(mat)[1]
+  dg.mat <- matrix(NA, nsim, 9)
+  ev.mat <- matrix(NA, nsim, 9)
+  bw.mat <- matrix(NA, nsim, 9)
+  cc.mat <- matrix(NA, 1, 9)
+  mod.mat <- matrix(NA, 1, 9)
+  colnames(dg.mat) <- samp.frac
+  colnames(ev.mat) <- samp.frac
+  colnames(bw.mat) <- samp.frac
+  colnames(cc.mat) <- samp.frac
+  colnames(mod.mat) <- samp.frac
+  
+  for (j in 1:9) {
+    for (i in 1:nsim) {
+      sub.samp <-
+        sample(
+          seq(1, igraph::gsize(x)),
+          size = round(igraph::gsize(x) *
+                         (j / 10), 0),
+          replace = F
+        )
+      temp.net <- x
+      net.reduced <- igraph::delete.edges(temp.net, sub.samp)
+      temp.stats <- net.stats(net.reduced)
+      temp.stats.single <- net.stats.single(net.reduced)
+      dg.mat[i, j] <-
+        cor(temp.stats[, 1], stats.g[, 1], method = "spearman")
+      ev.mat[i, j] <-
+        cor(temp.stats[, 2], stats.g[, 2], method = "spearman")
+      bw.mat[i, j] <-
+        cor(temp.stats[, 3], stats.g[, 3], method = "spearman")
+      cc.mat[1, j] <- temp.stats.single[, 1]
+      mod.mat[1, j] <- temp.stats.single[, 2]
+      
     }
-    # Add original to cc.mat and mod.mat (i.e., 100% sampling).
-    cc.mat <- as.data.frame(cc.mat) %>% 
-        dplyr::mutate(S100 = stats.g.single[1]) %>% 
-        dplyr::select(S100, everything()) %>% 
-        as.matrix()
-    mod.mat <- as.data.frame(mod.mat) %>% 
-        dplyr::mutate(S100 = stats.g.single[2]) %>% 
-        dplyr::select(S100, everything()) %>% 
-        as.matrix()
-    
-    out.list <- list()
-    out.list[[1]] <- dg.mat
-    out.list[[2]] <- ev.mat
-    out.list[[3]] <- bw.mat
-    out.list[[4]] <- cc.mat
-    out.list[[5]] <- mod.mat
-    return(out.list)
+  }
+  # Add original to cc.mat and mod.mat (i.e., 100% sampling).
+  cc.mat <- as.data.frame(cc.mat) %>%
+    dplyr::mutate(S100 = stats.g.single[1]) %>%
+    dplyr::select(S100, everything()) %>%
+    as.matrix()
+  mod.mat <- as.data.frame(mod.mat) %>%
+    dplyr::mutate(S100 = stats.g.single[2]) %>%
+    dplyr::select(S100, everything()) %>%
+    as.matrix()
+  
+  out.list <- list()
+  out.list[[1]] <- dg.mat
+  out.list[[2]] <- ev.mat
+  out.list[[3]] <- bw.mat
+  out.list[[4]] <- cc.mat
+  out.list[[5]] <- mod.mat
+  return(out.list)
 }
 
 # Run the script for the binary network.
@@ -385,21 +388,63 @@ BR.edge <- cv.resamp.edge(tn)
 
 # Setup modularity and clustering coefficient for plotting.
 cc.mat.long <- as.data.frame(BR.edge[[4]]) %>%
-  tidyr::gather("S100", "S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10", key = sample.perc, value = cc.score) %>% 
-    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>% 
-    dplyr::arrange(sample.perc)
+  tidyr::gather(
+    "S100",
+    "S90",
+    "S80",
+    "S70",
+    "S60",
+    "S50",
+    "S40",
+    "S30",
+    "S20",
+    "S10",
+    key = sample.perc,
+    value = cc.score
+  ) %>%
+  dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
+  dplyr::arrange(sample.perc)
 mod.mat.long <- as.data.frame(BR.edge[[5]]) %>%
-  tidyr::gather("S100", "S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10", key = sample.perc, value = mod.score) %>% 
-    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>% 
-    dplyr::arrange(sample.perc)
+  tidyr::gather(
+    "S100",
+    "S90",
+    "S80",
+    "S70",
+    "S60",
+    "S50",
+    "S40",
+    "S30",
+    "S20",
+    "S10",
+    key = sample.perc,
+    value = mod.score
+  ) %>%
+  dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
+  dplyr::arrange(sample.perc)
 
 #Plot the results.
 par(mfrow = c(2, 3))
-boxplot(BR.edge[[1]], main = "BR - degree", xlab = "sampling fraction", 
-    ylab = "Spearmans rho")
+boxplot(BR.edge[[1]],
+        main = "BR - degree",
+        xlab = "sampling fraction",
+        ylab = "Spearmans rho")
 boxplot(BR.edge[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
 boxplot(BR.edge[[3]],  main = "BR - betweenness", xlab = "sampling fraction")
-plot(cc.mat.long$sample.perc, cc.mat.long$cc.score, type="l", lwd=5, xlab="Sampling Percentage", ylab="Clustering Coefficient")
-plot(mod.mat.long$sample.perc, mod.mat.long$mod.score, type="l", lwd=5, xlab="Sampling Percentage", ylab="Modularity Score")
+plot(
+  cc.mat.long$sample.perc,
+  cc.mat.long$cc.score,
+  type = "l",
+  lwd = 5,
+  xlab = "Sampling Percentage",
+  ylab = "Clustering Coefficient"
+)
+plot(
+  mod.mat.long$sample.perc,
+  mod.mat.long$mod.score,
+  type = "l",
+  lwd = 5,
+  xlab = "Sampling Percentage",
+  ylab = "Modularity Score"
+)
 
 ```
