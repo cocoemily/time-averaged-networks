@@ -43,15 +43,15 @@ tn <- Chaco_original_graphs[[1]]
 ## Centrality scores for binary and weighted networks.
 ```{r centrality, echo=FALSE}
 
-# Calculate centrality scores for binary networks
-net.stats <- function(y) {
+# Calculate centrality scores for binary networks for igraph objects.
+net.stats.igraph <- function(y) {
     # Calculate degree centrality
     dg <- as.matrix(igraph::degree(y))
     # Calculate and scale eigenvector centrality
     eg <- as.matrix(igraph::evcent(y)$vector)
     #eg <- sqrt((eg^2) * length(eg))
     # Calculate betweenness centrality
-    bw <- igraph::betweenness(y, normalized = TRUE, directed = FALSE)
+    bw <- igraph::betweenness(y, normalized = TRUE, directed = TRUE)
     # Combine centrality scores into matrix
     output <- cbind(dg, eg, bw)
     colnames(output) <- c("dg", "eg", "bw")
@@ -86,7 +86,7 @@ resamp.test <- function(x) {
             sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
                 0), replace = F)
             # Calculate the betweenness statistic for the matrix reduced to only include the sub-sampled rows/columns.
-            temp.stats <- sna::betweenness(mat[sub.samp, sub.samp], gmode = "graph")
+            temp.stats <- igraph::betweenness(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp], gmode = "graph"))
             # Calculate Spearman's rho for replicate
             out.mat[i, j] <- suppressWarnings(cor(temp.stats, bw.g[sub.samp], 
                 method = "spearman"))
@@ -102,7 +102,6 @@ boxplot(resamp.test(tn), main = "BR - betweenness", xlab = "sampling fraction",
 ```
 
 ### Over multiple centrality measures and/or networks
-The 2 function defined below are for binary and weighted networks.
 
 ```{r missing_nodes_multiple, echo=FALSE}
 
@@ -112,11 +111,11 @@ The 2 function defined below are for binary and weighted networks.
 #     tidyr::spread(metric, value) %>% 
 #     dplyr::select(network, btwn, eigen, mean.deg, size)
 
-# The following function does the same calculation as above but is set up to work with the output of net.stats and net.stats.wt.
-nsim <- 25
+# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?10,000 for better results)
+nsim <- 100
 samp.frac <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
-# This function is for a binary network.
+# This function is for a binary network. This function does the same calculation as above but is set up to work with the output of net.stats.
 cv.resamp.bin <- function(x) {
     # Calculate all network stats for the original network
     stats.g <- net.stats(x)
@@ -133,11 +132,12 @@ cv.resamp.bin <- function(x) {
     colnames(bw.mat) <- samp.frac
     
     # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's rho correlation between the resulting centrality values and the original sample.
+    graph_from_adjacency_matrix
     for (j in 1:9) {
         for (i in 1:nsim) {
             sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
                 0), replace = F)
-            temp.stats <- net.stats(mat[sub.samp, sub.samp])
+            temp.stats <- net.stats(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
             dg.mat[i, j] <- suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp, 
                 1], method = "spearman"))
             ev.mat[i, j] <- suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp, 
@@ -154,16 +154,15 @@ cv.resamp.bin <- function(x) {
     return(out.list)
 }  # return the resulting list
 
-
-# Run function on binary network (the Brainerd-Robinson Similarity one).
-BR.rs <- cv.resamp.bin(BRnet)
+# Run function on binary network.
+BR.rs <- cv.resamp.bin(tn)
 
 # set up for 1 by 3 plotting for the binary network
 par(mfrow = c(1, 3))
-boxplot(BR.rs[[1]], ylim = c(0, 1), main = "BR - degree", xlab = "sampling fraction", 
+boxplot(BR.rs[[1]], main = "BR - degree", xlab = "sampling fraction", 
     ylab = "Spearmans rho")
-boxplot(BR.rs[[2]], ylim = c(0, 1), main = "BR - eigenvector", xlab = "sampling fraction")
-boxplot(BR.rs[[3]], ylim = c(0, 1), main = "BR - betweenness", xlab = "sampling fraction")
+boxplot(BR.rs[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
+boxplot(BR.rs[[3]], main = "BR - betweenness", xlab = "sampling fraction")
 
 ```
 
