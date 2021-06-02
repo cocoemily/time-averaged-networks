@@ -53,18 +53,9 @@ net.stats <- function(y) {
     #eg <- sqrt((eg^2) * length(eg)) #scale centrality
     # Calculate betweenness centrality
     bw <- igraph::betweenness(y, normalized = TRUE, directed = FALSE)
-    # Calculate clustering coefficient
-    cc <- igraph::transitivity(y, "global")
-    cc.matrix <- matrix(c(cc,rep(0, nrow(dg)-1)), nrow = nrow(dg), ncol = 1)
-    cc <- as.matrix(rep(cc.matrix[1,], nrow(cc.matrix)))
-    # Calculate modularity
-    wtc = igraph::cluster_walktrap(y)
-    mod <- igraph::modularity(as.undirected(y), membership(wtc))
-    mod.matrix <- matrix(c(mod,rep(0, nrow(dg)-1)), nrow = nrow(dg), ncol = 1)
-    mod <- as.matrix(rep(mod.matrix[1,], nrow(mod.matrix)))
     # Combine centrality scores into matrix
-    output <- cbind(dg, eg, bw, cc, mod)
-    colnames(output) <- c("dg", "eg", "bw", "cc", "mod")
+    output <- cbind(dg, eg, bw)
+    colnames(output) <- c("dg", "eg", "bw")
     return(output)
 }  # return results of this function
 
