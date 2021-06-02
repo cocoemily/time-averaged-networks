@@ -41,21 +41,46 @@ tn <- Chaco_original_graphs[[1]]
 
 ```
 
-## Centrality scores for binary and weighted networks.
+## Centrality scores for binary networks.
 ```{r centrality, echo=FALSE}
 
 # Calculate centrality scores for binary networks for igraph objects.
-net.stats.igraph <- function(y) {
+net.stats <- function(y) {
     # Calculate degree centrality
     dg <- as.matrix(igraph::degree(y))
-    # Calculate and scale eigenvector centrality
+    # Calculate eigenvector centrality
     eg <- as.matrix(igraph::evcent(y)$vector)
-    #eg <- sqrt((eg^2) * length(eg))
+    #eg <- sqrt((eg^2) * length(eg)) #scale centrality
     # Calculate betweenness centrality
     bw <- igraph::betweenness(y, normalized = TRUE, directed = FALSE)
+    # Calculate clustering coefficient
+    cc <- igraph::transitivity(y, "global")
+    cc.matrix <- matrix(c(cc,rep(0, nrow(dg)-1)), nrow = nrow(dg), ncol = 1)
+    cc <- as.matrix(rep(cc.matrix[1,], nrow(cc.matrix)))
+    # Calculate modularity
+    wtc = igraph::cluster_walktrap(y)
+    mod <- igraph::modularity(as.undirected(y), membership(wtc))
+    mod.matrix <- matrix(c(mod,rep(0, nrow(dg)-1)), nrow = nrow(dg), ncol = 1)
+    mod <- as.matrix(rep(mod.matrix[1,], nrow(mod.matrix)))
     # Combine centrality scores into matrix
-    output <- cbind(dg, eg, bw)
-    colnames(output) <- c("dg", "eg", "bw")
+    output <- cbind(dg, eg, bw, cc, mod)
+    colnames(output) <- c("dg", "eg", "bw", "cc", "mod")
+    return(output)
+}  # return results of this function
+
+net.stats.single <- function(y) {
+    # Calculate clustering coefficient
+    cc <- igraph::transitivity(y, "global")
+    # cc.matrix <- matrix(c(cc,rep(0, nrow(dg)-1)), nrow = nrow(dg), ncol = 1)
+    # cc <- as.matrix(rep(cc.matrix[1,], nrow(cc.matrix)))
+    # Calculate modularity
+    wtc = igraph::cluster_walktrap(y)
+    mod <- igraph::modularity(as.undirected(y), membership(wtc))
+    # mod.matrix <- matrix(c(mod,rep(0, nrow(dg)-1)), nrow = nrow(dg), ncol = 1)
+    # mod <- as.matrix(rep(mod.matrix[1,], nrow(mod.matrix)))
+    # Combine centrality scores into matrix
+    output <- cbind(cc, mod)
+    colnames(output) <- c("cc", "mod")
     return(output)
 }  # return results of this function
 
@@ -122,6 +147,7 @@ samp.frac <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 cv.resamp.bin <- function(x) {
     # Calculate all network stats for the original network.
     stats.g <- net.stats(x)
+    stats.g.single <- net.stats.single(x)
     mat <- as.matrix(igraph::get.adjacency(x))
     # Count number of rows (nodes).
     dim.x <- dim(mat)[1]
@@ -129,31 +155,42 @@ cv.resamp.bin <- function(x) {
     dg.mat <- matrix(NA, nsim, 9)
     ev.mat <- matrix(NA, nsim, 9)
     bw.mat <- matrix(NA, nsim, 9)
+    cc.mat <- matrix(NA, 1, 9)
+    mod.mat <- matrix(NA, 1, 9)
     # Add column names based on sampling fraction.
     colnames(dg.mat) <- samp.frac
     colnames(ev.mat) <- samp.frac
     colnames(bw.mat) <- samp.frac
+    colnames(cc.mat) <- samp.frac
+    colnames(mod.mat) <- samp.frac
     
-    # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's Rho correlation between the resulting centrality values and the original sample.
-    graph_from_adjacency_matrix
+# This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's Rho correlation between the resulting centrality values and the original sample.
     for (j in 1:9) {
         for (i in 1:nsim) {
-            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
+            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - 5)/10), 
                 0), replace = F)
             temp.stats <- net.stats(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
+            temp.stats.single <- net.stats.single(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
             dg.mat[i, j] <- suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp, 
                 1], method = "spearman"))
             ev.mat[i, j] <- suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp, 
                 2], method = "spearman"))
             bw.mat[i, j] <- suppressWarnings(cor(temp.stats[, 3], stats.g[sub.samp, 
                 3], method = "spearman"))
+            cc.mat[1, j] <- suppressWarnings(cor(temp.stats.single[, 1], stats.g.single[1, 
+                1], method = "spearman"))
+            mod.mat[i, j] <- suppressWarnings(cor(temp.stats.single[, 2], stats.g.single[1, 
+                2], method = "spearman"))
         }
     }
     # Create list for output and populate it.
-    out.list <- list()  
+    out.list <- list()
     out.list[[1]] <- dg.mat
     out.list[[2]] <- ev.mat
     out.list[[3]] <- bw.mat
+    out.list[[4]] <- cc.mat
+    out.list[[5]] <- mod.mat
+    
     return(out.list)
 }  # return the resulting list
 
