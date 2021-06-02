@@ -205,7 +205,7 @@ mod.mat.long <- as.data.frame(BR.rs[[5]]) %>%
     dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>% 
     dplyr::arrange(sample.perc)
 
-# Set up for 1 by 3 plotting for the binary network.
+# Set up for 2 by 3 plotting for the binary network.
 par(mfrow = c(2, 3))
 boxplot(BR.rs[[1]], main = "BR - degree", xlab = "sampling fraction", 
     ylab = "Spearmans rho")
@@ -331,14 +331,19 @@ samp.frac <- c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
 cv.resamp.edge <- function(x) {
     stats.g <- net.stats(x)
+    stats.g.single <- net.stats.single(x)
     mat <- as.matrix(igraph::get.adjacency(x))
     dim.x <- dim(mat)[1]
     dg.mat <- matrix(NA, nsim, 9)
     ev.mat <- matrix(NA, nsim, 9)
     bw.mat <- matrix(NA, nsim, 9)
+    cc.mat <- matrix(NA, 1, 9)
+    mod.mat <- matrix(NA, 1, 9)
     colnames(dg.mat) <- samp.frac
     colnames(ev.mat) <- samp.frac
     colnames(bw.mat) <- samp.frac
+    colnames(cc.mat) <- samp.frac
+    colnames(mod.mat) <- samp.frac
     
     for (j in 1:9) {
         for (i in 1:nsim) {
@@ -347,26 +352,54 @@ cv.resamp.edge <- function(x) {
             temp.net <- x
             net.reduced <- igraph::delete.edges(temp.net, sub.samp)
             temp.stats <- net.stats(net.reduced)
+            temp.stats.single <- net.stats.single(net.reduced)
             dg.mat[i, j] <- cor(temp.stats[, 1], stats.g[, 1], method = "spearman")
             ev.mat[i, j] <- cor(temp.stats[, 2], stats.g[, 2], method = "spearman")
             bw.mat[i, j] <- cor(temp.stats[, 3], stats.g[, 3], method = "spearman")
+            cc.mat[1, j] <- temp.stats.single[, 1]
+            mod.mat[1, j] <- temp.stats.single[, 2]
+
         }
     }
+    # Add original to cc.mat and mod.mat (i.e., 100% sampling).
+    cc.mat <- as.data.frame(cc.mat) %>% 
+        dplyr::mutate(S100 = stats.g.single[1]) %>% 
+        dplyr::select(S100, everything()) %>% 
+        as.matrix()
+    mod.mat <- as.data.frame(mod.mat) %>% 
+        dplyr::mutate(S100 = stats.g.single[2]) %>% 
+        dplyr::select(S100, everything()) %>% 
+        as.matrix()
+    
     out.list <- list()
     out.list[[1]] <- dg.mat
     out.list[[2]] <- ev.mat
     out.list[[3]] <- bw.mat
+    out.list[[4]] <- cc.mat
+    out.list[[5]] <- mod.mat
     return(out.list)
 }
 
 # Run the script for the binary network.
 BR.edge <- cv.resamp.edge(tn)
 
+# Setup modularity and clustering coefficient for plotting.
+cc.mat.long <- as.data.frame(BR.edge[[4]]) %>%
+  tidyr::gather("S100", "S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10", key = sample.perc, value = cc.score) %>% 
+    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>% 
+    dplyr::arrange(sample.perc)
+mod.mat.long <- as.data.frame(BR.edge[[5]]) %>%
+  tidyr::gather("S100", "S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10", key = sample.perc, value = mod.score) %>% 
+    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>% 
+    dplyr::arrange(sample.perc)
+
 #Plot the results.
-par(mfrow = c(1, 3))
+par(mfrow = c(2, 3))
 boxplot(BR.edge[[1]], main = "BR - degree", xlab = "sampling fraction", 
     ylab = "Spearmans rho")
 boxplot(BR.edge[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
 boxplot(BR.edge[[3]],  main = "BR - betweenness", xlab = "sampling fraction")
+plot(cc.mat.long$sample.perc, cc.mat.long$cc.score, type="l", lwd=5, xlab="Sampling Percentage", ylab="Clustering Coefficient")
+plot(mod.mat.long$sample.perc, mod.mat.long$mod.score, type="l", lwd=5, xlab="Sampling Percentage", ylab="Modularity Score")
 
 ```
