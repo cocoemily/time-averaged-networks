@@ -158,22 +158,29 @@ cv.resamp.bin <- function(x) {
 # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's Rho correlation between the resulting centrality values and the original sample.
     for (j in 1:9) {
         for (i in 1:nsim) {
-            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - 5)/10), 
+            sub.samp <- sample(seq(1, dim.x), size = round(dim.x * ((10 - j)/10), 
                 0), replace = F)
             temp.stats <- net.stats(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
             temp.stats.single <- net.stats.single(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
-            dg.mat[i, j] <- suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp, 
+            dg.mat[i, j] <- suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp,
                 1], method = "spearman"))
-            ev.mat[i, j] <- suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp, 
+            ev.mat[i, j] <- suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp,
                 2], method = "spearman"))
-            bw.mat[i, j] <- suppressWarnings(cor(temp.stats[, 3], stats.g[sub.samp, 
+            bw.mat[i, j] <- suppressWarnings(cor(temp.stats[, 3], stats.g[sub.samp,
                 3], method = "spearman"))
-            cc.mat[1, j] <- suppressWarnings(cor(temp.stats.single[, 1], stats.g.single[1, 
-                1], method = "spearman"))
-            mod.mat[i, j] <- suppressWarnings(cor(temp.stats.single[, 2], stats.g.single[1, 
-                2], method = "spearman"))
+            cc.mat[1, j] <- temp.stats.single[, 1]
+            mod.mat[1, j] <- temp.stats.single[, 2]
         }
     }
+# Add original to cc.mat and mod.mat (i.e,. 100% sampling).
+    cc.mat <- as.data.frame(cc.mat) %>% 
+        dplyr::mutate(S100 = stats.g.single[1]) %>% 
+        dplyr::select(S100, everything()) %>% 
+        as.matrix()
+    mod.mat <- as.data.frame(mod.mat) %>% 
+        dplyr::mutate(S100 = stats.g.single[2]) %>% 
+        dplyr::select(S100, everything()) %>% 
+        as.matrix()
     # Create list for output and populate it.
     out.list <- list()
     out.list[[1]] <- dg.mat
@@ -188,12 +195,24 @@ cv.resamp.bin <- function(x) {
 # Run function on binary network.
 BR.rs <- cv.resamp.bin(tn)
 
+# Setup modularity and clustering coefficient for plotting.
+cc.mat.long <- as.data.frame(BR.rs[[4]]) %>%
+  tidyr::gather("S100", "S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10", key = sample.perc, value = cc.score) %>% 
+    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>% 
+    dplyr::arrange(sample.perc)
+mod.mat.long <- as.data.frame(BR.rs[[5]]) %>%
+  tidyr::gather("S100", "S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10", key = sample.perc, value = mod.score) %>% 
+    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>% 
+    dplyr::arrange(sample.perc)
+
 # Set up for 1 by 3 plotting for the binary network.
-par(mfrow = c(1, 3))
+par(mfrow = c(2, 3))
 boxplot(BR.rs[[1]], main = "BR - degree", xlab = "sampling fraction", 
     ylab = "Spearmans rho")
 boxplot(BR.rs[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
 boxplot(BR.rs[[3]], main = "BR - betweenness", xlab = "sampling fraction")
+plot(cc.mat.long$sample.perc, cc.mat.long$cc.score, type="l", lwd=5, xlab="Sampling Percentage", ylab="Clustering Coefficient")
+plot(mod.mat.long$sample.perc, mod.mat.long$mod.score, type="l", lwd=5, xlab="Sampling Percentage", ylab="Modularity Score")
 
 ```
 
