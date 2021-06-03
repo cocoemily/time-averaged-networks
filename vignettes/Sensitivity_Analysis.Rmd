@@ -12,10 +12,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(dplyr)
 library(igraph)
-library(statnet)
-library(tnet)
 library(ggraph)
-library(intergraph)
+library(purrr)
+# library(statnet)
+# library(tnet)
+# library(intergraph)
 
 ```
 
@@ -28,8 +29,19 @@ Currently, most of this RMD focuses only on 1 Chaco dataset (i.e., AD 800). This
 
 ```{r load_data}
 
-# First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs).
+# First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we only need the second one, as these will include the original graphs too.
 load("Data/Chaco_graph_objects.RData")
+
+# The lists are unnested for 1 level.
+Chaco.nets <- purrr::map(Chaco_ta_graphs, 1)
+# Give names to each list of time period to keep track.
+chaco.names <- c("chaco800", "chaco825", "chaco850", "chaco875", 
+              "chaco900", "chaco925", "chaco950", "chaco975",
+              "chaco1000", "chaco1025", "chaco1050", "chaco1075",
+              "chaco1100", "chaco1125", "chaco1150", "chaco1175",
+              "chaco1200", "chaco1225", "chaco1250", "chaco1275")
+names(Chaco.nets) <- chaco.names
+
 
 #I will simply get 1 original network that was created in 'Chaco_time_average.R', and use that to build the basis for the analysis. 
 tn <- Chaco_original_graphs[[1]]
@@ -80,8 +92,8 @@ net.stats.single <- function(y) {
 
 ```{r missing_nodes_multiple, echo=FALSE}
 
-# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?10,000 for better results)
-nsim <- 100
+# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?10,000 for better results).
+nsim <- 2
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
@@ -151,8 +163,12 @@ cv.resamp.bin <- function(x) {
   return(out.list)
 }  # return the resulting list
 
+
+# Now apply the function to all 400 networks (20 per time period).
+BR.rs <- Chaco.nets %>% purrr::map(~ purrr::map(.x, cv.resamp.bin))
+
 # Run function on binary network.
-BR.rs <- cv.resamp.bin(tn)
+#BR.rs <- cv.resamp.bin(tn)
 
 # Setup modularity and clustering coefficient for plotting.
 cc.mat.long <- as.data.frame(BR.rs[[4]]) %>%
