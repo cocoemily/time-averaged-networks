@@ -43,7 +43,7 @@ chaco.names <- c("chaco800", "chaco825", "chaco850", "chaco875",
 names(Chaco.nets) <- chaco.names
 
 
-#I will simply get 1 original network that was created in 'Chaco_time_average.R', and use that to build the basis for the analysis. 
+#I will simply get 1 original network that was created in 'Chaco_time_average.R', and use that to build the basis for the analysis.
 tn <- Chaco_original_graphs[[1]]
 #tn <- Chaco_ta_graphs[[1]][[1]][[1]]
 
@@ -118,7 +118,7 @@ cv.resamp.bin <- function(x) {
   colnames(cc.mat) <- samp.frac
   colnames(mod.mat) <- samp.frac
   
-  # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's Rho correlation between the resulting centrality values and the original sample.
+  # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's Rho correlation between the resulting centrality values and the original sample. However, for clustering coefficient and modularity, these will just output the values from the different networks.
   for (j in 1:9) {
     for (i in 1:nsim) {
       sub.samp <-
@@ -164,10 +164,10 @@ cv.resamp.bin <- function(x) {
 }  # return the resulting list
 
 
-# Now apply the function to all 400 networks (20 per time period).
+# Now apply the function to all 400 networks (20 per time period) for Chaco.
 BR.rs <- Chaco.nets %>% purrr::map(~ purrr::map(.x, cv.resamp.bin))
 
-# Run function on binary network.
+# Run function on binary network. This line was just for testing to focus on 1 network.
 #BR.rs <- cv.resamp.bin(tn)
 
 # Setup modularity and clustering coefficient for plotting.
@@ -188,6 +188,7 @@ cc.mat.long <- as.data.frame(BR.rs[[4]]) %>%
   ) %>%
   dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
   dplyr::arrange(sample.perc)
+
 mod.mat.long <- as.data.frame(BR.rs[[5]]) %>%
   tidyr::gather(
     "S100",
@@ -206,7 +207,7 @@ mod.mat.long <- as.data.frame(BR.rs[[5]]) %>%
   dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
   dplyr::arrange(sample.perc)
 
-# Set up for 2 by 3 plotting for the binary network.
+# Set up for 2 by 3 plotting for the binary network. This will also need to be updated to run on more than one network. Will need to make this a function, then use map to output for each network (or a sample of the networks).
 par(mfrow = c(2, 3))
 boxplot(BR.rs[[1]],
         main = "BR - degree",
@@ -399,10 +400,13 @@ cv.resamp.edge <- function(x) {
   return(out.list)
 }
 
-# Run the script for the binary network.
-BR.edge <- cv.resamp.edge(tn)
+# Now apply the function to all 400 networks (20 per time period) for Chaco.
+BR.edge <- Chaco.nets %>% purrr::map(~ purrr::map(.x, cv.resamp.edge))
 
-# Setup modularity and clustering coefficient for plotting.
+# Run the script for the binary network. his line was just for testing to focus on 1 network.
+#BR.edge <- cv.resamp.edge(tn)
+
+# Setup modularity and clustering coefficient for plotting. 
 cc.mat.long <- as.data.frame(BR.edge[[4]]) %>%
   tidyr::gather(
     "S100",
@@ -420,6 +424,7 @@ cc.mat.long <- as.data.frame(BR.edge[[4]]) %>%
   ) %>%
   dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
   dplyr::arrange(sample.perc)
+
 mod.mat.long <- as.data.frame(BR.edge[[5]]) %>%
   tidyr::gather(
     "S100",
@@ -438,7 +443,7 @@ mod.mat.long <- as.data.frame(BR.edge[[5]]) %>%
   dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
   dplyr::arrange(sample.perc)
 
-#Plot the results.
+#Plot the results. This will also need to be updated to run on more than one network. Will need to make this a function, then use map to output for each network (or a sample of the networks).
 par(mfrow = c(2, 3))
 boxplot(BR.edge[[1]],
         main = "BR - degree",
