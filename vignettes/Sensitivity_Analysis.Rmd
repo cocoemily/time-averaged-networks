@@ -14,6 +14,8 @@ library(dplyr)
 library(igraph)
 library(ggraph)
 library(purrr)
+library(stringr)
+library(DT)
 # library(statnet)
 # library(tnet)
 # library(intergraph)
@@ -30,7 +32,7 @@ Currently, most of this RMD focuses only on 1 Chaco dataset (i.e., AD 800). This
 ```{r load_data}
 
 # First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we only need the second one, as these will include the original graphs too.
-load("Data/Chaco_graph_objects.RData")
+load("../Data/Chaco_graph_objects.RData")
 
 # The lists are unnested for 1 level.
 Chaco.nets <- purrr::map(Chaco_ta_graphs, 1)
@@ -86,11 +88,130 @@ net.stats.single <- function(y) {
 
 ```
 
+## Functions for creating outputs
+```{r output_functions, echo = FALSE, warning=F, message=F}
+# Create output table for sensitivity analysis
+create_output_tables = function(BR.list) {
+  dg.df = data.frame()
+  eg.df = data.frame()
+  bt.df = data.frame()
+  cc.df = data.frame()
+  mod.df = data.frame()
+  
+  for(n in chaco.names) {
+    for(ta in 1:length(BR.list[n][[1]])) {
+      dg = as.data.frame(BR.list[n][[1]][[ta]][[1]]) %>% 
+        tidyr::gather("S90","S80","S70","S60","S50","S40","S30",
+                      "S20","S10",key = sample.perc,value = dg.rho) %>% 
+        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      dg.df = rbind(dg.df, dg)
+      
+      eg = as.data.frame(BR.list[n][[1]][[ta]][[2]]) %>% 
+        tidyr::gather("S90","S80","S70","S60","S50","S40","S30",
+                      "S20","S10",key = sample.perc,value = eg.rho) %>% 
+        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      eg.df = rbind(eg.df, eg)
+      
+      bt = as.data.frame(BR.list[n][[1]][[ta]][[3]]) %>% 
+        tidyr::gather("S90","S80","S70","S60","S50","S40","S30",
+                      "S20","S10",key = sample.perc,value = bt.rho) %>% 
+        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      bt.df = rbind(bt.df, bt)
+      
+      cc = as.data.frame(BR.list[n][[1]][[ta]][[4]]) %>% 
+        tidyr::gather("S100","S90","S80","S70","S60","S50","S40","S30",
+                      "S20","S10",key = sample.perc,value = cc.val) %>% 
+        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      cc.df = rbind(cc.df, cc)
+      
+      mod = as.data.frame(BR.list[n][[1]][[ta]][[5]]) %>% 
+        tidyr::gather("S100","S90","S80","S70","S60","S50","S40","S30",
+                      "S20","S10",key = sample.perc,value = mod.val) %>% 
+        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      mod.df = rbind(mod.df, mod)
+    }
+  }
+  
+  output.dg = dg.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(dg.rho, na.rm = TRUE), 
+      quart.1 = quantile(dg.rho, probs = 0.25, na.rm = TRUE),
+      med = median(dg.rho, na.rm = TRUE),
+      quart.3 = quantile(dg.rho, probs = 0.75, na.rm = TRUE),
+      max = max(dg.rho, na.rm = TRUE)
+    ) %>% 
+    dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  output.eg = eg.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(eg.rho, na.rm = TRUE), 
+      quart.1 = quantile(eg.rho, probs = 0.25, na.rm = TRUE),
+      med = median(eg.rho, na.rm = TRUE),
+      quart.3 = quantile(eg.rho, probs = 0.75, na.rm = TRUE),
+      max = max(eg.rho, na.rm = TRUE)
+    ) %>% 
+    dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  output.bt = bt.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(bt.rho, na.rm = TRUE), 
+      quart.1 = quantile(bt.rho, probs = 0.25, na.rm = TRUE),
+      med = median(bt.rho, na.rm = TRUE),
+      quart.3 = quantile(bt.rho, probs = 0.75, na.rm = TRUE),
+      max = max(bt.rho, na.rm = TRUE)
+    ) %>% 
+    dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  output.cc = cc.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(cc.val, na.rm = TRUE), 
+      quart.1 = quantile(cc.val, probs = 0.25, na.rm = TRUE),
+      med = median(cc.val, na.rm = TRUE),
+      quart.3 = quantile(cc.val, probs = 0.75, na.rm = TRUE),
+      max = max(cc.val, na.rm = TRUE)
+    ) %>% 
+    dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  output.mod = mod.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(mod.val, na.rm = TRUE), 
+      quart.1 = quantile(mod.val, probs = 0.25, na.rm = TRUE),
+      med = median(mod.val, na.rm = TRUE),
+      quart.3 = quantile(mod.val, probs = 0.75, na.rm = TRUE),
+      max = max(mod.val, na.rm = TRUE)
+    ) %>% 
+    dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  return(list(output.dg, output.eg, output.bt, output.cc, output.mod))
+}
+```
+
+
 ## Potential impact of missing nodes
 
 ### Over multiple centrality measures and/or networks
 
-```{r missing_nodes_multiple, echo=FALSE}
+```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
 
 # Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?10,000 for better results).
 nsim <- 2
@@ -170,76 +291,99 @@ BR.rs <- Chaco.nets %>% purrr::map(~ purrr::map(.x, cv.resamp.bin))
 # Run function on binary network. This line was just for testing to focus on 1 network.
 #BR.rs <- cv.resamp.bin(tn)
 
+# Create output tables for node removal sensitivity analysis
+outputs.rs = create_output_tables(BR.rs)
+# knitr::kable(outputs.rs[[1]], caption = "Degree Centrality Rho Values")
+# knitr::kable(outputs.rs[[2]], caption = "Eigenvector Centrality Rho Values")
+# knitr::kable(output.rs[[3]], caption = "Betweenness Centrality Rho Values")
+# knitr::kable(output.rs[[4]], caption = "Clustering Coefficient Values")
+# knitr::kable(output.rs[[5]], caption = "Modularity Values")
+datatable(outputs.rs[[1]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Degree Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(outputs.rs[[2]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Eigenvector Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(outputs.rs[[3]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Betweenness Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(outputs.rs[[4]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Clustering Coefficient Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(outputs.rs[[5]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Modularity Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+
 # Setup modularity and clustering coefficient for plotting.
-cc.mat.long <- as.data.frame(BR.rs[[4]]) %>%
-  tidyr::gather(
-    "S100",
-    "S90",
-    "S80",
-    "S70",
-    "S60",
-    "S50",
-    "S40",
-    "S30",
-    "S20",
-    "S10",
-    key = sample.perc,
-    value = cc.score
-  ) %>%
-  dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
-  dplyr::arrange(sample.perc)
+test.BR.rs = BR.rs$chaco800[[1]]
+#plot_node_removal_sensitivity = function(test.BR.rs) {
+  cc.mat.long <- as.data.frame(test.BR.rs[[4]]) %>%
+    tidyr::gather(
+      "S100",
+      "S90",
+      "S80",
+      "S70",
+      "S60",
+      "S50",
+      "S40",
+      "S30",
+      "S20",
+      "S10",
+      key = sample.perc,
+      value = cc.score
+    ) %>%
+    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
+    dplyr::arrange(sample.perc)
+  
+  mod.mat.long <- as.data.frame(test.BR.rs[[5]]) %>%
+    tidyr::gather(
+      "S100",
+      "S90",
+      "S80",
+      "S70",
+      "S60",
+      "S50",
+      "S40",
+      "S30",
+      "S20",
+      "S10",
+      key = sample.perc,
+      value = mod.score
+    ) %>%
+    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
+    dplyr::arrange(sample.perc)
+  
+  # Set up for 2 by 3 plotting for the binary network. This will also need to be updated to run on more than one network. Will need to make this a function, then use map to output for each network (or a sample of the networks).
+  par(mfrow = c(2, 3))
+  boxplot(test.BR.rs[[1]],
+          main = "BR - degree",
+          xlab = "sampling fraction",
+          ylab = "Spearmans rho")
+  boxplot(test.BR.rs[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
+  boxplot(test.BR.rs[[3]], main = "BR - betweenness", xlab = "sampling fraction")
+  plot(
+    cc.mat.long$sample.perc,
+    cc.mat.long$cc.score,
+    type = "l",
+    lwd = 5,
+    xlab = "Sampling Percentage",
+    ylab = "Clustering Coefficient"
+  )
+  plot(
+    mod.mat.long$sample.perc,
+    mod.mat.long$mod.score,
+    type = "l",
+    lwd = 5,
+    xlab = "Sampling Percentage",
+    ylab = "Modularity Score"
+  )
+#}
 
-mod.mat.long <- as.data.frame(BR.rs[[5]]) %>%
-  tidyr::gather(
-    "S100",
-    "S90",
-    "S80",
-    "S70",
-    "S60",
-    "S50",
-    "S40",
-    "S30",
-    "S20",
-    "S10",
-    key = sample.perc,
-    value = mod.score
-  ) %>%
-  dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
-  dplyr::arrange(sample.perc)
-
-# Set up for 2 by 3 plotting for the binary network. This will also need to be updated to run on more than one network. Will need to make this a function, then use map to output for each network (or a sample of the networks).
-par(mfrow = c(2, 3))
-boxplot(BR.rs[[1]],
-        main = "BR - degree",
-        xlab = "sampling fraction",
-        ylab = "Spearmans rho")
-boxplot(BR.rs[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
-boxplot(BR.rs[[3]], main = "BR - betweenness", xlab = "sampling fraction")
-plot(
-  cc.mat.long$sample.perc,
-  cc.mat.long$cc.score,
-  type = "l",
-  lwd = 5,
-  xlab = "Sampling Percentage",
-  ylab = "Clustering Coefficient"
-)
-plot(
-  mod.mat.long$sample.perc,
-  mod.mat.long$mod.score,
-  type = "l",
-  lwd = 5,
-  xlab = "Sampling Percentage",
-  ylab = "Modularity Score"
-)
+#plot_node_removal_sensitivity(BR.rs$chaco800[[1]])
 
 ```
 
 ### Node specific assessment
 Here, we determine whether the most central node is consistently the most central.
 
-```{r node_specific, echo=FALSE}
+```{r node_specific, echo=FALSE, include = F, warning=F, eval=F}
 
-nsim <- 1000  #set number of replicates
+nsim <- 2 #set number of replicates
 
 resamp.node <- function(x, samp.frac) {
   mat <- as.matrix(igraph::get.adjacency(x))
@@ -334,10 +478,10 @@ for (i in 1:5) {
 
 
 ## Potential impact of missing edges
-```{r missing_edges, echo=FALSE}
+```{r missing_edges, echo=FALSE, warning=F, message=F}
 
 # Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
-nsim <- 25
+nsim <- 2
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
@@ -406,8 +550,28 @@ BR.edge <- Chaco.nets %>% purrr::map(~ purrr::map(.x, cv.resamp.edge))
 # Run the script for the binary network. his line was just for testing to focus on 1 network.
 #BR.edge <- cv.resamp.edge(tn)
 
+# Create output tables for node removal sensitivity analysis
+outputs.edge = create_output_tables(BR.edge)
+# knitr::kable(outputs.edge[[1]], caption = "Degree Centrality Rho Values")
+# knitr::kable(outputs.edge[[2]], caption = "Eigenvector Centrality Rho Values")
+# knitr::kable(output.edge[[3]], caption = "Betweenness Centrality Rho Values")
+# knitr::kable(output.edge[[4]], caption = "Clustering Coefficient Values")
+# knitr::kable(output.edge[[5]], caption = "Modularity Values")
+datatable(outputs.edge[[1]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Degree Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(outputs.edge[[2]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Eigenvector Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(outputs.edge[[3]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Betweenness Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(outputs.edge[[4]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Clustering Coefficient Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(outputs.edge[[5]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Modularity Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+
 # Setup modularity and clustering coefficient for plotting. 
-cc.mat.long <- as.data.frame(BR.edge[[4]]) %>%
+test.BR.edge = BR.edge$chaco800[[1]]
+
+cc.mat.long <- as.data.frame(test.BR.edge[[4]]) %>%
   tidyr::gather(
     "S100",
     "S90",
@@ -425,7 +589,7 @@ cc.mat.long <- as.data.frame(BR.edge[[4]]) %>%
   dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
   dplyr::arrange(sample.perc)
 
-mod.mat.long <- as.data.frame(BR.edge[[5]]) %>%
+mod.mat.long <- as.data.frame(test.BR.edge[[5]]) %>%
   tidyr::gather(
     "S100",
     "S90",
@@ -445,12 +609,12 @@ mod.mat.long <- as.data.frame(BR.edge[[5]]) %>%
 
 #Plot the results. This will also need to be updated to run on more than one network. Will need to make this a function, then use map to output for each network (or a sample of the networks).
 par(mfrow = c(2, 3))
-boxplot(BR.edge[[1]],
+boxplot(test.BR.edge[[1]],
         main = "BR - degree",
         xlab = "sampling fraction",
         ylab = "Spearmans rho")
-boxplot(BR.edge[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
-boxplot(BR.edge[[3]],  main = "BR - betweenness", xlab = "sampling fraction")
+boxplot(test.BR.edge[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
+boxplot(test.BR.edge[[3]],  main = "BR - betweenness", xlab = "sampling fraction")
 plot(
   cc.mat.long$sample.perc,
   cc.mat.long$cc.score,
