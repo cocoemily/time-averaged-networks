@@ -520,7 +520,7 @@ plots_subset <- plots_sa_nodes[c(net.seq.full)]
 #                         nrow = 1, ncol = 1)
 
 #Need to adjust original plots, as test is overlapping and spilling over the edge of the margins.
-#ggexport(ok3[[1]], filename = "/Users/andrewgillreath-brown/Desktop/multi.page.ggplot2.pdf")
+#ggexport(plot, filename = "/Users/andrewgillreath-brown/Desktop/multi.page.ggplot2.pdf")
 
 
 # sublist.names <- names(plots_sa_nodes)

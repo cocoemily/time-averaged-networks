@@ -50,7 +50,8 @@ plot_sa <- function(sa.data) {
     ylab = "Spearman's Rho",
     bxp.errorbar = TRUE
   ) +
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic()
   
   ev.mat.plot <- ggpubr::ggboxplot(
     ev.mat,
@@ -61,7 +62,8 @@ plot_sa <- function(sa.data) {
     ylab = "Spearman's Rho",
     bxp.errorbar = TRUE
   ) +
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic()
   
   bw.mat.plot <- ggpubr::ggboxplot(
     bw.mat,
@@ -72,7 +74,8 @@ plot_sa <- function(sa.data) {
     ylab = "Spearman's Rho",
     bxp.errorbar = TRUE
   ) +
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic()
   
   cc.mat.long.plot <- ggpubr::ggline(
     cc.mat.long,
@@ -82,7 +85,8 @@ plot_sa <- function(sa.data) {
     xlab = "Sampling Fraction",
     ylab = "Clustering Coefficient Value"
   ) +
-    theme(plot.title = element_text(hjust = 0.5))
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic()
   
   mod.mat.long.plot <- ggpubr::ggline(
     mod.mat.long,
@@ -92,7 +96,7 @@ plot_sa <- function(sa.data) {
     xlab = "Sampling Fraction",
     ylab = "Modularity Value"
   ) +
-    theme(plot.title = element_text(hjust = 0.5))
+    theme_classic(base_size = 6)
   
   
     plot <- ggpubr::ggarrange(
@@ -102,8 +106,8 @@ plot_sa <- function(sa.data) {
       cc.mat.long.plot,
       mod.mat.long.plot,
       labels = c("A", "B", "C", "D", "E"),
-      ncol = 3,
-      nrow = 2
+      ncol = 2,
+      nrow = 3
     )
     
     return(plot)
