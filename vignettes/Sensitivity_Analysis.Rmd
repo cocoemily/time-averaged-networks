@@ -309,8 +309,14 @@ datatable(outputs.rs[[4]], extensions = 'Buttons', options = list(dom = 'Bfrtip'
 datatable(outputs.rs[[5]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Modularity Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
 
+
+
+# Plotting
+
+
 # Setup modularity and clustering coefficient for plotting.
 test.BR.rs = BR.rs$chaco800[[1]]
+#test.BR.rs = BR.rs[c(1,2) ]
 #plot_node_removal_sensitivity = function(test.BR.rs) {
   cc.mat.long <- as.data.frame(test.BR.rs[[4]]) %>%
     tidyr::gather(
