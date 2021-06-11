@@ -16,6 +16,8 @@ library(ggraph)
 library(purrr)
 library(stringr)
 library(DT)
+library(gridExtra)
+library(ggpubr)
 # library(statnet)
 # library(tnet)
 # library(intergraph)
@@ -44,15 +46,31 @@ chaco.names <- c("chaco800", "chaco825", "chaco850", "chaco875",
               "chaco1200", "chaco1225", "chaco1250", "chaco1275")
 names(Chaco.nets) <- chaco.names
 
+# Also, further prepare a name list that will be used to rename elements in a list for plotting.
+chaco.net.names <- as.data.frame(chaco.names) %>%
+  replicate(n = length(Chaco.nets), simplify = FALSE) %>% 
+  unlist() %>% 
+  as.data.frame() %>%
+  dplyr::rename(period = 1)
+chaco.net.names$period <-
+  factor(chaco.net.names$period, levels = chaco.names)
+chaco.net.names <-
+  chaco.net.names[order(chaco.net.names$period), ] %>% 
+  as.data.frame() %>% 
+  dplyr::rename(period = 1)
+chaco.net.names$period <- as.character(chaco.net.names$period)
 
-#I will simply get 1 original network that was created in 'Chaco_time_average.R', and use that to build the basis for the analysis.
-tn <- Chaco_original_graphs[[1]]
-#tn <- Chaco_ta_graphs[[1]][[1]][[1]]
+network.names <- as.data.frame(paste("network", 1:length(Chaco.nets), sep = "_")) %>% 
+  dplyr::rename(network = 1)
+
+chaco.net.names.full <- cbind(chaco.net.names, network.names)
+chaco.net.names.full <- chaco.net.names.full %>% 
+  tidyr::unite(period_network, c("period", "network"))
 
 
 ```
 
-## Centrality scores for binary networks.
+## Functions to get multiple centrality scores for binary networks.
 ```{r centrality, echo=FALSE}
 
 # Calculate centrality scores for binary networks for igraph objects.
@@ -285,11 +303,9 @@ cv.resamp.bin <- function(x) {
 }  # return the resulting list
 
 
-# Now apply the function to all 400 networks (20 per time period) for Chaco.
-BR.rs <- Chaco.nets %>% purrr::map(~ purrr::map(.x, cv.resamp.bin))
+# Now apply the function to all 400 networks (20 per time period, which is for the 20 time averaged Chaco networks) for Chaco.
+BR.rs <- Chaco.nets %>% purrr::map( ~ purrr::map(.x, cv.resamp.bin))
 
-# Run function on binary network. This line was just for testing to focus on 1 network.
-#BR.rs <- cv.resamp.bin(tn)
 
 # Create output tables for node removal sensitivity analysis
 outputs.rs = create_output_tables(BR.rs)
@@ -312,75 +328,14 @@ datatable(outputs.rs[[5]], extensions = 'Buttons', options = list(dom = 'Bfrtip'
 
 
 # Plotting
+# Here, all the networks are unlisted. The final result is that there is the year of the network, then the final digits are the network number. For example, for the first time averaged network for AD 800, it would be listed as "chaco8001", then "chaco8002" and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020".
+BR.rs.plotting <- unlist(BR.rs,recursive=FALSE)
 
+# This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function (in R folder).
+plots_sa_nodes <- BR.rs.plotting %>% purrr::map(plot_sa)
 
-# Setup modularity and clustering coefficient for plotting.
-test.BR.rs = BR.rs$chaco800[[1]]
-#test.BR.rs = BR.rs[c(1,2) ]
-#plot_node_removal_sensitivity = function(test.BR.rs) {
-  cc.mat.long <- as.data.frame(test.BR.rs[[4]]) %>%
-    tidyr::gather(
-      "S100",
-      "S90",
-      "S80",
-      "S70",
-      "S60",
-      "S50",
-      "S40",
-      "S30",
-      "S20",
-      "S10",
-      key = sample.perc,
-      value = cc.score
-    ) %>%
-    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
-    dplyr::arrange(sample.perc)
-  
-  mod.mat.long <- as.data.frame(test.BR.rs[[5]]) %>%
-    tidyr::gather(
-      "S100",
-      "S90",
-      "S80",
-      "S70",
-      "S60",
-      "S50",
-      "S40",
-      "S30",
-      "S20",
-      "S10",
-      key = sample.perc,
-      value = mod.score
-    ) %>%
-    dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
-    dplyr::arrange(sample.perc)
-  
-  # Set up for 2 by 3 plotting for the binary network. This will also need to be updated to run on more than one network. Will need to make this a function, then use map to output for each network (or a sample of the networks).
-  par(mfrow = c(2, 3))
-  boxplot(test.BR.rs[[1]],
-          main = "BR - degree",
-          xlab = "sampling fraction",
-          ylab = "Spearmans rho")
-  boxplot(test.BR.rs[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
-  boxplot(test.BR.rs[[3]], main = "BR - betweenness", xlab = "sampling fraction")
-  plot(
-    cc.mat.long$sample.perc,
-    cc.mat.long$cc.score,
-    type = "l",
-    lwd = 5,
-    xlab = "Sampling Percentage",
-    ylab = "Clustering Coefficient"
-  )
-  plot(
-    mod.mat.long$sample.perc,
-    mod.mat.long$mod.score,
-    type = "l",
-    lwd = 5,
-    xlab = "Sampling Percentage",
-    ylab = "Modularity Score"
-  )
-#}
-
-#plot_node_removal_sensitivity(BR.rs$chaco800[[1]])
+# Then, can rename each plot to have network number along with year.
+names(plots_sa_nodes) <- chaco.net.names.full
 
 ```
 
@@ -551,10 +506,9 @@ cv.resamp.edge <- function(x) {
 }
 
 # Now apply the function to all 400 networks (20 per time period) for Chaco.
-BR.edge <- Chaco.nets %>% purrr::map(~ purrr::map(.x, cv.resamp.edge))
+BR.edge <- Chaco.nets %>%
+  purrr::map( ~ purrr::map(.x, cv.resamp.edge))
 
-# Run the script for the binary network. his line was just for testing to focus on 1 network.
-#BR.edge <- cv.resamp.edge(tn)
 
 # Create output tables for node removal sensitivity analysis
 outputs.edge = create_output_tables(BR.edge)
@@ -574,68 +528,16 @@ datatable(outputs.edge[[4]], extensions = 'Buttons', options = list(dom = 'Bfrti
 datatable(outputs.edge[[5]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Modularity Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
 
-# Setup modularity and clustering coefficient for plotting. 
-test.BR.edge = BR.edge$chaco800[[1]]
 
-cc.mat.long <- as.data.frame(test.BR.edge[[4]]) %>%
-  tidyr::gather(
-    "S100",
-    "S90",
-    "S80",
-    "S70",
-    "S60",
-    "S50",
-    "S40",
-    "S30",
-    "S20",
-    "S10",
-    key = sample.perc,
-    value = cc.score
-  ) %>%
-  dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
-  dplyr::arrange(sample.perc)
+# Plotting
+# Here, all the networks are unlisted. The final result is that there is the year of the network, then the final digits are the network number. For example, for the first time averaged network for AD 800, it would be listed as "chaco8001", then "chaco8002" and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020".
+BR.edge.plotting <- unlist(BR.edge,recursive=FALSE)
 
-mod.mat.long <- as.data.frame(test.BR.edge[[5]]) %>%
-  tidyr::gather(
-    "S100",
-    "S90",
-    "S80",
-    "S70",
-    "S60",
-    "S50",
-    "S40",
-    "S30",
-    "S20",
-    "S10",
-    key = sample.perc,
-    value = mod.score
-  ) %>%
-  dplyr::mutate(sample.perc = c(seq(100, 10, by = -10))) %>%
-  dplyr::arrange(sample.perc)
+# This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function (in R folder).
+plots_sa_edges <- BR.edge.plotting %>% 
+  purrr::map(plot_sa)
 
-#Plot the results. This will also need to be updated to run on more than one network. Will need to make this a function, then use map to output for each network (or a sample of the networks).
-par(mfrow = c(2, 3))
-boxplot(test.BR.edge[[1]],
-        main = "BR - degree",
-        xlab = "sampling fraction",
-        ylab = "Spearmans rho")
-boxplot(test.BR.edge[[2]], main = "BR - eigenvector", xlab = "sampling fraction")
-boxplot(test.BR.edge[[3]],  main = "BR - betweenness", xlab = "sampling fraction")
-plot(
-  cc.mat.long$sample.perc,
-  cc.mat.long$cc.score,
-  type = "l",
-  lwd = 5,
-  xlab = "Sampling Percentage",
-  ylab = "Clustering Coefficient"
-)
-plot(
-  mod.mat.long$sample.perc,
-  mod.mat.long$mod.score,
-  type = "l",
-  lwd = 5,
-  xlab = "Sampling Percentage",
-  ylab = "Modularity Score"
-)
+# Then, can rename each plot to have network number along with year.
+names(plots_sa_edges) <- chaco.net.names.full
 
 ```
