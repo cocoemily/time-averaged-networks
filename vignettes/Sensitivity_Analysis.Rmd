@@ -16,29 +16,27 @@ library(ggraph)
 library(purrr)
 library(stringr)
 library(DT)
-library(gridExtra)
 library(ggpubr)
 # library(statnet)
 # library(tnet)
 # library(intergraph)
+#library(gridExtra)
 
 ```
 
 # Sensitivity Analysis
-Here, we run a variety of sensitivity analyses on the original and time-averaged networks. This code has been adapted from Peeples, Matthew A. 2017. Network Science and Statistical Techniques for Dealing with Uncertainties in Archaeological Datasets. [online]. Available: [www.mattpeeples.net/netstats.html](http://www.mattpeeples.net/netstats.html). Here, we use igraph rather than the sna and network packages.
-
-Currently, most of this RMD focuses only on 1 Chaco dataset (i.e., AD 800). This script now fits into the workflow with the rest of the Chaco scripts. However, this script still needs to be updated to apply to all of the networks rather than just the 1 subset (i.e., the original AD 800 network).
+Here, we run a variety of sensitivity analyses on the original and time-averaged networks. This code has been adapted from Peeples, Matthew A. 2017. Network Science and Statistical Techniques for Dealing with Uncertainties in Archaeological Datasets. [online]. Available: [www.mattpeeples.net/netstats.html](http://www.mattpeeples.net/netstats.html). One main difference is that we use `igraph` rather than the `sna` and `network` packages.
 
 ## Load and prepare data for sensitivity analysis.
 
 ```{r load_data}
 
-# First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we only need the second one, as these will include the original graphs too.
+# First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we will only use Chaco_ta_graphs, as the first network for each time period will be the original graph.
 load("../Data/Chaco_graph_objects.RData")
 
 # The lists are unnested for 1 level.
 Chaco.nets <- purrr::map(Chaco_ta_graphs, 1)
-# Give names to each list of time period to keep track.
+# Give names to each list for each time period to keep track.
 chaco.names <- c("chaco800", "chaco825", "chaco850", "chaco875", 
               "chaco900", "chaco925", "chaco950", "chaco975",
               "chaco1000", "chaco1025", "chaco1050", "chaco1075",
@@ -46,7 +44,7 @@ chaco.names <- c("chaco800", "chaco825", "chaco850", "chaco875",
               "chaco1200", "chaco1225", "chaco1250", "chaco1275")
 names(Chaco.nets) <- chaco.names
 
-# Also, further prepare a name list that will be used to rename elements in a list for plotting.
+# Further prepare a name list that will be used to rename elements in a list for plotting (i.e., to have a time period [e.g., chaco800] concatenated to a network number [e.g., chaco800_network_1]).
 chaco.net.names <- as.data.frame(chaco.names) %>%
   replicate(n = length(Chaco.nets), simplify = FALSE) %>% 
   unlist() %>% 
@@ -79,7 +77,6 @@ net.stats <- function(y) {
     dg <- as.matrix(igraph::degree(y))
     # Calculate eigenvector centrality
     eg <- as.matrix(igraph::evcent(y)$vector)
-    #eg <- sqrt((eg^2) * length(eg)) #scale centrality
     # Calculate betweenness centrality
     bw <- igraph::betweenness(y, normalized = TRUE, directed = FALSE)
     # Combine centrality scores into matrix
@@ -91,13 +88,9 @@ net.stats <- function(y) {
 net.stats.single <- function(y) {
     # Calculate clustering coefficient
     cc <- igraph::transitivity(y, "global")
-    # cc.matrix <- matrix(c(cc,rep(0, nrow(dg)-1)), nrow = nrow(dg), ncol = 1)
-    # cc <- as.matrix(rep(cc.matrix[1,], nrow(cc.matrix)))
     # Calculate modularity
     wtc = igraph::cluster_walktrap(y)
     mod <- igraph::modularity(as.undirected(y), membership(wtc))
-    # mod.matrix <- matrix(c(mod,rep(0, nrow(dg)-1)), nrow = nrow(dg), ncol = 1)
-    # mod <- as.matrix(rep(mod.matrix[1,], nrow(mod.matrix)))
     # Combine centrality scores into matrix
     output <- cbind(cc, mod)
     colnames(output) <- c("cc", "mod")
@@ -108,7 +101,8 @@ net.stats.single <- function(y) {
 
 ## Functions for creating outputs
 ```{r output_functions, echo = FALSE, warning=F, message=F}
-# Create output table for sensitivity analysis
+
+# Create output table for sensitivity analysis.
 create_output_tables = function(BR.list) {
   dg.df = data.frame()
   eg.df = data.frame()
@@ -116,48 +110,125 @@ create_output_tables = function(BR.list) {
   cc.df = data.frame()
   mod.df = data.frame()
   
-  for(n in chaco.names) {
-    for(ta in 1:length(BR.list[n][[1]])) {
-      dg = as.data.frame(BR.list[n][[1]][[ta]][[1]]) %>% 
-        tidyr::gather("S90","S80","S70","S60","S50","S40","S30",
-                      "S20","S10",key = sample.perc,value = dg.rho) %>% 
-        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+  for (n in chaco.names) {
+    for (ta in 1:length(BR.list[n][[1]])) {
+      dg = as.data.frame(BR.list[n][[1]][[ta]][[1]]) %>%
+        tidyr::gather(
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = dg.rho
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
         dplyr::arrange(sample.perc) %>%
         dplyr::mutate(num.net = ta) %>%
         dplyr::mutate(orig.net = n)
       dg.df = rbind(dg.df, dg)
       
-      eg = as.data.frame(BR.list[n][[1]][[ta]][[2]]) %>% 
-        tidyr::gather("S90","S80","S70","S60","S50","S40","S30",
-                      "S20","S10",key = sample.perc,value = eg.rho) %>% 
-        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+      eg = as.data.frame(BR.list[n][[1]][[ta]][[2]]) %>%
+        tidyr::gather(
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = eg.rho
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
         dplyr::arrange(sample.perc) %>%
         dplyr::mutate(num.net = ta) %>%
         dplyr::mutate(orig.net = n)
       eg.df = rbind(eg.df, eg)
       
-      bt = as.data.frame(BR.list[n][[1]][[ta]][[3]]) %>% 
-        tidyr::gather("S90","S80","S70","S60","S50","S40","S30",
-                      "S20","S10",key = sample.perc,value = bt.rho) %>% 
-        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+      bt = as.data.frame(BR.list[n][[1]][[ta]][[3]]) %>%
+        tidyr::gather(
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = bt.rho
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
         dplyr::arrange(sample.perc) %>%
         dplyr::mutate(num.net = ta) %>%
         dplyr::mutate(orig.net = n)
       bt.df = rbind(bt.df, bt)
       
-      cc = as.data.frame(BR.list[n][[1]][[ta]][[4]]) %>% 
-        tidyr::gather("S100","S90","S80","S70","S60","S50","S40","S30",
-                      "S20","S10",key = sample.perc,value = cc.val) %>% 
-        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+      cc = as.data.frame(BR.list[n][[1]][[ta]][[4]]) %>%
+        tidyr::gather(
+          "S100",
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = cc.val
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
         dplyr::arrange(sample.perc) %>%
         dplyr::mutate(num.net = ta) %>%
         dplyr::mutate(orig.net = n)
       cc.df = rbind(cc.df, cc)
       
-      mod = as.data.frame(BR.list[n][[1]][[ta]][[5]]) %>% 
-        tidyr::gather("S100","S90","S80","S70","S60","S50","S40","S30",
-                      "S20","S10",key = sample.perc,value = mod.val) %>% 
-        dplyr::mutate(sample.perc = as.numeric(str_sub(sample.perc, start = 2, end = length(sample.perc)))) %>% 
+      mod = as.data.frame(BR.list[n][[1]][[ta]][[5]]) %>%
+        tidyr::gather(
+          "S100",
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = mod.val
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
         dplyr::arrange(sample.perc) %>%
         dplyr::mutate(num.net = ta) %>%
         dplyr::mutate(orig.net = n)
@@ -167,71 +238,72 @@ create_output_tables = function(BR.list) {
   
   output.dg = dg.df %>% group_by(orig.net, num.net, sample.perc) %>%
     summarize(
-      min = min(dg.rho, na.rm = TRUE), 
+      min = min(dg.rho, na.rm = TRUE),
       quart.1 = quantile(dg.rho, probs = 0.25, na.rm = TRUE),
       med = median(dg.rho, na.rm = TRUE),
       quart.3 = quantile(dg.rho, probs = 0.75, na.rm = TRUE),
       max = max(dg.rho, na.rm = TRUE)
-    ) %>% 
+    ) %>%
     dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
     dplyr::arrange(orig.net)
   
   output.eg = eg.df %>% group_by(orig.net, num.net, sample.perc) %>%
     summarize(
-      min = min(eg.rho, na.rm = TRUE), 
+      min = min(eg.rho, na.rm = TRUE),
       quart.1 = quantile(eg.rho, probs = 0.25, na.rm = TRUE),
       med = median(eg.rho, na.rm = TRUE),
       quart.3 = quantile(eg.rho, probs = 0.75, na.rm = TRUE),
       max = max(eg.rho, na.rm = TRUE)
-    ) %>% 
+    ) %>%
     dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
     dplyr::arrange(orig.net)
   
   output.bt = bt.df %>% group_by(orig.net, num.net, sample.perc) %>%
     summarize(
-      min = min(bt.rho, na.rm = TRUE), 
+      min = min(bt.rho, na.rm = TRUE),
       quart.1 = quantile(bt.rho, probs = 0.25, na.rm = TRUE),
       med = median(bt.rho, na.rm = TRUE),
       quart.3 = quantile(bt.rho, probs = 0.75, na.rm = TRUE),
       max = max(bt.rho, na.rm = TRUE)
-    ) %>% 
+    ) %>%
     dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
     dplyr::arrange(orig.net)
   
   output.cc = cc.df %>% group_by(orig.net, num.net, sample.perc) %>%
     summarize(
-      min = min(cc.val, na.rm = TRUE), 
+      min = min(cc.val, na.rm = TRUE),
       quart.1 = quantile(cc.val, probs = 0.25, na.rm = TRUE),
       med = median(cc.val, na.rm = TRUE),
       quart.3 = quantile(cc.val, probs = 0.75, na.rm = TRUE),
       max = max(cc.val, na.rm = TRUE)
-    ) %>% 
+    ) %>%
     dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
     dplyr::arrange(orig.net)
   
   output.mod = mod.df %>% group_by(orig.net, num.net, sample.perc) %>%
     summarize(
-      min = min(mod.val, na.rm = TRUE), 
+      min = min(mod.val, na.rm = TRUE),
       quart.1 = quantile(mod.val, probs = 0.25, na.rm = TRUE),
       med = median(mod.val, na.rm = TRUE),
       quart.3 = quantile(mod.val, probs = 0.75, na.rm = TRUE),
       max = max(mod.val, na.rm = TRUE)
-    ) %>% 
+    ) %>%
     dplyr::mutate(orig.net = factor(orig.net, levels = chaco.names)) %>%
     dplyr::arrange(orig.net)
   
   return(list(output.dg, output.eg, output.bt, output.cc, output.mod))
 }
+
 ```
 
 
-## Potential impact of missing nodes
+## Potential Impact of Missing Nodes
 
 ### Over multiple centrality measures and/or networks
 
 ```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
 
-# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?10,000 for better results).
+# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?1,000 or ?10,000 for better results).
 nsim <- 2
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
@@ -304,7 +376,8 @@ cv.resamp.bin <- function(x) {
 
 
 # Now apply the function to all 400 networks (20 per time period, which is for the 20 time averaged Chaco networks) for Chaco.
-BR.rs <- Chaco.nets %>% purrr::map( ~ purrr::map(.x, cv.resamp.bin))
+BR.rs <- Chaco.nets %>%
+  purrr::map(~ purrr::map(.x, cv.resamp.bin))
 
 
 # Create output tables for node removal sensitivity analysis
@@ -314,27 +387,108 @@ outputs.rs = create_output_tables(BR.rs)
 # knitr::kable(output.rs[[3]], caption = "Betweenness Centrality Rho Values")
 # knitr::kable(output.rs[[4]], caption = "Clustering Coefficient Values")
 # knitr::kable(output.rs[[5]], caption = "Modularity Values")
-datatable(outputs.rs[[1]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Degree Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.rs[[1]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Degree Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-datatable(outputs.rs[[2]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Eigenvector Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.rs[[2]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Eigenvector Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-datatable(outputs.rs[[3]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Betweenness Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.rs[[3]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Betweenness Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-datatable(outputs.rs[[4]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Clustering Coefficient Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.rs[[4]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Clustering Coefficient Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-datatable(outputs.rs[[5]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Modularity Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.rs[[5]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Modularity Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
 
 
 
 # Plotting
-# Here, all the networks are unlisted. The final result is that there is the year of the network, then the final digits are the network number. For example, for the first time averaged network for AD 800, it would be listed as "chaco8001", then "chaco8002" and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020".
-BR.rs.plotting <- unlist(BR.rs,recursive=FALSE)
+# First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
+BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
 
-# This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function (in R folder).
-plots_sa_nodes <- BR.rs.plotting %>% purrr::map(plot_sa)
+# This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function (in the R folder).
+plots_sa_nodes <- BR.rs.plotting %>%
+  purrr::map(plot_sa)
 
-# Then, can rename each plot to have network number along with year.
+# Then, we can rename each plot to have network number along with year (e.g., chaco800_network_1).
 names(plots_sa_nodes) <- chaco.net.names.full
 
 ```
@@ -505,9 +659,9 @@ cv.resamp.edge <- function(x) {
   return(out.list)
 }
 
-# Now apply the function to all 400 networks (20 per time period) for Chaco.
+# Now apply the function to all 400 networks (20 per time period, which is for the 20 time averaged Chaco networks) for Chaco.
 BR.edge <- Chaco.nets %>%
-  purrr::map( ~ purrr::map(.x, cv.resamp.edge))
+  purrr::map(~ purrr::map(.x, cv.resamp.edge))
 
 
 # Create output tables for node removal sensitivity analysis
@@ -517,27 +671,107 @@ outputs.edge = create_output_tables(BR.edge)
 # knitr::kable(output.edge[[3]], caption = "Betweenness Centrality Rho Values")
 # knitr::kable(output.edge[[4]], caption = "Clustering Coefficient Values")
 # knitr::kable(output.edge[[5]], caption = "Modularity Values")
-datatable(outputs.edge[[1]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Degree Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.edge[[1]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Degree Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-datatable(outputs.edge[[2]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Eigenvector Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.edge[[2]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Eigenvector Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-datatable(outputs.edge[[3]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Betweenness Centrality Rho Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.edge[[3]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Betweenness Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-datatable(outputs.edge[[4]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Clustering Coefficient Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.edge[[4]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Clustering Coefficient Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-datatable(outputs.edge[[5]], extensions = 'Buttons', options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')), caption = "Modularity Values", rownames = FALSE, colnames = c("Original Network", "Number of Networks Averaged", "Sample Percentage", "Min", "1st Quartile", "Median", "3rd Quartile", "Max")) %>%
+datatable(
+  outputs.edge[[5]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Modularity Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
 
 
 # Plotting
-# Here, all the networks are unlisted. The final result is that there is the year of the network, then the final digits are the network number. For example, for the first time averaged network for AD 800, it would be listed as "chaco8001", then "chaco8002" and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020".
-BR.edge.plotting <- unlist(BR.edge,recursive=FALSE)
+# First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
+BR.edge.plotting <- unlist(BR.edge, recursive = FALSE)
 
-# This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function (in R folder).
-plots_sa_edges <- BR.edge.plotting %>% 
+# This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function (in the R folder).
+plots_sa_edges <- BR.edge.plotting %>%
   purrr::map(plot_sa)
 
-# Then, can rename each plot to have network number along with year.
+# Then, we can rename each plot to have network number along with year (e.g., chaco800_network_1).
 names(plots_sa_edges) <- chaco.net.names.full
 
 ```
