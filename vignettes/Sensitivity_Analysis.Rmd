@@ -17,10 +17,10 @@ library(purrr)
 library(stringr)
 library(DT)
 library(ggpubr)
+library(gridExtra)
 # library(statnet)
 # library(tnet)
 # library(intergraph)
-#library(gridExtra)
 
 ```
 
