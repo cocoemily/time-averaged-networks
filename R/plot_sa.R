@@ -86,7 +86,7 @@ plot_sa <- function(sa.data) {
     ylab = "Clustering Coefficient Value"
   ) +
     theme(plot.title = element_text(hjust = 0.5)) +
-    theme_classic()
+    theme_classic(base_size = 9)
   
   mod.mat.long.plot <- ggpubr::ggline(
     mod.mat.long,
@@ -96,7 +96,7 @@ plot_sa <- function(sa.data) {
     xlab = "Sampling Fraction",
     ylab = "Modularity Value"
   ) +
-    theme_classic(base_size = 6)
+    theme_classic()
   
   
     plot <- ggpubr::ggarrange(
