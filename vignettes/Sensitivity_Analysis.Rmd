@@ -67,7 +67,7 @@ chaco.net.names.full <- chaco.net.names.full %>%
 
 #Next (for additional setup for outputting plots into pdfs), get the total number of networks (the chaco 20 time averaged networks per time period for a total of 400). Then, create a sequence, which will be used as an index to extract 3 ggplot objects per time period.
 total.nets <- length(Chaco.nets)*length(Chaco.nets)
-middle.net <- round(length.nets/2)
+middle.net <- round(length(Chaco.nets)/2)
 net.seq <- seq(0, total.nets, by = middle.net)
 net.seq[1] <- 1
 # Now need to include the first elements throughout the networks so need to add network 21, 41, etc. (which is the original network for all of the subsequent time periods).
@@ -324,7 +324,7 @@ create_output_tables = function(BR.list) {
 ```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
 
 # Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?1,000 or ?10,000 for better results).
-nsim <- 2
+nsim <- 1
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
