@@ -637,7 +637,7 @@ plots_subset_nodes <- plots_sa_nodes[c(net.seq.full)]
 chaco.net.names.full.subset <- chaco.net.names.full[c(net.seq.full),]
 
 # Arrange each ggplot object to be 1 per page. Use marrangeGrob so that can save each ggplot object to each page, and also put name at top of page. **Need to figure out how to change the plot name for each page.**
-ml.nodes <- gridExtra::marrangeGrob(plots_subset_nodes, nrow=1, ncol=1)
+ml.nodes <- gridExtra::marrangeGrob(plots_subset_nodes, nrow=1, ncol=1, top=quote(names(plots_subset_nodes)[g]))
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
 ggsave("figures/sensitivity-analysis/Chaco/sensitivity.nodes.plots.pdf", ml.nodes, scale = 1.5)
@@ -649,7 +649,7 @@ ggsave("figures/sensitivity-analysis/Chaco/sensitivity.nodes.plots.pdf", ml.node
 ```{r missing_edges, echo=FALSE, warning=F, message=F}
 
 # Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
-nsim <- 2
+nsim <- 1
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
@@ -834,7 +834,7 @@ plots_subset_edges <- plots_sa_edges[c(net.seq.full)]
 chaco.net.names.full.subset <- chaco.net.names.full[c(net.seq.full),]
 
 # Arrange each ggplot object to be 1 per page. Use marrangeGrob so that can save each ggplot object to each page, and also put name at top of page.
-ml.edges <- gridExtra::marrangeGrob(plots_subset_edges, nrow=1, ncol=1, top = quote(chaco.net.names.full.subset))
+ml.edges <- gridExtra::marrangeGrob(plots_subset_edges, nrow=1, ncol=1, top=quote(names(plots_subset_edges)[g]))
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
 ggsave("figures/sensitivity-analysis/Chaco/sensitivity.edges.plots.pdf", ml.edges, scale = 1.5)
