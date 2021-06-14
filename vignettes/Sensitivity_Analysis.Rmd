@@ -825,7 +825,7 @@ plots_sa_edges <- BR.edge.plotting %>%
   purrr::map(plot_sa)
 
 # Then, we can rename each plot to have network number along with year (e.g., chaco800_network_1).
-names(plots_sa_edges) <- chaco.net.names.full
+names(plots_sa_edges) <- c(chaco.net.names.full$period_network)
 
 # Subset the plots to be a subsample of all the plots (only want to do the first [or original], the middle, and last for each time period [total of 60 for Chaco]). Use the list that was created above for this as an index to subset the 400 plots.
 plots_subset_edges <- plots_sa_edges[c(net.seq.full)]
