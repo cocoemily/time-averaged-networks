@@ -601,6 +601,7 @@ ml.nodes <- gridExtra::marrangeGrob(plots_sa_nodes, nrow=1, ncol=1, top=quote(na
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
 ggsave("figures/sensitivity-analysis/Prignano/sensitivity.nodes.plots.prignano.pdf", ml.nodes, scale = 1.5)
+plot(ml.nodes)
 
 ```
 
@@ -792,5 +793,6 @@ ml.edges <- gridExtra::marrangeGrob(plots_sa_edges, nrow=1, ncol=1, top=quote(na
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
 ggsave("figures/sensitivity-analysis/Prignano/sensitivity.edges.plots.prignano.pdf", ml.edges, scale = 1.5)
+plot(ml.edges)
 
 ```
