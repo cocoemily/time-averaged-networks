@@ -433,14 +433,21 @@ plot_sa <- function(sa.data) {
   
   
     plot <- ggpubr::ggarrange(
+      NULL,
       dg.mat.plot,
+      NULL,
       ev.mat.plot,
+      NULL,
       bw.mat.plot,
+      NULL,
       cc.mat.long.plot,
+      NULL,
       mod.mat.long.plot,
-      labels = c("A", "B", "C", "D", "E"),
-      ncol = 2,
-      nrow = 3
+      labels = c("", "A", "", "B", "", "C", "", "D", "", "E"),
+      ncol = 4,
+      nrow = 3,
+      widths = c(0.06, 1, 0.06, 1),
+      label.x = -0.04
     )
     
     return(plot)
