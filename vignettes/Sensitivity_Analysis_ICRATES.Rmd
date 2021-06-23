@@ -421,14 +421,21 @@ plot_sa <- function(sa.data) {
   
   
     plot <- ggpubr::ggarrange(
+      NULL,
       dg.mat.plot,
+      NULL,
       ev.mat.plot,
+      NULL,
       bw.mat.plot,
+      NULL,
       cc.mat.long.plot,
+      NULL,
       mod.mat.long.plot,
-      labels = c("A", "B", "C", "D", "E"),
-      ncol = 2,
-      nrow = 3
+      labels = c("", "A", "", "B", "", "C", "", "D", "", "E"),
+      ncol = 4,
+      nrow = 3,
+      widths = c(0.06, 1, 0.06, 1),
+      label.x = -0.04
     )
     
     return(plot)
@@ -444,12 +451,12 @@ plot_sa <- function(sa.data) {
 
 ```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
 
-# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?1,000 or ?10,000 for better results).
+# Set number of replicates.
 nsim <- 750
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
-# This function is for a binary network. This function does the same calculation as above but is set up to work with the output of net.stats.
+# Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
 cv.resamp.bin <- function(x) {
   # Calculate all network stats for the original network.
   stats.g <- net.stats(x)
@@ -621,7 +628,7 @@ datatable(
 
 
 # Plotting
-# First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
+# First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network index number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
 BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
@@ -637,7 +644,7 @@ plots_subset_nodes <- plots_sa_nodes[c(net.seq.full)]
 # Also, need to subset the list of names, so that we can put the name at top of each page as a title with each plot.
 icrates.net.names.full.subset <- icrates.net.names.full[c(net.seq.full),]
 
-# Arrange each ggplot object to be 1 per page. Use marrangeGrob so that can save each ggplot object to each page, and also put name at top of page. **Need to figure out how to change the plot name for each page.**
+# Arrange each ggplot object to be 1 per page. Use marrangeGrob so that can save each ggplot object to each page, and also put name at top of page.
 ml.nodes <- gridExtra::marrangeGrob(plots_subset_nodes, nrow=1, ncol=1, top=quote(names(plots_subset_nodes)[g]))
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
@@ -650,11 +657,12 @@ plot(ml.nodes)
 ## Potential impact of missing edges
 ```{r missing_edges, echo=FALSE, warning=F, message=F}
 
-# Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
+# Set number of replicates.
 nsim <- 750
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
+# Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
 cv.resamp.edge <- function(x) {
   stats.g <- net.stats(x)
   stats.g.single <- net.stats.single(x)
@@ -819,7 +827,7 @@ datatable(
 
 
 # Plotting
-# First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
+# First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network index number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
 BR.edge.plotting <- unlist(BR.edge, recursive = FALSE)
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.

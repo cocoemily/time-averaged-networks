@@ -661,6 +661,7 @@ ml.nodes <- gridExtra::marrangeGrob(plots_subset_nodes, nrow=1, ncol=1, top=quot
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
 ggsave("figures/sensitivity-analysis/Chaco/sensitivity.nodes.plots.pdf", ml.nodes, scale = 1.5)
+plot(ml.nodes)
 
 ```
 
@@ -859,5 +860,6 @@ ml.edges <- gridExtra::marrangeGrob(plots_subset_edges, nrow=1, ncol=1, top=quot
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
 ggsave("figures/sensitivity-analysis/Chaco/sensitivity.edges.plots.pdf", ml.edges, scale = 1.5)
+plot(ml.nodes)
 
 ```
