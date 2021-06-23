@@ -15,12 +15,20 @@ get_ta_graphs = function(original, index, graphs) {
   if(index == 1) { 
     for(i in 1:(length(graphs)-index)) {
       gl = list.append(gl, time_average(graphs, index, index+i))
-      ngl = list.append(ngl, i+1)
+      #ngl = list.append(ngl, i+1)
+    }
+    num.graphs = seq(2, length(graphs), by = 1)
+    for(n in num.graphs) { 
+      ngl = list.append(ngl, n)
     }
   } else if(index == length(graphs)) {
     for(i in 1:(length(graphs)-1)) {
       gl = list.append(gl, time_average(graphs, i, index))
-      ngl = list.append(ngl, i+1)
+      #ngl = list.append(ngl, i+1)
+    }
+    num.graphs = seq(length(graphs), 2 , by = -1)
+    for(n in num.graphs) { 
+      ngl = list.append(ngl, n)
     }
   } else { 
     for(i in 1:(length(graphs)-index)) {
