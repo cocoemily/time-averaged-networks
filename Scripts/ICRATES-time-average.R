@@ -43,23 +43,7 @@ create_edge_list = function(slice) {
 }
 
 graphs = list()
-for(s in 1:10) {
-  el = create_edge_list(timeslices[[s]])
-  graphs[[s]] = igraph::simplify(graph_from_edgelist(as.matrix(el[,1:2]), directed=FALSE))
-}
-for(s in 11:20) {
-  el = create_edge_list(timeslices[[s]])
-  graphs[[s]] = igraph::simplify(graph_from_edgelist(as.matrix(el[,1:2]), directed=FALSE))
-}
-for(s in 21:30) {
-  el = create_edge_list(timeslices[[s]])
-  graphs[[s]] = igraph::simplify(graph_from_edgelist(as.matrix(el[,1:2]), directed=FALSE))
-}
-for(s in 31:40) {
-  el = create_edge_list(timeslices[[s]])
-  graphs[[s]] = igraph::simplify(graph_from_edgelist(as.matrix(el[,1:2]), directed=FALSE))
-}
-for(s in 41:length(timeslices)) {
+for(s in 1:length(timeslices)) {
   el = create_edge_list(timeslices[[s]])
   graphs[[s]] = igraph::simplify(graph_from_edgelist(as.matrix(el[,1:2]), directed=FALSE))
 }
