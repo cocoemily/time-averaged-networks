@@ -57,9 +57,9 @@ chaco1125 = create_network(chaco %>% filter(P1125 != 0) %>% dplyr::select(SWSN_I
 chaco1150 = create_network(chaco %>% filter(P1150 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1150))
 chaco1175 = create_network(chaco %>% filter(P1175 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1175))
 chaco1200 = create_network(chaco %>% filter(P1200 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1200))
-chaco1225 = create_network(chaco %>% filter(P925 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1225))
-chaco1250 = create_network(chaco %>% filter(P950 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1250))
-chaco1275 = create_network(chaco %>% filter(P975 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1275))
+chaco1225 = create_network(chaco %>% filter(P1225 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1225))
+chaco1250 = create_network(chaco %>% filter(P1250 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1250))
+chaco1275 = create_network(chaco %>% filter(P1275 != 0) %>% dplyr::select(SWSN_ID, SWSN_Ware, P1275))
 
 graphs = list(chaco800, chaco825, chaco850, chaco875, 
               chaco900, chaco925, chaco950, chaco975,
