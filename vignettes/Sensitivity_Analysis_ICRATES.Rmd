@@ -839,6 +839,8 @@ icrates.net.names.full.subset <- icrates.net.names.full[c(net.seq.full),]
 ml.edges <- gridExtra::marrangeGrob(plots_subset_edges, nrow=1, ncol=1, top=quote(names(plots_subset_edges)[g]))
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
-ggsave("figures/sensitivity-analysis/ICRATES/sensitivity.edges.plots.pdf", ml.edges, scale = 1.5)
+ggsave("figures/sensitivity-analysis/ICRATES/sensitivity.edges.plots.pdf", 
+ml.edges, scale = 1.5)
+plot(ml.edges)
 
 ```
