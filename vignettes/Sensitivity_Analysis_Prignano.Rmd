@@ -409,12 +409,12 @@ plot_sa <- function(sa.data) {
 
 ```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
 
-# Set number of replicates (keeping number low for now, so that it will run quicker, but should definitely increase this number to ?1,000 or ?10,000 for better results).
+# Set number of replicates.
 nsim <- 750
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
-# This function is for a binary network. This function does the same calculation as above but is set up to work with the output of net.stats.
+# Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
 cv.resamp.bin <- function(x) {
   # Calculate all network stats for the original network.
   stats.g <- net.stats(x)
@@ -609,11 +609,12 @@ plot(ml.nodes)
 ## Potential impact of missing edges
 ```{r missing_edges, echo=FALSE, warning=F, message=F}
 
-# Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
+# Set number of replicates.
 nsim <- 750
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
+# Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
 cv.resamp.edge <- function(x) {
   stats.g <- net.stats(x)
   stats.g.single <- net.stats.single(x)
