@@ -32,10 +32,10 @@ Here, we run a variety of sensitivity analyses on the original and time-averaged
 ```{r load_data}
 
 # First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we will only use Chaco_ta_graphs, as the first network for each time period will be the original graph.
-load("Data/ICRATES_ta_graph_objects_first-half.RData")
-load("Data/ICRATES_ta_graph_objects_second-half.RData")
+load("../Data/ICRATES_ta_graph_objects_first-half.RData")
+load("../Data/ICRATES_ta_graph_objects_second-half.RData")
 ICRATES_ta_graphs = append(first_half, second_half)
-load("Data/ICRATES/timeslice_levels.RData")
+load("../Data/ICRATES/timeslice_levels.RData")
 
 # The lists are unnested for 1 level.
 ICRATES.nets <- purrr::map(ICRATES_ta_graphs, 1)
