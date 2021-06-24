@@ -66,25 +66,37 @@ icrates.net.names.full <- cbind(icrates.net.names, network.names)
 icrates.net.names.full <- icrates.net.names.full %>% 
   tidyr::unite(period_network, c("period", "network"))
 
-#Next (for additional setup for outputting plots into pdfs), get the total number of networks. Then, create a sequence, which will be used as an index to extract 3 ggplot objects per time period.
-total.nets <- length(ICRATES.nets)*length(ICRATES.nets)
-middle.net <- round(length(ICRATES.nets)/2)
-net.seq <- seq(0, total.nets, by = middle.net)
-net.seq[1] <- 1
-# Now need to include the first elements throughout the networks so need to add network 21, 41, etc. (which is the original network for all of the subsequent time periods).
-net.seq <- as.data.frame(net.seq) %>% 
-  dplyr::mutate(other = net.seq +1)
-df.new <- net.seq[seq(3, nrow(net.seq), 2), ] %>% 
-  dplyr::select(other) %>% 
-  dplyr::slice(1:(n()-1)) %>% 
-  dplyr::rename(net.seq = other)
-# Now combine the two columns and put back into a list.
-net.seq.full <- net.seq %>% 
-  dplyr::select(net.seq) %>% 
-  rbind(df.new) %>% 
-  arrange(net.seq) %>% 
-  c()
-net.seq.full <- net.seq.full[[1]]
+#Next (for additional setup for outputting plots into pdfs), get the total number of networks (the chaco 20 time averaged networks per time period for a total of 400). Then, create a sequence, which will be used as an index to extract 3 ggplot objects per time period.
+icrates.num.net.seq <- ICRATES.ta.num %>% 
+  unlist() %>% 
+  as.data.frame() %>% 
+  dplyr::rename("graphs" = 1) %>% 
+  dplyr::mutate(index = 1:length(graphs)) %>% 
+  dplyr::mutate(icrates.net.names)
+
+# Get rows with the maximum graphs for each period.
+net.seq.max <- icrates.num.net.seq %>%
+     group_by(period) %>%
+     slice(which.max(graphs))
+
+# Get rows with the minimum graphs (i.e., the original).
+net.seq.min <- icrates.num.net.seq %>%
+     group_by(period) %>%
+     slice(which.min(graphs))
+
+# Function for finding the middle value.
+which.median <- function(x) ceiling(max(x)/2)
+
+# Get rows with the median amount of graphs.
+net.seq.median <- icrates.num.net.seq %>%
+     group_by(period) %>%
+     slice(which.median(graphs))
+
+net.seq.full <- rbind(net.seq.max, net.seq.min, net.seq.median) %>% 
+  arrange(index) %>%
+  ungroup() %>% 
+  dplyr::select(index) %>% 
+  unlist()
 
 
 ```
