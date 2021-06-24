@@ -386,14 +386,21 @@ plot_sa <- function(sa.data) {
   
   
     plot <- ggpubr::ggarrange(
+      NULL,
       dg.mat.plot,
+      NULL,
       ev.mat.plot,
+      NULL,
       bw.mat.plot,
+      NULL,
       cc.mat.long.plot,
+      NULL,
       mod.mat.long.plot,
-      labels = c("A", "B", "C", "D", "E"),
-      ncol = 2,
-      nrow = 3
+      labels = c("", "A", "", "B", "", "C", "", "D", "", "E"),
+      ncol = 4,
+      nrow = 3,
+      widths = c(0.06, 1, 0.06, 1),
+      label.x = -0.04
     )
     
     return(plot)
@@ -601,7 +608,6 @@ ml.nodes <- gridExtra::marrangeGrob(plots_sa_nodes, nrow=1, ncol=1, top=quote(na
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
 ggsave("../figures/sensitivity-analysis/Prignano/sensitivity.nodes.plots.prignano.pdf", ml.nodes, scale = 1.5)
-ml.nodes
 
 ```
 
