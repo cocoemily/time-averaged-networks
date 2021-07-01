@@ -464,7 +464,7 @@ plot_sa <- function(sa.data) {
 ```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
 
 # Set number of replicates.
-nsim <- 750
+nsim <- 100
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
@@ -660,8 +660,9 @@ icrates.net.names.full.subset <- icrates.net.names.full[c(net.seq.full),]
 ml.nodes <- gridExtra::marrangeGrob(plots_subset_nodes, nrow=1, ncol=1, top=quote(names(plots_subset_nodes)[g]))
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
-ggsave("figures/sensitivity-analysis/ICRATES/sensitivity.nodes.plots.pdf", ml.nodes, scale = 1.5)
-plot(ml.nodes)
+ggsave("../figures/sensitivity-analysis/ICRATES/sensitivity.nodes.plots.pdf", 
+ml.nodes, scale = 1.5)
+ml.nodes
 
 ```
 
@@ -670,7 +671,7 @@ plot(ml.nodes)
 ```{r missing_edges, echo=FALSE, warning=F, message=F}
 
 # Set number of replicates.
-nsim <- 750
+nsim <- 100
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
@@ -859,8 +860,8 @@ icrates.net.names.full.subset <- icrates.net.names.full[c(net.seq.full),]
 ml.edges <- gridExtra::marrangeGrob(plots_subset_edges, nrow=1, ncol=1, top=quote(names(plots_subset_edges)[g]))
 
 # Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
-ggsave("figures/sensitivity-analysis/ICRATES/sensitivity.edges.plots.pdf", 
+ggsave("../figures/sensitivity-analysis/ICRATES/sensitivity.edges.plots.pdf", 
 ml.edges, scale = 1.5)
-plot(ml.edges)
+ml.edges
 
 ```

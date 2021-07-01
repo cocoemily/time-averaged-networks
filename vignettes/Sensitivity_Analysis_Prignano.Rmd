@@ -417,7 +417,7 @@ plot_sa <- function(sa.data) {
 ```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
 
 # Set number of replicates.
-nsim <- 750
+nsim <- 100
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
@@ -616,7 +616,7 @@ ggsave("../figures/sensitivity-analysis/Prignano/sensitivity.nodes.plots.prignan
 ```{r missing_edges, echo=FALSE, warning=F, message=F}
 
 # Set number of replicates.
-nsim <- 750
+nsim <- 100
 samp.frac <-
   c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 
