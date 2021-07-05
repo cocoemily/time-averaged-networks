@@ -31,13 +31,18 @@ get_ta_graphs = function(original, index, graphs) {
       ngl = list.append(ngl, n)
     }
   } else { 
-    for(i in 1:(length(graphs)-index)) {
-      gl = list.append(gl, time_average(graphs, index, index+i))
-      ngl = list.append(ngl, i+1)
-    }
-    for(i in 1:(index-1)) {
-      gl = list.append(gl, time_average(graphs, i, index))
-      ngl = list.append(ngl, i+1)
+    for(i in 1:index) {
+      if(i != index) {
+        for(j in index:length(graphs)) {
+          gl = list.append(gl, time_average(graphs, i, j))
+          ngl = list.append(ngl, (j-i+1))
+        }
+      } else {
+        for(j in (index+1):length(graphs)) {
+          gl = list.append(gl, time_average(graphs, i, j))
+          ngl = list.append(ngl, (j-i+1))
+        }
+      }
     }
   }
   return(list(gl, ngl))
@@ -81,12 +86,17 @@ ICRATES_ta_compare = function(original, index, graphs, o_name) {
     }
     df$num.graphs = c(1, seq(nrow(df), 2 , by = -1))
     df$network = c(replicate(nrow(df), o_name))
-  } else { #TODO multiple direction time-averaging
-    for(i in 1:(length(graphs)-index)) {
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, index, index+i)), i+1)
-    }
-    for(i in 1:(index-1)) {
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, index)), i+1)
+  } else {
+    for(i in 1:index) {
+      if(i != index) {
+        for(j in index:length(graphs)) {
+          df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, j)), (j-i+1))
+        }
+      } else {
+        for(j in (index+1):length(graphs)) {
+          df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, j)), (j-i+1))
+        }
+      }
     }
     df$network = c(replicate(nrow(df), o_name))
   }
@@ -130,12 +140,25 @@ Chaco_ta_compare = function(original, index, graphs, o_name) {
     }
     df$num.graphs = c(1, seq(nrow(df), 2 , by = -1))
     df$network = c(replicate(nrow(df), o_name))
-  } else { #TODO multiple direction time-averaging
-    for(i in 1:(length(graphs)-index)) {
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, index, index+i)), i+1)
-    }
-    for(i in 1:(index-1)) {
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, index)), i+1)
+  } else { 
+    # for(i in 1:(length(graphs)-index)) {
+    #   df[nrow(df) + 1, ] = c(get_row(time_average(graphs, index, index+i)), i+1)
+    # }
+    # for(i in 1:(index-1)) {
+    #   df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, index)), i+1)
+    # }
+    for(i in 1:index) {
+      #print(i)
+      if(i != index) {
+        for(j in index:length(graphs)) {
+          df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, j)), (j-i+1))
+        }
+      } else {
+        for(j in (index+1):length(graphs)) {
+          #print(j)
+          df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, j)), (j-i+1))
+        }
+      }
     }
     df$network = c(replicate(nrow(df), o_name))
   }
