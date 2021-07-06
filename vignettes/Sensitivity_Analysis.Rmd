@@ -32,7 +32,12 @@ Here, we run a variety of sensitivity analyses on the original and time-averaged
 ```{r load_data}
 
 # First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we will only use Chaco_ta_graphs, as the first network for each time period will be the original graph.
-load("../Data/Chaco_graph_objects.RData")
+#load("../Data/Chaco_graph_objects.RData")
+load("../Data/Chaco_ta_graph_objects_1.RData")
+load("../Data/Chaco_ta_graph_objects_2.RData")
+load("../Data/Chaco_ta_graph_objects_3.RData")
+
+Chaco_ta_graphs = append(append(cf, cs), ct)
 
 # The lists are unnested for 1 level.
 Chaco.nets <- purrr::map(Chaco_ta_graphs, 1)
@@ -47,18 +52,24 @@ names(Chaco.nets) <- chaco.names
 Chaco.ta.num <- purrr::map(Chaco_ta_graphs, 2)
 
 # Further prepare a name list that will be used to rename elements in a list for plotting (i.e., to have a time period [e.g., chaco800] concatenated to a network number [e.g., chaco800_network_1]).
-chaco.net.names <- as.data.frame(chaco.names) %>%
-  replicate(n = length(Chaco.nets), simplify = FALSE) %>% 
-  unlist() %>% 
-  as.data.frame() %>%
-  dplyr::rename(period = 1)
-chaco.net.names$period <-
-  factor(chaco.net.names$period, levels = chaco.names)
-chaco.net.names <-
-  chaco.net.names[order(chaco.net.names$period), ] %>% 
-  as.data.frame() %>% 
-  dplyr::rename(period = 1)
-chaco.net.names$period <- as.character(chaco.net.names$period)
+names = c()
+for(i in 1:length(Chaco.nets)) {
+  names = c(names, rep(names(Chaco.nets)[i], each=length(Chaco.nets[[i]])))
+}
+chaco.net.names = as.data.frame(names) %>% dplyr::rename(period = 1)
+
+# chaco.net.names <- as.data.frame(chaco.names) %>%
+#   replicate(n = length(Chaco.nets), simplify = FALSE) %>% 
+#   unlist() %>% 
+#   as.data.frame() %>%
+#   dplyr::rename(period = 1)
+# chaco.net.names$period <-
+#   factor(chaco.net.names$period, levels = chaco.names)
+# chaco.net.names <-
+#   chaco.net.names[order(chaco.net.names$period), ] %>% 
+#   as.data.frame() %>% 
+#   dplyr::rename(period = 1)
+# chaco.net.names$period <- as.character(chaco.net.names$period)
 
 network.names <- as.data.frame(paste("network", unlist(Chaco.ta.num), sep = "_")) %>% 
   dplyr::rename(network = 1)
@@ -90,8 +101,10 @@ which.median <- function(x) ceiling(max(x)/2)
 
 # Get rows with the median amount of graphs.
 net.seq.median <- Chaco.num.net.seq %>%
-     group_by(period) %>%
-     slice(which.median(graphs))
+     filter(graphs == which.median(graphs)) %>%
+  group_by(period) %>%
+  slice_sample()
+  
 
 net.seq.full <- rbind(net.seq.max, net.seq.min, net.seq.median) %>% 
   arrange(index) %>%
