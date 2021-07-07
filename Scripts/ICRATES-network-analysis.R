@@ -116,7 +116,14 @@ for(index in 1:length(graphs)) {
     }
   }
 }
-#write.csv(modelerrors2, file = "output/ICRATES/model-errors_ta-to-ta.csv")
+me1 = modelerrors2[1:276238,]
+me2 = modelerrors2[276239:552476,]
+me3 = modelerrors2[552477:828715,]
+me4 = modelerrors2[828716:nrow(modelerrors2),]
+write.csv(me1, file = "output/ICRATES/model-errors_ta-to-ta_1.csv")
+write.csv(me2, file = "output/ICRATES/model-errors_ta-to-ta_2.csv")
+write.csv(me3, file = "output/ICRATES/model-errors_ta-to-ta_3.csv")
+write.csv(me4, file = "output/ICRATES/model-errors_ta-to-ta_4.csv")
 ggsave("figures/null-models/ICRATES/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
 
 
