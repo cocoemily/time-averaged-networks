@@ -32,9 +32,16 @@ Here, we run a variety of sensitivity analyses on the original and time-averaged
 ```{r load_data}
 
 # First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we will only use Chaco_ta_graphs, as the first network for each time period will be the original graph.
-load("../Data/ICRATES_ta_graph_objects_first-half.RData")
-load("../Data/ICRATES_ta_graph_objects_second-half.RData")
-ICRATES_ta_graphs = append(first_half, second_half)
+files = list.files("../Data", pattern= "ICRATES_ta")
+for(f in files) {
+  load(paste0("../Data/", f))
+}
+
+ICRATES_ta_graphs = c(i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, 
+                      i11, i12, i13, i14, i15, i16, i17, i18, i19, i20, 
+                      i21, i22, i23, i24, i25)  
+
+
 load("../Data/ICRATES/timeslice_levels.RData")
 
 # The lists are unnested for 1 level.
@@ -46,18 +53,14 @@ icrates.names <- lvls
 names(ICRATES.nets) <- icrates.names 
 
 # Further prepare a name list that will be used to rename elements in a list for plotting (i.e., to have a time period [e.g., chaco800] concatenated to a network number [e.g., chaco800_network_1]).
-icrates.net.names <- as.data.frame(icrates.names) %>%
-  replicate(n = length(ICRATES.nets), simplify = FALSE) %>% 
-  unlist() %>% 
-  as.data.frame() %>%
+names = c()
+for(i in 1:length(ICRATES.nets)) {
+  names = c(names, rep(names(ICRATES.nets)[i], each=length(ICRATES.nets[[i]])))
+}
+icrates.net.names = as.data.frame(names) %>% dplyr::rename(period = 1)
+icrates.net.names = icrates.net.names[order(factor(icrates.net.names$period, levels = icrates.names)),]
+icrates.net.names = as.data.frame(icrates.net.names) %>% 
   dplyr::rename(period = 1)
-icrates.net.names$period <-
-  factor(icrates.net.names$period, levels = icrates.names)
-icrates.net.names <-
-  icrates.net.names[order(icrates.net.names$period), ] %>% 
-  as.data.frame() %>% 
-  dplyr::rename(period = 1)
-icrates.net.names$period <- as.character(icrates.net.names$period)
 
 network.names <- as.data.frame(paste("network", unlist(ICRATES.ta.num), sep = "_")) %>% 
   dplyr::rename(network = 1)
@@ -89,10 +92,14 @@ which.median <- function(x) ceiling(max(x)/2)
 
 # Get rows with the median amount of graphs.
 net.seq.median <- icrates.num.net.seq %>%
-     group_by(period) %>%
-     slice(which.median(graphs))
+     filter(graphs == which.median(graphs)) %>%
+  group_by(period) %>%
+  slice_sample()
+
+subsample = icrates.names[c(1, 10, 20, 30, 40, 50)]
 
 net.seq.full <- rbind(net.seq.max, net.seq.min, net.seq.median) %>% 
+  filter(period %in% subsample) %>%
   arrange(index) %>%
   ungroup() %>% 
   dplyr::select(index) %>% 
