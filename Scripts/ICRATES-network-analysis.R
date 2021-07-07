@@ -116,7 +116,7 @@ for(index in 1:length(graphs)) {
     }
   }
 }
-write.csv(modelerrors2, file = "output/ICRATES/model-errors_ta-to-ta.csv")
+#write.csv(modelerrors2, file = "output/ICRATES/model-errors_ta-to-ta.csv")
 ggsave("figures/null-models/ICRATES/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
 
 
