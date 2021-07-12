@@ -1,0 +1,877 @@
+---
+title: "ICRATES Sensitivity Analysis - Subsample"
+author: "Andrew Gillreath-Brown & Emily Coco"
+date: "4/21/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(igraph)
+library(ggraph)
+library(purrr)
+library(stringr)
+library(DT)
+library(ggpubr)
+library(gridExtra)
+# library(statnet)
+# library(tnet)
+# library(intergraph)
+
+```
+
+# Sensitivity Analysis
+Here, we run a variety of sensitivity analyses on the original and time-averaged networks. This code has been adapted from Peeples, Matthew A. 2017. Network Science and Statistical Techniques for Dealing with Uncertainties in Archaeological Datasets. [online]. Available: [www.mattpeeples.net/netstats.html](http://www.mattpeeples.net/netstats.html). One main difference is that we use `igraph` rather than the `sna` and `network` packages.
+
+## Load and prepare data for sensitivity analysis.
+
+```{r load_data}
+
+# First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we will only use Chaco_ta_graphs, as the first network for each time period will be the original graph.
+files = list.files("../Data", pattern= "ICRATES_ta")
+for(f in files) {
+  load(paste0("../Data/", f))
+}
+
+ICRATES_ta_graphs = c(i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, 
+                      i11, i12, i13, i14, i15, i16, i17, i18, i19, i20, 
+                      i21, i22, i23, i24, i25)  
+
+
+load("../Data/ICRATES/timeslice_levels.RData")
+
+# The lists are unnested for 1 level.
+ICRATES.nets <- purrr::map(ICRATES_ta_graphs, 1)
+# List unnested for level 2 to get number of graphs averaged at each list position
+ICRATES.ta.num = purrr::map(ICRATES_ta_graphs, 2)
+# Give names to each list for each time period to keep track.
+icrates.names <- lvls
+names(ICRATES.nets) <- icrates.names 
+
+# Further prepare a name list that will be used to rename elements in a list for plotting (i.e., to have a time period [e.g., chaco800] concatenated to a network number [e.g., chaco800_network_1]).
+names = c()
+for(i in 1:length(ICRATES.nets)) {
+  names = c(names, rep(names(ICRATES.nets)[i], each=length(ICRATES.nets[[i]])))
+}
+icrates.net.names = as.data.frame(names) %>% dplyr::rename(period = 1)
+icrates.net.names = icrates.net.names[order(factor(icrates.net.names$period, levels = icrates.names)),]
+icrates.net.names = as.data.frame(icrates.net.names) %>% 
+  dplyr::rename(period = 1)
+
+network.names <- as.data.frame(paste("network", unlist(ICRATES.ta.num), sep = "_")) %>% 
+  dplyr::rename(network = 1)
+
+icrates.net.names.full <- cbind(icrates.net.names, network.names)
+icrates.net.names.full <- icrates.net.names.full %>% 
+  tidyr::unite(period_network, c("period", "network"))
+
+#Next (for additional setup for outputting plots into pdfs), get the total number of networks (the chaco 20 time averaged networks per time period for a total of 400). Then, create a sequence, which will be used as an index to extract 3 ggplot objects per time period.
+icrates.num.net.seq <- ICRATES.ta.num %>% 
+  unlist() %>% 
+  as.data.frame() %>% 
+  dplyr::rename("graphs" = 1) %>% 
+  dplyr::mutate(index = 1:length(graphs)) %>% 
+  dplyr::mutate(icrates.net.names)
+
+# Get rows with the maximum graphs for each period.
+net.seq.max <- icrates.num.net.seq %>%
+     group_by(period) %>%
+     slice(which.max(graphs))
+
+# Get rows with the minimum graphs (i.e., the original).
+net.seq.min <- icrates.num.net.seq %>%
+     group_by(period) %>%
+     slice(which.min(graphs))
+
+# Function for finding the middle value.
+which.median <- function(x) ceiling(max(x)/2)
+
+# Get rows with the median amount of graphs.
+net.seq.median <- icrates.num.net.seq %>%
+     filter(graphs == which.median(graphs)) %>%
+  group_by(period) %>%
+  slice_sample()
+
+subsample = icrates.names[c(1, 10, 20, 30, 40, 50)]
+subsample2 = icrates.names[c(1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)]
+
+net.seq.full <- rbind(net.seq.max, net.seq.min, net.seq.median) %>% 
+  filter(period %in% subsample) %>%
+  arrange(index) %>%
+  ungroup() %>% 
+  dplyr::select(index) %>% 
+  unlist()
+
+
+ICRATES.nets.sub = ICRATES.nets[subsample2]
+
+```
+
+## Functions to get multiple centrality scores for binary networks.
+```{r centrality, echo=FALSE}
+
+# Calculate centrality scores for binary networks for igraph objects.
+net.stats <- function(y) {
+    # Calculate degree centrality
+    dg <- as.matrix(igraph::degree(y))
+    # Calculate eigenvector centrality
+    eg <- as.matrix(igraph::evcent(y)$vector)
+    # Calculate betweenness centrality
+    bw <- igraph::betweenness(y, normalized = TRUE, directed = FALSE)
+    # Combine centrality scores into matrix
+    output <- cbind(dg, eg, bw)
+    colnames(output) <- c("dg", "eg", "bw")
+    return(output)
+}  # return results of this function
+
+net.stats.single <- function(y) {
+    # Calculate clustering coefficient
+    cc <- igraph::transitivity(y, "global")
+    # Calculate modularity
+    wtc = igraph::cluster_walktrap(y)
+    mod <- igraph::modularity(as.undirected(y), membership(wtc))
+    # Combine centrality scores into matrix
+    output <- cbind(cc, mod)
+    colnames(output) <- c("cc", "mod")
+    return(output)
+}  # return results of this function
+
+```
+
+## Functions for creating outputs
+```{r output_functions, echo = FALSE, warning=F, message=F}
+
+# Create output table for sensitivity analysis.
+create_output_tables = function(BR.list) {
+  dg.df = data.frame()
+  eg.df = data.frame()
+  bt.df = data.frame()
+  cc.df = data.frame()
+  mod.df = data.frame()
+  
+  for (n in icrates.names) {
+    for (ta in 1:length(BR.list[n][[1]])) {
+      dg = as.data.frame(BR.list[n][[1]][[ta]][[1]]) %>%
+        tidyr::gather(
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = dg.rho
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      dg.df = rbind(dg.df, dg)
+      
+      eg = as.data.frame(BR.list[n][[1]][[ta]][[2]]) %>%
+        tidyr::gather(
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = eg.rho
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      eg.df = rbind(eg.df, eg)
+      
+      bt = as.data.frame(BR.list[n][[1]][[ta]][[3]]) %>%
+        tidyr::gather(
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = bt.rho
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      bt.df = rbind(bt.df, bt)
+      
+      cc = as.data.frame(BR.list[n][[1]][[ta]][[4]]) %>%
+        tidyr::gather(
+          "S100",
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = cc.val
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      cc.df = rbind(cc.df, cc)
+      
+      mod = as.data.frame(BR.list[n][[1]][[ta]][[5]]) %>%
+        tidyr::gather(
+          "S100",
+          "S90",
+          "S80",
+          "S70",
+          "S60",
+          "S50",
+          "S40",
+          "S30",
+          "S20",
+          "S10",
+          key = sample.perc,
+          value = mod.val
+        ) %>%
+        dplyr::mutate(sample.perc = as.numeric(str_sub(
+          sample.perc,
+          start = 2,
+          end = length(sample.perc)
+        ))) %>%
+        dplyr::arrange(sample.perc) %>%
+        dplyr::mutate(num.net = ta) %>%
+        dplyr::mutate(orig.net = n)
+      mod.df = rbind(mod.df, mod)
+    }
+  }
+  
+  output.dg = dg.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(dg.rho, na.rm = TRUE),
+      quart.1 = quantile(dg.rho, probs = 0.25, na.rm = TRUE),
+      med = median(dg.rho, na.rm = TRUE),
+      quart.3 = quantile(dg.rho, probs = 0.75, na.rm = TRUE),
+      max = max(dg.rho, na.rm = TRUE)
+    ) %>%
+    dplyr::mutate(orig.net = factor(orig.net, levels = icrates.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  output.eg = eg.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(eg.rho, na.rm = TRUE),
+      quart.1 = quantile(eg.rho, probs = 0.25, na.rm = TRUE),
+      med = median(eg.rho, na.rm = TRUE),
+      quart.3 = quantile(eg.rho, probs = 0.75, na.rm = TRUE),
+      max = max(eg.rho, na.rm = TRUE)
+    ) %>%
+    dplyr::mutate(orig.net = factor(orig.net, levels = icrates.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  output.bt = bt.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(bt.rho, na.rm = TRUE),
+      quart.1 = quantile(bt.rho, probs = 0.25, na.rm = TRUE),
+      med = median(bt.rho, na.rm = TRUE),
+      quart.3 = quantile(bt.rho, probs = 0.75, na.rm = TRUE),
+      max = max(bt.rho, na.rm = TRUE)
+    ) %>%
+    dplyr::mutate(orig.net = factor(orig.net, levels = icrates.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  output.cc = cc.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(cc.val, na.rm = TRUE),
+      quart.1 = quantile(cc.val, probs = 0.25, na.rm = TRUE),
+      med = median(cc.val, na.rm = TRUE),
+      quart.3 = quantile(cc.val, probs = 0.75, na.rm = TRUE),
+      max = max(cc.val, na.rm = TRUE)
+    ) %>%
+    dplyr::mutate(orig.net = factor(orig.net, levels = icrates.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  output.mod = mod.df %>% group_by(orig.net, num.net, sample.perc) %>%
+    summarize(
+      min = min(mod.val, na.rm = TRUE),
+      quart.1 = quantile(mod.val, probs = 0.25, na.rm = TRUE),
+      med = median(mod.val, na.rm = TRUE),
+      quart.3 = quantile(mod.val, probs = 0.75, na.rm = TRUE),
+      max = max(mod.val, na.rm = TRUE)
+    ) %>%
+    dplyr::mutate(orig.net = factor(orig.net, levels = icrates.names)) %>%
+    dplyr::arrange(orig.net)
+  
+  return(list(output.dg, output.eg, output.bt, output.cc, output.mod))
+}
+
+```
+
+## Function for creating plots
+```{r plot_function, echo = FALSE, warning=F, message=F}
+
+plot_sa <- function(sa.data) {
+  # Prepare data for plotting.
+  dg.mat <- as.data.frame(sa.data[[1]]) %>%
+    tidyr::gather(s.fraction, values)
+  ev.mat <- as.data.frame(sa.data[[2]]) %>%
+    tidyr::gather(s.fraction, values)
+  bw.mat <- as.data.frame(sa.data[[3]]) %>%
+    tidyr::gather(s.fraction, values)
+  
+  cc.mat.long <- as.data.frame(sa.data[[4]]) %>%
+    tidyr::gather(
+      "S100",
+      "S90",
+      "S80",
+      "S70",
+      "S60",
+      "S50",
+      "S40",
+      "S30",
+      "S20",
+      "S10",
+      key = sample.perc,
+      value = cc.score
+    )
+  
+  mod.mat.long <- as.data.frame(sa.data[[5]]) %>%
+    tidyr::gather(
+      "S100",
+      "S90",
+      "S80",
+      "S70",
+      "S60",
+      "S50",
+      "S40",
+      "S30",
+      "S20",
+      "S10",
+      key = sample.perc,
+      value = mod.score
+    )
+  
+  # Save individual plots, then can create an arranged plot, so that each network has 1 set of figures.
+  dg.mat.plot <- ggpubr::ggboxplot(
+    dg.mat,
+    title = "Degree Centrality",
+    x = "s.fraction",
+    y = "values",
+    xlab = "Sampling Fraction",
+    ylab = "Spearman's Rho",
+    bxp.errorbar = TRUE
+  ) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic()
+  
+  ev.mat.plot <- ggpubr::ggboxplot(
+    ev.mat,
+    title = "Eigenvector Centrality",
+    x = "s.fraction",
+    y = "values",
+    xlab = "Sampling Fraction",
+    ylab = "Spearman's Rho",
+    bxp.errorbar = TRUE
+  ) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic()
+  
+  bw.mat.plot <- ggpubr::ggboxplot(
+    bw.mat,
+    title = "Betweenness Centrality",
+    x = "s.fraction",
+    y = "values",
+    xlab = "Sampling Fraction",
+    ylab = "Spearman's Rho",
+    bxp.errorbar = TRUE
+  ) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic()
+  
+  cc.mat.long.plot <- ggpubr::ggline(
+    cc.mat.long,
+    title = "Clustering Coefficient",
+    x = "sample.perc",
+    y = "cc.score",
+    xlab = "Sampling Fraction",
+    ylab = "Clustering Coefficient Value"
+  ) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme_classic(base_size = 9)
+  
+  mod.mat.long.plot <- ggpubr::ggline(
+    mod.mat.long,
+    title = "Modularity",
+    x = "sample.perc",
+    y = "mod.score",
+    xlab = "Sampling Fraction",
+    ylab = "Modularity Value"
+  ) +
+    theme_classic()
+  
+  
+    plot <- ggpubr::ggarrange(
+      NULL,
+      dg.mat.plot,
+      NULL,
+      ev.mat.plot,
+      NULL,
+      bw.mat.plot,
+      NULL,
+      cc.mat.long.plot,
+      NULL,
+      mod.mat.long.plot,
+      labels = c("", "A", "", "B", "", "C", "", "D", "", "E"),
+      ncol = 4,
+      nrow = 3,
+      widths = c(0.06, 1, 0.06, 1),
+      label.x = -0.04
+    )
+    
+    return(plot)
+  
+}
+
+```
+
+
+## Potential Impact of Missing Nodes
+
+### Over multiple centrality measures and/or networks
+
+```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
+
+# Set number of replicates.
+nsim <- 100
+samp.frac <-
+  c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
+
+# Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
+cv.resamp.bin <- function(x) {
+  # Calculate all network stats for the original network.
+  stats.g <- net.stats(x)
+  stats.g.single <- net.stats.single(x)
+  mat <- as.matrix(igraph::get.adjacency(x))
+  # Count number of rows (nodes).
+  dim.x <- dim(mat)[1]
+  # Define empty matrices for output.
+  dg.mat <- matrix(NA, nsim, 9)
+  ev.mat <- matrix(NA, nsim, 9)
+  bw.mat <- matrix(NA, nsim, 9)
+  cc.mat <- matrix(NA, 1, 9)
+  mod.mat <- matrix(NA, 1, 9)
+  # Add column names based on sampling fraction.
+  colnames(dg.mat) <- samp.frac
+  colnames(ev.mat) <- samp.frac
+  colnames(bw.mat) <- samp.frac
+  colnames(cc.mat) <- samp.frac
+  colnames(mod.mat) <- samp.frac
+  
+  # This double loop goes through each sampling fraction and each random replicate to calculate centrality statistics and runs a Spearman's Rho correlation between the resulting centrality values and the original sample. However, for clustering coefficient and modularity, these will just output the values from the different networks.
+  for (j in 1:9) {
+    for (i in 1:nsim) {
+      sub.samp <-
+        sample(seq(1, dim.x),
+               size = round(dim.x * ((10 - j) / 10),
+                            0),
+               replace = F)
+      temp.stats <-
+        net.stats(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
+      temp.stats.single <-
+        net.stats.single(igraph::graph_from_adjacency_matrix(mat[sub.samp, sub.samp]))
+      dg.mat[i, j] <-
+        suppressWarnings(cor(temp.stats[, 1], stats.g[sub.samp,
+                                                      1], method = "spearman"))
+      ev.mat[i, j] <-
+        suppressWarnings(cor(temp.stats[, 2], stats.g[sub.samp,
+                                                      2], method = "spearman"))
+      bw.mat[i, j] <-
+        suppressWarnings(cor(temp.stats[, 3], stats.g[sub.samp,
+                                                      3], method = "spearman"))
+      cc.mat[1, j] <- temp.stats.single[, 1]
+      mod.mat[1, j] <- temp.stats.single[, 2]
+    }
+  }
+  # Add original to cc.mat and mod.mat (i.e,. 100% sampling).
+  cc.mat <- as.data.frame(cc.mat) %>%
+    dplyr::mutate(S100 = stats.g.single[1]) %>%
+    dplyr::select(S100, everything()) %>%
+    as.matrix()
+  mod.mat <- as.data.frame(mod.mat) %>%
+    dplyr::mutate(S100 = stats.g.single[2]) %>%
+    dplyr::select(S100, everything()) %>%
+    as.matrix()
+  # Create list for output and populate it.
+  out.list <- list()
+  out.list[[1]] <- dg.mat
+  out.list[[2]] <- ev.mat
+  out.list[[3]] <- bw.mat
+  out.list[[4]] <- cc.mat
+  out.list[[5]] <- mod.mat
+  
+  return(out.list)
+}  # return the resulting list
+
+
+# Now apply the function to a subsample of networks from the ICRATES dataset.
+BR.rs <- ICRATES.nets.sub %>%
+  purrr::map(~ purrr::map(.x, cv.resamp.bin))
+
+
+# Create output tables for node removal sensitivity analysis
+outputs.rs = create_output_tables(BR.rs)
+# knitr::kable(outputs.rs[[1]], caption = "Degree Centrality Rho Values")
+# knitr::kable(outputs.rs[[2]], caption = "Eigenvector Centrality Rho Values")
+# knitr::kable(output.rs[[3]], caption = "Betweenness Centrality Rho Values")
+# knitr::kable(output.rs[[4]], caption = "Clustering Coefficient Values")
+# knitr::kable(output.rs[[5]], caption = "Modularity Values")
+datatable(
+  outputs.rs[[1]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Degree Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.rs[[2]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Eigenvector Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.rs[[3]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Betweenness Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.rs[[4]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Clustering Coefficient Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.rs[[5]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Modularity Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+
+
+# Plotting
+# First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network index number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
+BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
+
+# This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
+plots_sa_nodes <- BR.rs.plotting %>%
+  purrr::map(plot_sa)
+
+# Then, we can rename each plot to have its network number along with year (e.g., chaco800_network_1).
+names(plots_sa_nodes) <- c(icrates.net.names.full$period_network)
+
+# Subset the plots to be a subsample of all the plots (only want to do the first [or original], the middle, and last for each time period [total of 60 for Chaco]). Use the list that was created above for this as an index to subset the 400 plots.
+plots_subset_nodes <- plots_sa_nodes[c(net.seq.full)]
+
+# Also, need to subset the list of names, so that we can put the name at top of each page as a title with each plot.
+icrates.net.names.full.subset <- icrates.net.names.full[c(net.seq.full),]
+
+# Arrange each ggplot object to be 1 per page. Use marrangeGrob so that can save each ggplot object to each page, and also put name at top of page.
+ml.nodes <- gridExtra::marrangeGrob(plots_subset_nodes, nrow=1, ncol=1, top=quote(names(plots_subset_nodes)[g]))
+
+# Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
+ggsave("../figures/sensitivity-analysis/ICRATES/sensitivity.nodes.plots.subsample.pdf", 
+ml.nodes, scale = 1.5)
+ml.nodes
+
+```
+
+
+## Potential impact of missing edges
+```{r missing_edges, echo=FALSE, warning=F, message=F}
+
+# Set number of replicates.
+nsim <- 100
+samp.frac <-
+  c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
+
+# Create a function that calculates correlations between the original and sub-sampled replicates from 90% to 10% for all three of the primary measures of centrality and clustering coefficient and modularity using the format from the net.stats and net.stats.single function to assess the rank order correlation of nodes.
+cv.resamp.edge <- function(x) {
+  stats.g <- net.stats(x)
+  stats.g.single <- net.stats.single(x)
+  mat <- as.matrix(igraph::get.adjacency(x))
+  dim.x <- dim(mat)[1]
+  dg.mat <- matrix(NA, nsim, 9)
+  ev.mat <- matrix(NA, nsim, 9)
+  bw.mat <- matrix(NA, nsim, 9)
+  cc.mat <- matrix(NA, 1, 9)
+  mod.mat <- matrix(NA, 1, 9)
+  colnames(dg.mat) <- samp.frac
+  colnames(ev.mat) <- samp.frac
+  colnames(bw.mat) <- samp.frac
+  colnames(cc.mat) <- samp.frac
+  colnames(mod.mat) <- samp.frac
+  
+  for (j in 1:9) {
+    for (i in 1:nsim) {
+      sub.samp <-
+        sample(
+          seq(1, igraph::gsize(x)),
+          size = round(igraph::gsize(x) *
+                         (j / 10), 0),
+          replace = F
+        )
+      temp.net <- x
+      net.reduced <- igraph::delete.edges(temp.net, sub.samp)
+      temp.stats <- net.stats(net.reduced)
+      temp.stats.single <- net.stats.single(net.reduced)
+      dg.mat[i, j] <-
+        cor(temp.stats[, 1], stats.g[, 1], method = "spearman")
+      ev.mat[i, j] <-
+        cor(temp.stats[, 2], stats.g[, 2], method = "spearman")
+      bw.mat[i, j] <-
+        cor(temp.stats[, 3], stats.g[, 3], method = "spearman")
+      cc.mat[1, j] <- temp.stats.single[, 1]
+      mod.mat[1, j] <- temp.stats.single[, 2]
+      
+    }
+  }
+  # Add original to cc.mat and mod.mat (i.e., 100% sampling).
+  cc.mat <- as.data.frame(cc.mat) %>%
+    dplyr::mutate(S100 = stats.g.single[1]) %>%
+    dplyr::select(S100, everything()) %>%
+    as.matrix()
+  mod.mat <- as.data.frame(mod.mat) %>%
+    dplyr::mutate(S100 = stats.g.single[2]) %>%
+    dplyr::select(S100, everything()) %>%
+    as.matrix()
+  
+  out.list <- list()
+  out.list[[1]] <- dg.mat
+  out.list[[2]] <- ev.mat
+  out.list[[3]] <- bw.mat
+  out.list[[4]] <- cc.mat
+  out.list[[5]] <- mod.mat
+  return(out.list)
+}
+
+# Now apply the function to a subsample of networks from the ICRATES dataset.
+BR.edge <- ICRATES.nets.sub %>%
+  purrr::map(~ purrr::map(.x, cv.resamp.edge))
+
+
+# Create output tables for node removal sensitivity analysis
+outputs.edge = create_output_tables(BR.edge)
+# knitr::kable(outputs.edge[[1]], caption = "Degree Centrality Rho Values")
+# knitr::kable(outputs.edge[[2]], caption = "Eigenvector Centrality Rho Values")
+# knitr::kable(output.edge[[3]], caption = "Betweenness Centrality Rho Values")
+# knitr::kable(output.edge[[4]], caption = "Clustering Coefficient Values")
+# knitr::kable(output.edge[[5]], caption = "Modularity Values")
+datatable(
+  outputs.edge[[1]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Degree Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.edge[[2]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Eigenvector Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.edge[[3]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Betweenness Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.edge[[4]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Clustering Coefficient Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.edge[[5]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Modularity Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+
+
+# Plotting
+# First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network index number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
+BR.edge.plotting <- unlist(BR.edge, recursive = FALSE)
+
+# This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
+plots_sa_edges <- BR.edge.plotting %>%
+  purrr::map(plot_sa)
+
+# Then, we can rename each plot to have network number along with year (e.g., chaco800_network_1).
+names(plots_sa_edges) <- c(icrates.net.names.full$period_network)
+
+# Subset the plots to be a subsample of all the plots (only want to do the first [or original], the middle, and last for each time period [total of 60 for Chaco]). Use the list that was created above for this as an index to subset the 400 plots.
+plots_subset_edges <- plots_sa_edges[c(net.seq.full)]
+
+# Also, need to subset the list of names, so that we can put the name at top of each page as a title with each plot.
+icrates.net.names.full.subset <- icrates.net.names.full[c(net.seq.full),]
+
+# Arrange each ggplot object to be 1 per page. Use marrangeGrob so that can save each ggplot object to each page, and also put name at top of page.
+ml.edges <- gridExtra::marrangeGrob(plots_subset_edges, nrow=1, ncol=1, top=quote(names(plots_subset_edges)[g]))
+
+# Save as one pdf. Use scale here in order for the multi-plots to fit on each page.
+ggsave("../figures/sensitivity-analysis/ICRATES/sensitivity.edges.plots.subsample.pdf", 
+ml.edges, scale = 1.5)
+ml.edges
+
+```
