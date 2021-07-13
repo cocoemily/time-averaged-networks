@@ -96,8 +96,9 @@ net.seq.median <- icrates.num.net.seq %>%
   group_by(period) %>%
   slice_sample()
 
-subsample = icrates.names[c(1, 10, 20, 30, 40, 50)]
-subsample2 = icrates.names[c(1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)]
+# Subsample of graphs that will be used for doing sensitivity analysis for computational purposes. The first graph is not included because it is empty. 
+subsample = icrates.names[c(2, 10, 20, 30, 40, 50)] #plotting sample
+subsample2 = icrates.names[c(2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)] #table sample
 
 net.seq.full <- rbind(net.seq.max, net.seq.min, net.seq.median) %>% 
   filter(period %in% subsample) %>%
@@ -153,7 +154,7 @@ create_output_tables = function(BR.list) {
   cc.df = data.frame()
   mod.df = data.frame()
   
-  for (n in icrates.names) {
+  for (n in names(BR.list)) {
     for (ta in 1:length(BR.list[n][[1]])) {
       dg = as.data.frame(BR.list[n][[1]][[ta]][[1]]) %>%
         tidyr::gather(
