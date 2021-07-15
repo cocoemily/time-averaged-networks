@@ -51,18 +51,26 @@ ICRATES.ta.num = purrr::map(ICRATES_ta_graphs, 2)
 # Give names to each list for each time period to keep track.
 icrates.names <- lvls
 names(ICRATES.nets) <- icrates.names 
+names(ICRATES.ta.num) = icrates.names
+
+# Subsample of graphs that will be used for doing sensitivity analysis for computational purposes. The first graph is not included because it is empty. 
+subsample = icrates.names[c(2, 10, 20, 30, 40, 50)] #plotting sample
+subsample2 = icrates.names[c(2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)] #table sample
+
+ICRATES.nets.sub = ICRATES.nets[subsample2[1:2]]
+ICRATES.ta.num.sub = ICRATES.ta.num[subsample2[1:2]]
 
 # Further prepare a name list that will be used to rename elements in a list for plotting (i.e., to have a time period [e.g., chaco800] concatenated to a network number [e.g., chaco800_network_1]).
 names = c()
-for(i in 1:length(ICRATES.nets)) {
-  names = c(names, rep(names(ICRATES.nets)[i], each=length(ICRATES.nets[[i]])))
+for(i in 1:length(ICRATES.nets.sub)) {
+  names = c(names, rep(names(ICRATES.nets.sub)[i], each=length(ICRATES.nets.sub[[i]])))
 }
 icrates.net.names = as.data.frame(names) %>% dplyr::rename(period = 1)
 icrates.net.names = icrates.net.names[order(factor(icrates.net.names$period, levels = icrates.names)),]
 icrates.net.names = as.data.frame(icrates.net.names) %>% 
   dplyr::rename(period = 1)
 
-network.names <- as.data.frame(paste("network", unlist(ICRATES.ta.num), sep = "_")) %>% 
+network.names <- as.data.frame(paste("network", unlist(ICRATES.ta.num.sub), sep = "_")) %>% 
   dplyr::rename(network = 1)
 
 icrates.net.names.full <- cbind(icrates.net.names, network.names)
@@ -70,7 +78,7 @@ icrates.net.names.full <- icrates.net.names.full %>%
   tidyr::unite(period_network, c("period", "network"))
 
 #Next (for additional setup for outputting plots into pdfs), get the total number of networks (the chaco 20 time averaged networks per time period for a total of 400). Then, create a sequence, which will be used as an index to extract 3 ggplot objects per time period.
-icrates.num.net.seq <- ICRATES.ta.num %>% 
+icrates.num.net.seq <- ICRATES.ta.num.sub %>% 
   unlist() %>% 
   as.data.frame() %>% 
   dplyr::rename("graphs" = 1) %>% 
@@ -96,9 +104,7 @@ net.seq.median <- icrates.num.net.seq %>%
   group_by(period) %>%
   slice_sample()
 
-# Subsample of graphs that will be used for doing sensitivity analysis for computational purposes. The first graph is not included because it is empty. 
-subsample = icrates.names[c(2, 10, 20, 30, 40, 50)] #plotting sample
-subsample2 = icrates.names[c(2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)] #table sample
+
 
 net.seq.full <- rbind(net.seq.max, net.seq.min, net.seq.median) %>% 
   filter(period %in% subsample) %>%
@@ -108,7 +114,7 @@ net.seq.full <- rbind(net.seq.max, net.seq.min, net.seq.median) %>%
   unlist()
 
 
-ICRATES.nets.sub = ICRATES.nets[subsample2]
+
 
 ```
 
