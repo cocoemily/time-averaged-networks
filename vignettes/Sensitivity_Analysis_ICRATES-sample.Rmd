@@ -57,8 +57,8 @@ names(ICRATES.ta.num) = icrates.names
 subsample = icrates.names[c(2, 10, 20, 30, 40, 50)] #plotting sample
 subsample2 = icrates.names[c(2, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50)] #table sample
 
-ICRATES.nets.sub = ICRATES.nets[subsample2[1:2]]
-ICRATES.ta.num.sub = ICRATES.ta.num[subsample2[1:2]]
+ICRATES.nets.sub = ICRATES.nets[subsample2]
+ICRATES.ta.num.sub = ICRATES.ta.num[subsample2]
 
 # Further prepare a name list that will be used to rename elements in a list for plotting (i.e., to have a time period [e.g., chaco800] concatenated to a network number [e.g., chaco800_network_1]).
 names = c()
