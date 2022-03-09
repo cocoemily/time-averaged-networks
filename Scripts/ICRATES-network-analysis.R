@@ -82,7 +82,7 @@ ggsave("figures/pca/ICRATES/pca-biplot.pdf", ipca)
 ####Model Errors#### - not working with betweenness
 ##comparison to original graph
 
-null.btwn = get_null_model_values(graph, FUN = calc.mean.between)
+null.btwn = get_null_model_values(graphs[[5]], FUN = calc.mean.between)
 print(null.btwn)
 
 modelerrors = calculate_model_error(graphs[[1]], comp.dfs[[1]])
