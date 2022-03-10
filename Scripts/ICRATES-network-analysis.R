@@ -79,14 +79,12 @@ ggsave("figures/pca/ICRATES/pca-biplot.pdf", ipca)
 
 
 
-####Model Errors#### - not working with betweenness
+####Model Errors####
 ##comparison to original graph
 
-null.btwn = get_null_model_values(graphs[[5]], FUN = calc.mean.between)
-print(null.btwn)
-
-modelerrors = calculate_model_error(graphs[[1]], comp.dfs[[1]])
-for(g in 2:(length(graphs)-1)) {
+#starting at graph 2 because graph 1 is empty
+modelerrors = calculate_model_error(graphs[[2]], comp.dfs[[2]])
+for(g in 3:(length(graphs)-1)) {
   modelerrors = rbind(modelerrors, calculate_model_error(graphs[[g]], comp.dfs[[g]]))
 }
 write.csv(modelerrors, file = "output/ICRATES/model-errors_ta-to-orig.csv")
@@ -99,35 +97,36 @@ ggsave("figures/null-models/ICRATES/me_ta-to-orig.pdf", plot_model_errors(modele
 # ggsave("figures/null-models/ICRATES/noncomplete_me_ta-to-orig.pdf", plot_model_errors(ncmodelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
 
 
-modelerrors2 = calculate_model_error(graphs[[1]], comp.dfs[[1]])
-for(index in 1:length(graphs)) {
-  if(index == 1) { 
-    for(i in 2:(length(graphs)-index)) {
-      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), comp.dfs[[index]]))
-    }
-  } else if(index == length(graphs)) {
-    modelerrors2 = rbind(modelerrors2, calculate_model_error(graphs[[index]], comp.dfs[[index]]))
-    for(i in 1:(length(graphs)-1)) {
-      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), comp.dfs[[index]]))
-    }
-  } else { 
-    modelerrors2 = rbind(modelerrors2, calculate_model_error(graphs[[index]], comp.dfs[[index]]))
-    for(i in 1:(length(graphs)-index)) {
-      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), comp.dfs[[index]]))
-    }
-    for(i in 1:(index-1)) {
-      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), comp.dfs[[index]]))
-    }
-  }
-}
-me1 = modelerrors2[1:276238,]
-me2 = modelerrors2[276239:552476,]
-me3 = modelerrors2[552477:828715,]
-me4 = modelerrors2[828716:nrow(modelerrors2),]
-write.csv(me1, file = "output/ICRATES/model-errors_ta-to-ta_1.csv")
-write.csv(me2, file = "output/ICRATES/model-errors_ta-to-ta_2.csv")
-write.csv(me3, file = "output/ICRATES/model-errors_ta-to-ta_3.csv")
-write.csv(me4, file = "output/ICRATES/model-errors_ta-to-ta_4.csv")
-ggsave("figures/null-models/ICRATES/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
+#this analysis no longer included in paper
+# modelerrors2 = calculate_model_error(graphs[[1]], comp.dfs[[1]])
+# for(index in 1:length(graphs)) {
+#   if(index == 1) { 
+#     for(i in 2:(length(graphs)-index)) {
+#       modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), comp.dfs[[index]]))
+#     }
+#   } else if(index == length(graphs)) {
+#     modelerrors2 = rbind(modelerrors2, calculate_model_error(graphs[[index]], comp.dfs[[index]]))
+#     for(i in 1:(length(graphs)-1)) {
+#       modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), comp.dfs[[index]]))
+#     }
+#   } else { 
+#     modelerrors2 = rbind(modelerrors2, calculate_model_error(graphs[[index]], comp.dfs[[index]]))
+#     for(i in 1:(length(graphs)-index)) {
+#       modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), comp.dfs[[index]]))
+#     }
+#     for(i in 1:(index-1)) {
+#       modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), comp.dfs[[index]]))
+#     }
+#   }
+# }
+# me1 = modelerrors2[1:276238,]
+# me2 = modelerrors2[276239:552476,]
+# me3 = modelerrors2[552477:828715,]
+# me4 = modelerrors2[828716:nrow(modelerrors2),]
+# write.csv(me1, file = "output/ICRATES/model-errors_ta-to-ta_1.csv")
+# write.csv(me2, file = "output/ICRATES/model-errors_ta-to-ta_2.csv")
+# write.csv(me3, file = "output/ICRATES/model-errors_ta-to-ta_3.csv")
+# write.csv(me4, file = "output/ICRATES/model-errors_ta-to-ta_4.csv")
+# ggsave("figures/null-models/ICRATES/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
 
 
