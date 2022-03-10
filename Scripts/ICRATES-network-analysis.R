@@ -85,6 +85,7 @@ ggsave("figures/pca/ICRATES/pca-biplot.pdf", ipca)
 #starting at graph 2 because graph 1 is empty
 modelerrors = calculate_model_error(graphs[[2]], comp.dfs[[2]])
 for(g in 3:(length(graphs)-1)) {
+  print(g) #to see which graph is breaking it
   modelerrors = rbind(modelerrors, calculate_model_error(graphs[[g]], comp.dfs[[g]]))
 }
 write.csv(modelerrors, file = "output/ICRATES/model-errors_ta-to-orig.csv")
