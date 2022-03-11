@@ -69,98 +69,102 @@ get_null_model_values = function(graph, FUN = calc.diam) {
 #' @return dataframe with model errors
 #'
 calculate_model_error = function(graph, df) {
-
-  null.btwn = get_null_model_values(graph, FUN = calc.mean.between)
-  if(sum(median(null.btwn) > df$btwn) == length(df$btwn)) {
-    df$btwn_me = (median(null.btwn) - df$btwn)/(quantile(null.btwn, 0.95) - median(null.btwn))
-  } else if (sum(median(null.btwn) < df$btwn) == length(df$btwn)) {
-    df$btwn_me = (median(null.btwn) - df$btwn)/(median(null.btwn) - quantile(null.btwn, 0.05))     
-  } else {
-    df$btwn_me = ifelse(median(null.btwn) > df$btwn,
-                        (median(null.btwn) - df$btwn)/(quantile(null.btwn, 0.975) - median(null.btwn)),
-                        (median(null.btwn) - df$btwn)/(median(null.btwn) - quantile(null.btwn, 0.025)))
-  }                   
   
-  null.eigen = get_null_model_values(graph, FUN = calc.mean.eigen)
-  if(sum(median(null.eigen) > df$eigen) == length(df$eigen)) {
-    df$eigen_me = (median(null.eigen) - df$eigen)/(quantile(null.eigen, 0.95) - median(null.eigen))
-  } else if (sum(median(null.eigen) < df$eigen) == length(df$eigen)) {
-    df$eigen_me = (median(null.eigen) - df$eigen)/(median(null.eigen) - quantile(null.eigen, 0.05))     
-  } else {
-    df$eigen_me = ifelse(median(null.eigen) > df$eigen, 
-                         (median(null.eigen) - df$eigen)/(quantile(null.eigen, 0.975) - median(null.eigen)), 
-                         (median(null.eigen) - df$eigen)/(median(null.eigen) - quantile(null.eigen, 0.025)))
-  }                   
-  
-  # ---->> does not work + is not visualisaed originally either <<----
-  # null.pl = get_null_model_values(graph, FUN = calc.mean.path.length) # function seems to work here
-  # if(sum(median(null.pl) > df$pl) == length(df$pl)) {
-  #   df$pl_me = (median(null.pl) - df$pl)/(quantile(null.pl, 0.95) - median(null.pl))
-  # } else if (sum(median(null.pl) < df$pl) == length(df$pl)) {
-  #   df$pl_me = (median(null.pl) - df$pl)/(median(null.pl) - quantile(null.pl, 0.05))     
-  # } else {
-  #   df$pl_me = ifelse(median(null.pl) > df$path.length, 
-  #                     (median(null.pl) - df$path.length)/(quantile(null.pl, 0.975) - median(null.pl)), 
-  #                     (median(null.pl) - df$path.length)/(median(null.pl) - quantile(null.pl, 0.025)))
-  # }                   
-  
-  null.diam = get_null_model_values(graph, FUN = calc.diam)
-  if(sum(median(null.diam) > df$diam) == length(df$diam)) {
-    df$diam_me = (median(null.diam) - df$diam)/(quantile(null.diam, 0.95) - median(null.diam))
-  } else if (sum(median(null.diam) < df$diam) == length(df$diam)) {
-    df$diam_me = (median(null.diam) - df$diam)/(median(null.diam) - quantile(null.diam, 0.05))     
-  } else {
-    df$diam_me = ifelse(median(null.diam) > df$diam, 
-                        (median(null.diam) - df$diam)/(quantile(null.diam, 0.975) - median(null.diam)), 
-                        (median(null.diam) - df$diam)/(median(null.diam) - quantile(null.diam, 0.025)))
+  if(nrow(df) != 0) {
+    
+    null.btwn = get_null_model_values(graph, FUN = calc.mean.between)
+    if(sum(median(null.btwn) > df$btwn) == length(df$btwn)) {
+      df$btwn_me = (median(null.btwn) - df$btwn)/(quantile(null.btwn, 0.95) - median(null.btwn))
+    } else if (sum(median(null.btwn) < df$btwn) == length(df$btwn)) {
+      df$btwn_me = (median(null.btwn) - df$btwn)/(median(null.btwn) - quantile(null.btwn, 0.05))     
+    } else {
+      df$btwn_me = ifelse(median(null.btwn) > df$btwn,
+                          (median(null.btwn) - df$btwn)/(quantile(null.btwn, 0.975) - median(null.btwn)),
+                          (median(null.btwn) - df$btwn)/(median(null.btwn) - quantile(null.btwn, 0.025)))
+    }                   
+    
+    null.eigen = get_null_model_values(graph, FUN = calc.mean.eigen)
+    if(sum(median(null.eigen) > df$eigen) == length(df$eigen)) {
+      df$eigen_me = (median(null.eigen) - df$eigen)/(quantile(null.eigen, 0.95) - median(null.eigen))
+    } else if (sum(median(null.eigen) < df$eigen) == length(df$eigen)) {
+      df$eigen_me = (median(null.eigen) - df$eigen)/(median(null.eigen) - quantile(null.eigen, 0.05))     
+    } else {
+      df$eigen_me = ifelse(median(null.eigen) > df$eigen, 
+                           (median(null.eigen) - df$eigen)/(quantile(null.eigen, 0.975) - median(null.eigen)), 
+                           (median(null.eigen) - df$eigen)/(median(null.eigen) - quantile(null.eigen, 0.025)))
+    }                   
+    
+    # ---->> does not work + is not visualisaed originally either <<----
+    # null.pl = get_null_model_values(graph, FUN = calc.mean.path.length) # function seems to work here
+    # if(sum(median(null.pl) > df$pl) == length(df$pl)) {
+    #   df$pl_me = (median(null.pl) - df$pl)/(quantile(null.pl, 0.95) - median(null.pl))
+    # } else if (sum(median(null.pl) < df$pl) == length(df$pl)) {
+    #   df$pl_me = (median(null.pl) - df$pl)/(median(null.pl) - quantile(null.pl, 0.05))     
+    # } else {
+    #   df$pl_me = ifelse(median(null.pl) > df$path.length, 
+    #                     (median(null.pl) - df$path.length)/(quantile(null.pl, 0.975) - median(null.pl)), 
+    #                     (median(null.pl) - df$path.length)/(median(null.pl) - quantile(null.pl, 0.025)))
+    # }                   
+    
+    null.diam = get_null_model_values(graph, FUN = calc.diam)
+    if(sum(median(null.diam) > df$diam) == length(df$diam)) {
+      df$diam_me = (median(null.diam) - df$diam)/(quantile(null.diam, 0.95) - median(null.diam))
+    } else if (sum(median(null.diam) < df$diam) == length(df$diam)) {
+      df$diam_me = (median(null.diam) - df$diam)/(median(null.diam) - quantile(null.diam, 0.05))     
+    } else {
+      df$diam_me = ifelse(median(null.diam) > df$diam, 
+                          (median(null.diam) - df$diam)/(quantile(null.diam, 0.975) - median(null.diam)), 
+                          (median(null.diam) - df$diam)/(median(null.diam) - quantile(null.diam, 0.025)))
+    }
+    
+    null.cc = get_null_model_values(graph, FUN = calc.cc)
+    if(sum(median(null.cc) > df$cc) == length(df$cc)) {
+      df$cc_me = (median(null.cc) - df$cc)/(quantile(null.cc, 0.95) - median(null.cc))
+    } else if (sum(median(null.cc) < df$cc) == length(df$cc)) {
+      df$cc_me = (median(null.cc) - df$cc)/(median(null.cc) - quantile(null.cc, 0.05))     
+    } else {
+      df$cc_me = ifelse(median(null.cc) > df$cc, 
+                        (median(null.cc) - df$cc)/(quantile(null.cc, 0.975) - median(null.cc)), 
+                        (median(null.cc) - df$cc)/(median(null.cc) - quantile(null.cc, 0.025)))
+    }  
+    
+    null.mod = get_null_model_values(graph, FUN = calc.mod)
+    if(sum(median(null.mod) > df$mod) == length(df$mod)) {
+      df$mod_me = (median(null.mod) - df$mod)/(quantile(null.mod, 0.95) - median(null.mod))
+    } else if (sum(median(null.mod) < df$mod) == length(df$mod)) {
+      df$mod_me = (median(null.mod) - df$mod)/(median(null.mod) - quantile(null.mod, 0.05))     
+    } else {
+      df$mod_me = ifelse(median(null.mod) > df$mod, 
+                         (median(null.mod) - df$mod)/(quantile(null.mod, 0.975) - median(null.mod)), 
+                         (median(null.mod) - df$mod)/(median(null.mod) - quantile(null.mod, 0.025)))
+    }  
+    
+    null.ed = get_null_model_values(graph, FUN = calc.edge.dens)
+    if(sum(median(null.ed) > df$ed) == length(df$ed)) {
+      df$ed_me = (median(null.ed) - df$ed)/(quantile(null.ed, 0.95) - median(null.ed))
+    } else if (sum(median(null.ed) < df$ed) == length(df$ed)) {
+      df$ed_me = (median(null.ed) - df$ed)/(median(null.ed) - quantile(null.ed, 0.05))     
+    } else {
+      df$ed_me = ifelse(median(null.ed) > df$edge.dens,
+                        (median(null.ed) - df$edge.dens)/(quantile(null.ed, 0.975) - median(null.ed)),
+                        (median(null.ed) - df$edge.dens)/(median(null.ed) - quantile(null.ed, 0.025)))
+    }  
+    
+    # ---->> does not work + is not visualisaed originally either <<----
+    # null.deg = get_null_model_values(graph, FUN = calc.deg.dist)
+    # if(sum(median(null.deg) > df$deg) == length(df$deg)) {
+    #   df$deg_me = (median(null.deg) - df$deg)/(quantile(null.deg, 0.95) - median(null.deg))
+    # } else if (sum(median(null.deg) < df$deg) == length(df$deg)) {
+    #   df$deg_me = (median(null.deg) - df$deg)/(median(null.deg) - quantile(null.deg, 0.05))     
+    # } else {
+    #   df$deg_me = ifelse(median(null.deg) > df$mean.deg,
+    #                      (median(null.deg) - df$mean.deg)/(quantile(null.deg, 0.975) - median(null.deg)),
+    #                      (median(null.deg) - df$mean.deg)/(median(null.deg) - quantile(null.deg, 0.025)))
+    # }  
   }
   
-  null.cc = get_null_model_values(graph, FUN = calc.cc)
-  if(sum(median(null.cc) > df$cc) == length(df$cc)) {
-    df$cc_me = (median(null.cc) - df$cc)/(quantile(null.cc, 0.95) - median(null.cc))
-  } else if (sum(median(null.cc) < df$cc) == length(df$cc)) {
-    df$cc_me = (median(null.cc) - df$cc)/(median(null.cc) - quantile(null.cc, 0.05))     
-  } else {
-    df$cc_me = ifelse(median(null.cc) > df$cc, 
-                      (median(null.cc) - df$cc)/(quantile(null.cc, 0.975) - median(null.cc)), 
-                      (median(null.cc) - df$cc)/(median(null.cc) - quantile(null.cc, 0.025)))
-  }  
-  
-  null.mod = get_null_model_values(graph, FUN = calc.mod)
-  if(sum(median(null.mod) > df$mod) == length(df$mod)) {
-    df$mod_me = (median(null.mod) - df$mod)/(quantile(null.mod, 0.95) - median(null.mod))
-  } else if (sum(median(null.mod) < df$mod) == length(df$mod)) {
-    df$mod_me = (median(null.mod) - df$mod)/(median(null.mod) - quantile(null.mod, 0.05))     
-  } else {
-    df$mod_me = ifelse(median(null.mod) > df$mod, 
-                       (median(null.mod) - df$mod)/(quantile(null.mod, 0.975) - median(null.mod)), 
-                       (median(null.mod) - df$mod)/(median(null.mod) - quantile(null.mod, 0.025)))
-  }  
-  
-  null.ed = get_null_model_values(graph, FUN = calc.edge.dens)
-  if(sum(median(null.ed) > df$ed) == length(df$ed)) {
-    df$ed_me = (median(null.ed) - df$ed)/(quantile(null.ed, 0.95) - median(null.ed))
-  } else if (sum(median(null.ed) < df$ed) == length(df$ed)) {
-    df$ed_me = (median(null.ed) - df$ed)/(median(null.ed) - quantile(null.ed, 0.05))     
-  } else {
-    df$ed_me = ifelse(median(null.ed) > df$edge.dens,
-                      (median(null.ed) - df$edge.dens)/(quantile(null.ed, 0.975) - median(null.ed)),
-                      (median(null.ed) - df$edge.dens)/(median(null.ed) - quantile(null.ed, 0.025)))
-  }  
-  
-  # ---->> does not work + is not visualisaed originally either <<----
-  # null.deg = get_null_model_values(graph, FUN = calc.deg.dist)
-  # if(sum(median(null.deg) > df$deg) == length(df$deg)) {
-  #   df$deg_me = (median(null.deg) - df$deg)/(quantile(null.deg, 0.95) - median(null.deg))
-  # } else if (sum(median(null.deg) < df$deg) == length(df$deg)) {
-  #   df$deg_me = (median(null.deg) - df$deg)/(median(null.deg) - quantile(null.deg, 0.05))     
-  # } else {
-  #   df$deg_me = ifelse(median(null.deg) > df$mean.deg,
-  #                      (median(null.deg) - df$mean.deg)/(quantile(null.deg, 0.975) - median(null.deg)),
-  #                      (median(null.deg) - df$mean.deg)/(median(null.deg) - quantile(null.deg, 0.025)))
-  # }  
-  
   return(df)
+  
 }
 
 #' 
