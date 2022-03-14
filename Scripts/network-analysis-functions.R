@@ -70,7 +70,7 @@ get_null_model_values = function(graph, FUN = calc.diam) {
 #'
 calculate_model_error = function(graph, df) {
   
-  if(nrow(df) != 0) {
+  if(gsize(graph) != 0) { #check for empty graph
     
     null.btwn = get_null_model_values(graph, FUN = calc.mean.between)
     if(sum(median(null.btwn) > df$btwn) == length(df$btwn)) {
@@ -160,10 +160,11 @@ calculate_model_error = function(graph, df) {
     #   df$deg_me = ifelse(median(null.deg) > df$mean.deg,
     #                      (median(null.deg) - df$mean.deg)/(quantile(null.deg, 0.975) - median(null.deg)),
     #                      (median(null.deg) - df$mean.deg)/(median(null.deg) - quantile(null.deg, 0.025)))
-    # }  
+    # } 
+    return(df)
   }
   
-  return(df)
+  
   
 }
 
