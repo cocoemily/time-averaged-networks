@@ -78,7 +78,7 @@ write.csv(modelerrors, file = "output/Chaco/model-errors_ta-to-orig.csv")
 
 #plot(plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")))
 ggsave("figures/null-models/Chaco/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
-
+ggsave("figures/null-models/Chaco/me_perc_ta-to-orig.pdf", plot_model_errors_bars(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), labsize = 1.1), height = 4, width = 7)
 
 
 modelerrors2 = calculate_model_error(graphs[[1]], c800)

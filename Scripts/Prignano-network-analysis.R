@@ -92,6 +92,7 @@ modelerrors = rbind(
 )
 write.csv(modelerrors, file = "output/Prignano/model-errors_ta-to-orig.csv")
 ggsave("figures/null-models/Prignano/me_ta-to-orig.pdf", plot_model_errors(modelerrors,  c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), span=0.75), height = 4, width = 7)
+ggsave("figures/null-models/Prignano/me_perc_ta-to-orig.pdf", plot_model_errors_bars(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), labsize = 2.2), height = 4, width = 7)
 
 me_eia1eta = rbind(
   calculate_model_error(average_two(eia1e.edge, eia1l.edge, groups), (eia1eta %>% filter(names == "ta2"))), 

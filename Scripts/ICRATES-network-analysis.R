@@ -90,6 +90,7 @@ for(g in 3:(length(graphs)-1)) {
 }
 write.csv(modelerrors, file = "output/ICRATES/model-errors_ta-to-orig.csv")
 ggsave("figures/null-models/ICRATES/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
+ggsave("figures/null-models/ICRATES/me_perc_ta-to-orig.pdf", plot_model_errors_bars(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), labsize = 0.8), height = 4, width = 7)
 
 # ncmodelerrors = calculate_model_error(ncgraphs[[1]], comp.dfs2[[1]])
 # for(g in 2:(length(ncgraphs)-1)) {
