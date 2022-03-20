@@ -596,6 +596,9 @@ datatable(
 # First, all the networks are unlisted. The final result is that there is the network, then the order of the time averaged networks.
 BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
 
+# Save data BR.rs.plotting for visual summary
+saveRDS(BR.rs.plotting, file = "Data/sensitivity_analysis_nodes_Prignano.rds")
+
 # This outputs a list of ggplot objects for all the time averaged networks for Prignano, using the plot_sa function.
 plots_sa_nodes <- BR.rs.plotting %>%
   purrr::map(plot_sa)
@@ -788,6 +791,9 @@ datatable(
 # Plotting
 # First, all the networks are unlisted. The final result is that there is the network, then the order of the time averaged networks.
 BR.edge.plotting <- unlist(BR.edge, recursive = FALSE)
+
+# Save data BR.edge.plotting for visual summary
+saveRDS(BR.edge.plotting, file = "Data/sensitivity_analysis_edges_Prignano.rds")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Prignano, using the plot_sa function.
 plots_sa_edges <- BR.edge.plotting %>%

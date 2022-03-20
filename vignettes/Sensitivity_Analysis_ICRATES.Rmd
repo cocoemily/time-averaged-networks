@@ -650,6 +650,9 @@ datatable(
 # First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network index number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
 BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
 
+# Save data BR.rs.plotting for visual summary
+saveRDS(BR.rs.plotting, file = "Data/sensitivity_analysis_nodes_ICRATES.rds")
+
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_nodes <- BR.rs.plotting %>%
   purrr::map(plot_sa)
@@ -849,6 +852,9 @@ datatable(
 # Plotting
 # First, all the networks are unlisted. The final result is that there is the year of the network (e.g., chaco800), then the final digits are the network index number. For example, for the first time averaged network for AD 800 would be listed as "chaco8001", then "chaco8002", and so on, and all the way to "chaco80020". Then, this would continue all the way to the 400th network, which would be "chaco125020". Below, we will rename these, so that this is much clearer.
 BR.edge.plotting <- unlist(BR.edge, recursive = FALSE)
+
+# Save data BR.edge.plotting for visual summary
+saveRDS(BR.edge.plotting, file = "Data/sensitivity_analysis_edges_ICRATES.rds")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_edges <- BR.edge.plotting %>%
