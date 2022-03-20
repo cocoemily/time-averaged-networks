@@ -163,9 +163,6 @@ calculate_model_error = function(graph, df) {
     # } 
     return(df)
   }
-  
-  
-  
 }
 
 #' 
@@ -190,4 +187,42 @@ plot_model_errors = function(modelerrors, variables, span = 0.4) {
     guides(color = FALSE) +
     theme_minimal()
   return(meplot)
+}
+
+#' 
+#' Plots percentage of significant model errors for specific variables
+#' @param modelerrors dataframe of model errors obtained from calculate_model_error function
+#' @param variables list of variables of interest (must specific with "_me" suffix)
+#' @param labsize numeric value for the label text size
+#' @return facetted graph looking at percentage of metric values different from the null model
+#' 
+plot_model_errors_bars = function(modelerrors, variables, labsize) {
+  me = modelerrors %>% gather(key = "modelerror", value = "value", variables)
+  metric.labs = c("betweenness centrality", "clustering coefficient", "diameter", 
+                  "eigenvector centrality", "modularity", "path length", 
+                  "edge density", "degree")
+  names(metric.labs) = c("btwn_me", "cc_me", "diam_me", "eigen_me", "mod_me", "pl_me", "ed_me", "deg_me")
+  me$count = ifelse((me$value <= 1 & me$value >= -1), "different", "not different")
+  tab_obs = me %>% group_by(modelerror, num.graphs) %>% summarize(obs = n(), .groups = 'rowwise')
+  tab_count = me %>% group_by(modelerror, num.graphs, count) %>% summarize(sum = n(), .groups = 'rowwise')
+  tab_all = merge(tab_obs, tab_count, by = c("modelerror", "num.graphs"))
+  tab_all$perc = tab_all$sum/tab_all$obs
+  tab_all$perc_lab = paste0(round(tab_all$perc*100, 1), "%")
+  tab_all$count = as.factor(tab_all$count)
+  barplot = ggplot(data = tab_all) +
+    aes(x = num.graphs, y = perc, fill = count, label = perc) +
+    geom_bar(stat = "identity", position = "fill", width = 0.95) + 
+    geom_label(position = position_fill(vjust = 0.5), colour = "#e5e6d8", label.size = 0, size = labsize, aes(x = num.graphs, y = perc, fill = count, label = perc_lab)) +
+    facet_wrap(~ modelerror, labeller = labeller(modelerror = metric.labs)) +
+    labs(x = "number of graphs", y = "") +
+    theme(legend.position = c(0.83, 0.1),
+          legend.direction = "vertical",
+          legend.title = element_blank(),
+          legend.background = element_blank(),
+          legend.box.background = element_rect(colour = "grey10"),
+          panel.background = element_rect(fill = "white",
+                                          colour = "white",
+                                          size = 0.5, linetype = "solid") )+
+    scale_fill_manual(values = c("different" = "#202020", "not different" = "#909090"))
+  return(barplot)
 }
