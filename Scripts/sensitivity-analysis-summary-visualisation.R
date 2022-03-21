@@ -129,8 +129,8 @@ hc.bc.grid = hw_grid(charts.bc, ncol = 2, rowheight = rowheight)
 
 # save plots in html file
 htmltools::save_html(hc.dc.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_DC_", dtAnalysis, "_", dtName, ".html"))
-htmltools::save_html(hc.ec.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "viz_summary_EC_", dtAnalysis, "_", dtName, ".html"))
-htmltools::save_html(hc.bc.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "viz_summary_BC_", dtAnalysis, "_", dtName, ".html"))
-htmltools::save_html(hc.cc, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "viz_summary_CC_", dtAnalysis, "_", dtName, ".html"))
-htmltools::save_html(hc.mo, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "viz_summary_MO_", dtAnalysis, "_", dtName, ".html"))
+htmltools::save_html(hc.ec.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_EC_", dtAnalysis, "_", dtName, ".html"))
+htmltools::save_html(hc.bc.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_BC_", dtAnalysis, "_", dtName, ".html"))
+htmltools::save_html(hc.cc, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_CC_", dtAnalysis, "_", dtName, ".html"))
+htmltools::save_html(hc.mo, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_MO_", dtAnalysis, "_", dtName, ".html"))
 
