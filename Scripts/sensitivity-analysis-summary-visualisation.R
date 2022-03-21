@@ -1,42 +1,6 @@
-# Visualize Sensitivy Analysis Results in Heatmaps
 source("Scripts/sensitivity-analysis-summary-visualisation-functions.R")
 
-# name of the dataset
-dtName = "Prignano"
-# # OR
-# dtName = "ICRATES"
-# # OR
-# dtName = "Chaco"
-
-
-# where does the sensitivity analysis refer to?
-dtAnalysis = "nodes" # Potential impact of missing nodes
-# # OR
-# dtAnalysis = "edges" # Potential impact of missing edges
-
-# load names of networks
-if (dtName == "Prignano") {
-  network.names.full = c("EIA1E_network_1", "EIA1E_network_2", "EIA1E_network_3", "EIA1E_network_4", 
-                         "EIA1E_network_5", "EIA1L_network_1", "EIA1L_network_2a", "EIA1L_network_2b", 
-                         "EIA1L_network_3a", "EIA1L_network_3b", "EIA1L_network_4a", "EIA1L_network_4b", 
-                         "EIA1L_network_5", "EIA2_network_1", "EIA2_network_2a", "EIA2_network_2b", 
-                         "EIA2_network_3a", "EIA2_network_3b", "EIA2_network_3c", "EIA2_network_4a", 
-                         "EIA2_network_4b", "EIA2_network_5", "OA_network_1", "OA_network_2a", 
-                         "OA_network_2b", "OA_network_3a", "OA_network_3b", "OA_network_4a", 
-                         "OA_network_4b", "OA_network_5", "AA_network_1", "AA_network_2", 
-                         "AA_network_3", "AA_network_4", "AA_network_5")
-  rowheight = 380
-  
-} else if (dtName == "ICRATES") {
-  network.names.full = icrates.net.names.full$period_network # from senstivity analysis
-  rowheight = 1000 # or potentially larger
-  
-} else if (dtName == "Chaco") {
-  network.names.full = NULL
-  rowheight = 380
-}
-
-# load data according to the input above
+# load data according to the input
 SA_results = readRDS(paste0("Data/sensitivity_analysis_", dtAnalysis, "_", dtName, ".rds"))
 
 # define colors
@@ -53,7 +17,7 @@ samp.frac = c("S90", "S80", "S70", "S60", "S50", "S40", "S30", "S20", "S10")
 dSF = length(samp.frac)
 
 # initialize results data
-list_res = initialize_data(dNets = dNets, dSF = dSF, samp.frac = samp.frac, network.names.full = network.names.full)
+list_res = initialize_data(dNets = dNets, dSF = dSF, samp.frac = samp.frac, network.names.full = NULL)
 
 # loop over all networks
 for (i in 1:dNets) {
@@ -154,7 +118,7 @@ hc.bc.d = plot_hc_heatmap(melted_df = melted_outliers_bc, title = paste0("Outlie
 hc.cc = plot_hc_heatmap(melted_df = melted_cc, title = paste0("Clustering Coefficient (", dtAnalysis, ")"), brewerset_Col = brewerset_Con, countdata = FALSE)
 # modularity
 hc.mo = plot_hc_heatmap(melted_df = melted_mo, title = paste0("Modularity (", dtAnalysis, ")"), brewerset_Col = brewerset_Con, countdata = FALSE)
-  
+
 # arrange plots in one page
 charts.dc = list(hc.dc.a, hc.dc.b, hc.dc.c, hc.dc.d)
 hc.dc.grid = hw_grid(charts.dc, ncol = 2, rowheight = rowheight)
@@ -164,9 +128,9 @@ charts.bc = list(hc.bc.a, hc.bc.b, hc.bc.c, hc.bc.d)
 hc.bc.grid = hw_grid(charts.bc, ncol = 2, rowheight = rowheight)
 
 # save plots in html file
-htmltools::save_html(hc.dc.grid, paste0("viz_summary_DC_", dtAnalysis, "_", dtName, ".html"))
-htmltools::save_html(hc.ec.grid, paste0("viz_summary_EC_", dtAnalysis, "_", dtName, ".html"))
-htmltools::save_html(hc.bc.grid, paste0("viz_summary_BC_", dtAnalysis, "_", dtName, ".html"))
-htmltools::save_html(hc.cc, paste0("viz_summary_CC_", dtAnalysis, "_", dtName, ".html"))
-htmltools::save_html(hc.mo, paste0("viz_summary_MO_", dtAnalysis, "_", dtName, ".html"))
+htmltools::save_html(hc.dc.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_DC_", dtAnalysis, "_", dtName, ".html"))
+htmltools::save_html(hc.ec.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "viz_summary_EC_", dtAnalysis, "_", dtName, ".html"))
+htmltools::save_html(hc.bc.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "viz_summary_BC_", dtAnalysis, "_", dtName, ".html"))
+htmltools::save_html(hc.cc, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "viz_summary_CC_", dtAnalysis, "_", dtName, ".html"))
+htmltools::save_html(hc.mo, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "viz_summary_MO_", dtAnalysis, "_", dtName, ".html"))
 

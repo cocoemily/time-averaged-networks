@@ -1,7 +1,8 @@
 
 library(reshape2)
-library(highcharter)
 library(RColorBrewer)
+library(highcharter)
+library(htmltools)
 
 # initialize summary results dataframes
 initialize_data = function(dNets, dSF, samp.frac, network.names.full) {
