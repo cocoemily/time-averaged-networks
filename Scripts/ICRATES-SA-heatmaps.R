@@ -6,8 +6,8 @@ dtName = "ICRATES"
 # heigh of heatmap
 rowheight = 1000 # or potentially larger, please change as you see fit.
 
-# NOTE for Emily: <<------
-# please hard code the network names from the senstivity analysis Rmd.
+# names of networks
+load("../Data/icrates_network_names.RData")
 network.names.full = icrates.net.names.full$period_network
 
 # Get output visuals - potential impact of missing nodes

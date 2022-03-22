@@ -78,6 +78,8 @@ chaco.net.names.full <- cbind(chaco.net.names, network.names)
 chaco.net.names.full <- chaco.net.names.full %>% 
   tidyr::unite(period_network, c("period", "network"))
 
+save(chaco.net.names.full, file="Data/chaco_network_names.RData")
+
 #Next (for additional setup for outputting plots into pdfs), get the total number of networks (the chaco 20 time averaged networks per time period for a total of 400). Then, create a sequence, which will be used as an index to extract 3 ggplot objects per time period.
 Chaco.num.net.seq <- Chaco.ta.num %>% 
   unlist() %>% 

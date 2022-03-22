@@ -7,7 +7,8 @@ dtName = "Chaco"
 rowheight = 380
 
 # names of networks
-network.names.full = NULL # please hard code the network names <<------
+load("../Data/chaco_network_names.RData")
+network.names.full = chaco.net.names.full$period_network
 
 # Get output visuals - potential impact of missing nodes
 dtAnalysis = "nodes" 
