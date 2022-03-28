@@ -6,10 +6,8 @@ dtName = "Chaco"
 # heigh of heatmap
 rowheight = 380
 
-setwd("time-averaged-networks")
-
 # names of networks
-load("Data/chaco_network_names.RData")
+load("/scratch/ec3307/time-averaged-networks/Data/chaco_network_names.RData")
 network.names.full = chaco.net.names.full$period_network
 
 # Get output visuals - potential impact of missing nodes
