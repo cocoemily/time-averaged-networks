@@ -31,13 +31,11 @@ Here, we run a variety of sensitivity analyses on the original and time-averaged
 
 ```{r load_data}
 
-getwd()
-
 # First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we will only use Chaco_ta_graphs, as the first network for each time period will be the original graph.
 #load("../Data/Chaco_graph_objects.RData")
-# load("../Data/Chaco_ta_graph_objects_1.RData")
-# load("../Data/Chaco_ta_graph_objects_2.RData")
-# load("../Data/Chaco_ta_graph_objects_3.RData")
+load("../Data/Chaco_ta_graph_objects_1.RData")
+load("../Data/Chaco_ta_graph_objects_2.RData")
+load("../Data/Chaco_ta_graph_objects_3.RData")
 
 Chaco_ta_graphs = append(append(cf, cs), ct)
 
