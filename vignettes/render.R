@@ -13,4 +13,4 @@
 load("/scratch/ec3307/time-averaged-networks/Data/Chaco_ta_graph_objects_1.RData")
 load("/scratch/ec3307/time-averaged-networks/Data/Chaco_ta_graph_objects_2.RData")
 load("/scratch/ec3307/time-averaged-networks/Data/Chaco_ta_graph_objects_3.RData")
-rmarkdown::render("vignettes/Sensitivity_Analysis.Rmd")
+rmarkdown::render("/scratch/ec3307/time-averaged-networks/vignettes/Sensitivity_Analysis.Rmd")
