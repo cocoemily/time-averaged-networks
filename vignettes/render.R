@@ -10,7 +10,7 @@
 #rmarkdown::render("vignettes/Sensitivity_Analysis_ICRATES-sample.Rmd")
 
 #run this line to render the Chaco sensitivity analysis document
-load("/scratch/ec3307/time-averaged-networks/Data/Chaco_ta_graph_objects_1.RData")
-load("/scratch/ec3307/time-averaged-networks/Data/Chaco_ta_graph_objects_2.RData")
-load("/scratch/ec3307/time-averaged-networks/Data/Chaco_ta_graph_objects_3.RData")
-rmarkdown::render("/scratch/ec3307/time-averaged-networks/vignettes/Sensitivity_Analysis.Rmd")
+# load("/scratch/ec3307/time-averaged-networks/Data/Chaco_ta_graph_objects_1.RData")
+# load("/scratch/ec3307/time-averaged-networks/Data/Chaco_ta_graph_objects_2.RData")
+# load("/scratch/ec3307/time-averaged-networks/Data/Chaco_ta_graph_objects_3.RData")
+rmarkdown::render("vignettes/Sensitivity_Analysis.Rmd")
