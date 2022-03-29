@@ -69,7 +69,7 @@ icrates.net.names.full <- cbind(icrates.net.names, network.names)
 icrates.net.names.full <- icrates.net.names.full %>% 
   tidyr::unite(period_network, c("period", "network"))
 
-save(icrates.net.names.full, file="Data/icrates_network_names.RData")
+save(icrates.net.names.full, file="../Data/icrates_network_names.RData")
 
 #Next (for additional setup for outputting plots into pdfs), get the total number of networks (the chaco 20 time averaged networks per time period for a total of 400). Then, create a sequence, which will be used as an index to extract 3 ggplot objects per time period.
 icrates.num.net.seq <- ICRATES.ta.num %>% 
@@ -653,7 +653,7 @@ datatable(
 BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
 
 # Save data BR.rs.plotting for visual summary
-saveRDS(BR.rs.plotting, file = "Data/sensitivity_analysis_nodes_ICRATES.rds")
+saveRDS(BR.rs.plotting, file = "../Data/sensitivity_analysis_nodes_ICRATES.rds")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_nodes <- BR.rs.plotting %>%
@@ -856,7 +856,7 @@ datatable(
 BR.edge.plotting <- unlist(BR.edge, recursive = FALSE)
 
 # Save data BR.edge.plotting for visual summary
-saveRDS(BR.edge.plotting, file = "Data/sensitivity_analysis_edges_ICRATES.rds")
+saveRDS(BR.edge.plotting, file = "../Data/sensitivity_analysis_edges_ICRATES.rds")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_edges <- BR.edge.plotting %>%

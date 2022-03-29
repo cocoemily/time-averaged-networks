@@ -659,7 +659,7 @@ datatable(
 BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
 
 # Save data BR.rs.plotting for visual summary
-saveRDS(BR.rs.plotting, file = "Data/sensitivity_analysis_nodes_Chaco.rds")
+saveRDS(BR.rs.plotting, file = "../Data/sensitivity_analysis_nodes_Chaco.rds")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_nodes <- BR.rs.plotting %>%
@@ -862,7 +862,7 @@ datatable(
 BR.edge.plotting <- unlist(BR.edge, recursive = FALSE)
 
 # Save data BR.edge.plotting for visual summary
-saveRDS(BR.edge.plotting, file = "Data/sensitivity_analysis_edges_Chaco.rds")
+saveRDS(BR.edge.plotting, file = "../Data/sensitivity_analysis_edges_Chaco.rds")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_edges <- BR.edge.plotting %>%
