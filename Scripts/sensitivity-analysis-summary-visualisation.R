@@ -1,7 +1,7 @@
 source("Scripts/sensitivity-analysis-summary-visualisation-functions.R")
 
 # load data according to the input
-SA_results = readRDS(paste0("../Data/sensitivity_analysis_", dtAnalysis, "_", dtName, ".rds"))
+SA_results = readRDS(paste0("Data/sensitivity_analysis_", dtAnalysis, "_", dtName, ".rds"))
 
 # define colors
 brewerset_Con = brewer.pal(11, name = "BrBG")[c(1:4, 8:11)]
@@ -128,9 +128,9 @@ charts.bc = list(hc.bc.a, hc.bc.b, hc.bc.c, hc.bc.d)
 hc.bc.grid = hw_grid(charts.bc, ncol = 2, rowheight = rowheight)
 
 # save plots in html file
-htmltools::save_html(hc.dc.grid, paste0("../figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_DC_", dtAnalysis, ".html"))
-htmltools::save_html(hc.ec.grid, paste0("../figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_EC_", dtAnalysis, ".html"))
-htmltools::save_html(hc.bc.grid, paste0("../figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_BC_", dtAnalysis, ".html"))
-htmltools::save_html(hc.cc, paste0("../figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_CC_", dtAnalysis, ".html"))
-htmltools::save_html(hc.mo, paste0("../figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_MO_", dtAnalysis, ".html"))
+htmltools::save_html(hc.dc.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_DC_", dtAnalysis, ".html"))
+htmltools::save_html(hc.ec.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_EC_", dtAnalysis, ".html"))
+htmltools::save_html(hc.bc.grid, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_BC_", dtAnalysis, ".html"))
+htmltools::save_html(hc.cc, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_CC_", dtAnalysis, ".html"))
+htmltools::save_html(hc.mo, paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_viz_summary_MO_", dtAnalysis, ".html"))
 
