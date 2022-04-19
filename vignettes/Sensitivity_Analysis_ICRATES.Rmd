@@ -470,7 +470,7 @@ plot_sa <- function(sa.data) {
 
 ### Over multiple centrality measures and/or networks
 
-```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
+```{r missing_nodes_multiple, echo=FALSE, warning=FALSE, eval=F}
 
 # Set number of replicates.
 nsim <- 100
@@ -653,7 +653,7 @@ datatable(
 BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
 
 # Save data BR.rs.plotting for visual summary
-saveRDS(BR.rs.plotting, file = "../Data/sensitivity_analysis_nodes_ICRATES.rds")
+#saveRDS(BR.rs.plotting, file = "../Data/sensitivity_analysis_nodes_ICRATES.rds")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_nodes <- BR.rs.plotting %>%
