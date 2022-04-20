@@ -223,6 +223,6 @@ plot_model_errors_bars = function(modelerrors, variables, labsize) {
           panel.background = element_rect(fill = "white",
                                           colour = "white",
                                           size = 0.5, linetype = "solid") )+
-    scale_fill_manual(values = c("different" = "#202020", "not different" = "#909090"))
+    scale_fill_manual(values = c("not different" = "#202020", "different" = "#909090"))
   return(barplot)
 }
