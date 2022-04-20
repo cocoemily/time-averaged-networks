@@ -57,6 +57,7 @@ plot_hc_heatmap = function(melted_df, title, brewerset_Col, countdata) {
     hc_tooltip(pointFormat = paste("Network: {point.y} <br> Spearman's Rho: {point.value}")) %>%
     hc_colorAxis(minColor = brewerset_Col[1], maxColor = brewerset_Col[length(brewerset_Col)],
                  stops = color_stops(length(brewerset_Col), brewerset_Col)) %>%
+    hc_plotOptions(series = list(turboThreshold = ceiling(0.8*dim(melted_df)[1])))  %>% 
     hc_title(text = title)
   return(hc)
 }
