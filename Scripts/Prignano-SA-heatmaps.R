@@ -20,9 +20,9 @@ network.names.full = c("EIA1E_network_1", "EIA1E_network_2", "EIA1E_network_3", 
 
 # Get output visuals - potential impact of missing nodes
 dtAnalysis = "nodes" 
-source("Scripts/sensitivity-analysis-summary-visualisation.R")
+source("Scripts/sensitivity-analysis-summary-visualisation-heatmap.R")
 
 # Get output visuals - potential impact of missing edges
 dtAnalysis = "edges"
-source("Scripts/sensitivity-analysis-summary-visualisation.R")
+source("Scripts/sensitivity-analysis-summary-visualisation-heatmap.R")
 
