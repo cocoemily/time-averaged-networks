@@ -4,17 +4,17 @@ source("Scripts/sensitivity-analysis-summary-visualisation-data.R")
 
 # Spearman's Rho summary data
 # degree cetrality summary data
-melted_median_dc_avg = melted_median_dc[melted_median_dc$Var1 != 1,]; melted_median_dc_avg$statistic = "median"
-melted_IQR_dc_avg = melted_IQR_dc[melted_IQR_dc$Var1 != 1,]; melted_IQR_dc_avg$statistic = "IQR"
-melted_dc_avg = rbind.data.frame(melted_median_dc_avg, melted_IQR_dc_avg); melted_dc_avg$metric = "degree centrality"
+melted_median_dc_avg = melted_median_dc[melted_median_dc$Var1 != 1,]; melted_median_dc_avg$statistic = "median"; melted_median_dc_avg$metric = "degree centrality"
+melted_IQR_dc_avg = melted_IQR_dc[melted_IQR_dc$Var1 != 1,]; melted_IQR_dc_avg$statistic = "IQR"; melted_IQR_dc_avg$metric = "degree centrality"
+melted_dc_avg = rbind.data.frame(melted_median_dc_avg, melted_IQR_dc_avg)
 # eigenvector centrality summary data
-melted_median_ec_avg = melted_median_ec[melted_median_ec$Var1 != 1,]; melted_median_ec_avg$statistic = "median"
-melted_IQR_ec_avg = melted_IQR_ec[melted_IQR_ec$Var1 != 1,]; melted_IQR_ec_avg$statistic = "IQR"
-melted_ec_avg = rbind.data.frame(melted_median_ec_avg, melted_IQR_ec_avg); melted_ec_avg$metric = "eigenvector centrality"
+melted_median_ec_avg = melted_median_ec[melted_median_ec$Var1 != 1,]; melted_median_ec_avg$statistic = "median"; melted_median_ec_avg$metric = "eigenvector centrality"
+melted_IQR_ec_avg = melted_IQR_ec[melted_IQR_ec$Var1 != 1,]; melted_IQR_ec_avg$statistic = "IQR"; melted_IQR_ec_avg$metric = "eigenvector centrality"
+melted_ec_avg = rbind.data.frame(melted_median_ec_avg, melted_IQR_ec_avg)
 # betweeness centrality summary data
-melted_median_bc_avg = melted_median_bc[melted_median_bc$Var1 != 1,]; melted_median_bc_avg$statistic = "median"
-melted_IQR_bc_avg = melted_IQR_bc[melted_IQR_bc$Var1 != 1,]; melted_IQR_bc_avg$statistic = "IQR"
-melted_bc_avg = rbind.data.frame(melted_median_bc_avg, melted_IQR_bc_avg); melted_bc_avg$metric = "betweeness centrality"
+melted_median_bc_avg = melted_median_bc[melted_median_bc$Var1 != 1,]; melted_median_bc_avg$statistic = "median"; melted_median_bc_avg$metric = "betweeness centrality"
+melted_IQR_bc_avg = melted_IQR_bc[melted_IQR_bc$Var1 != 1,]; melted_IQR_bc_avg$statistic = "IQR"; melted_IQR_bc_avg$metric = "betweeness centrality"
+melted_bc_avg = rbind.data.frame(melted_median_bc_avg, melted_IQR_bc_avg)
 # bind data
 melted_avg_summary = rbind.data.frame(melted_dc_avg, melted_ec_avg, melted_bc_avg)
 
@@ -48,11 +48,28 @@ ps2 = ggplot(melted_avg_actual, aes(x = Var2, y = value)) +
         theme_minimal() + 
         scale_color_gradient(low = "blue", high = "orange")
 
-# save plots
-ggsave(paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_SA_viz_", dtAnalysis, "_summary_value.png"), plot = ps1, height = 10, width = 10)
-ggsave(paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_SA_viz_", dtAnalysis, "_actual_value.png"), plot = ps2, height = 5, width = 10)
+# # save plots
+# ggsave(paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_SA_viz_", dtAnalysis, "_summary_value.png"), plot = ps1, height = 10, width = 10)
+# ggsave(paste0("figures/sensitivity-analysis/", dtName, "/", dtName, "_SA_viz_", dtAnalysis, "_actual_value.png"), plot = ps2, height = 5, width = 10)
 
+# # save all melted data
+# write.csv(melted_avg_summary, paste0(getwd(), "/output/", dtName, "/", dtName, "_SA_melted_avg_summary_", dtAnalysis, ".csv"), row.names = FALSE)
+# write.csv(melted_avg_actual, paste0(getwd(), "/output/", dtName, "/", dtName, "_SA_melted_avg_actual_", dtAnalysis, ".csv"), row.names = FALSE)
 
+# Scatter plot for all metrics per sampling fraction
+ggp1 = plot_facet_scatter(melted_df = melted_median_dc_avg, yaxislab = yaxislab_1, dtAnalysis = dtAnalysis)
+ggp2 = plot_facet_scatter(melted_df = melted_IQR_dc_avg, yaxislab = yaxislab_1, dtAnalysis = dtAnalysis)
+ggp3 = plot_facet_scatter(melted_df = melted_median_ec_avg, yaxislab = yaxislab_1, dtAnalysis = dtAnalysis)
+ggp4 = plot_facet_scatter(melted_df = melted_IQR_ec_avg, yaxislab = yaxislab_1, dtAnalysis = dtAnalysis)
+ggp5 = plot_facet_scatter(melted_df = melted_median_bc_avg, yaxislab = yaxislab_1, dtAnalysis = dtAnalysis)
+ggp6 = plot_facet_scatter(melted_df = melted_IQR_bc_avg, yaxislab = yaxislab_1, dtAnalysis = dtAnalysis)
+ggp7 = plot_facet_scatter(melted_df = melted_cc, yaxislab = yaxislab_2, dtAnalysis = dtAnalysis)
+ggp8 = plot_facet_scatter(melted_df = melted_mo, yaxislab = yaxislab_2, dtAnalysis = dtAnalysis)
+plotlist = list(ggp1$p, ggp2$p, ggp3$p, ggp4$p, ggp5$p, ggp6$p, ggp7$p, ggp8$p)
+names(plotlist) = c(ggp1$title, ggp2$title, ggp3$title, ggp4$title, ggp5$title, ggp6$title, ggp7$title, ggp8$title)
 
+# Save all plots in one pdf file
+ggp_save = gridExtra::marrangeGrob(grobs = plotlist, nrow = 1, ncol = 1, top = quote(names(plotlist)[g]))
+ggsave(paste0(getwd(),"/figures/sensitivity-analysis/", dtName, "/", dtName, "_SA_summary_", dtAnalysis, ".pdf"), ggp_save)
 
 

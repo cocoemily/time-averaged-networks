@@ -62,3 +62,15 @@ plot_hc_heatmap = function(melted_df, title, brewerset_Col, countdata) {
   return(hc)
 }
 
+# scatter plot function
+plot_facet_scatter = function(melted_df, yaxislab, dtAnalysis) {
+  ggp = ggplot(melted_df, aes(x = Var1, y = value)) + 
+    geom_point(alpha = alphavalue, size = pointsize, position = jitterpos, aes(col = Var1)) +
+    labs(x = "number of graphs", y = yaxislab, color = "number\nof\ngraphs") +
+    facet_wrap(~Var2) +
+    theme_minimal() + 
+    scale_color_gradient(low = "blue", high = "orange")
+  ggt = paste0(melted_df$statistic[1], " ", melted_df$metric[1], " - ", dtAnalysis)
+  return(list("p" = ggp, "title" = ggt))
+}
+
