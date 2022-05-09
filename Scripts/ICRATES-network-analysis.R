@@ -10,6 +10,8 @@ library(tidyverse)
 theme_set(theme_minimal())
 
 load("Data/ICRATES/timeslice_levels.RData")
+lvls_names = paste0(c(letters, paste0("z", letters[1:24])), ":", lvls)
+df_lvls = cbind.data.frame("lvls" = lvls, "network" = lvls_names)
 
 ##all graphs
 comp.dfs = list()
@@ -71,6 +73,10 @@ ggsave("figures/metrics/ICRATES/original-network-metrics.pdf", ioplot, width = 8
 # ggsave("figures/metrics/ICRATES/noncomplete_original-network-metrics.pdf", ioplot2, width = 8, height = 5)
 
 ####PCA Analysis####
+i_alldata = na.omit(i_alldata)
+colnames(i_alldata)[which(colnames(i_alldata) == "network")] = "lvls"
+i_alldata = merge(i_alldata, df_lvls, by = "lvls")
+head(i_alldata)
 write.csv(get_pca_variable_contribs(i_alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "output/ICRATES/pca-dim-contribs.csv")
 ipca = pca_biplot(i_alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")) +
   theme(legend.title = element_text(size = 5), 
@@ -83,21 +89,20 @@ ggsave("figures/pca/ICRATES/pca-biplot.pdf", ipca)
 ##comparison to original graph
 
 #starting at graph 2 because graph 1 is empty
-modelerrors = calculate_model_error(graphs[[2]], comp.dfs[[2]])
-for(g in 3:(length(graphs)-1)) {
+modelerrors = calculate_model_error(graphs[[1]], comp.dfs[[1]])
+for(g in 2:(length(graphs))) {
   print(g) #to see which graph is breaking it
   modelerrors = rbind(modelerrors, calculate_model_error(graphs[[g]], comp.dfs[[g]]))
 }
 write.csv(modelerrors, file = "output/ICRATES/model-errors_ta-to-orig.csv")
 ggsave("figures/null-models/ICRATES/me_ta-to-orig.pdf", plot_model_errors(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
-ggsave("figures/null-models/ICRATES/me_perc_ta-to-orig.pdf", plot_model_errors_bars(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), labsize = 0.8), height = 4, width = 7)
+ggsave("figures/null-models/ICRATES/me_perc_ta-to-orig.pdf", plot_model_errors_bars(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), labsize = 0), height = 4, width = 7)
 
 # ncmodelerrors = calculate_model_error(ncgraphs[[1]], comp.dfs2[[1]])
 # for(g in 2:(length(ncgraphs)-1)) {
 #   ncmodelerrors = rbind(ncmodelerrors, calculate_model_error(ncgraphs[[g]], comp.dfs2[[g]]))
 # }
 # ggsave("figures/null-models/ICRATES/noncomplete_me_ta-to-orig.pdf", plot_model_errors(ncmodelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
-
 
 #this analysis no longer included in paper
 # modelerrors2 = calculate_model_error(graphs[[1]], comp.dfs[[1]])

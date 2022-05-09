@@ -42,18 +42,22 @@ create_edge_list = function(slice) {
   return(df_links)
 }
 
+names = as.data.frame(list.files("Data/ICRATES/time-slices", "*.csv"))
+colnames(names) = "file"
+names = names %>% tidyr::separate(file, into = c("i", "s", "n", "r", "dates"), sep = "_") 
+names$dates = substr(names$dates, 1, nchar(names$dates)-4)
+names$n = as.numeric(names$n)
+orderid = order(names$n) # get the desired chronological order
+names = names[orderid,]
+names = as.vector(names$dates)
+
+timeslices = timeslices[orderid] # order timeslices based on the chronological sequence
+
 graphs = list()
 for(s in 1:length(timeslices)) {
   el = create_edge_list(timeslices[[s]])
   graphs[[s]] = igraph::simplify(graph_from_edgelist(as.matrix(el[,1:2]), directed=FALSE))
 }
-
-
-names = as.data.frame(list.files("Data/ICRATES/time-slices", "*.csv"))
-colnames(names) = "file"
-names = names %>% tidyr::separate(file, into = c("i", "s", "n", "r", "dates"), sep = "_") 
-names$dates = substr(names$dates, 1, nchar(names$dates)-4)
-names = as.vector(names$dates)
 
 
 #ICRATES time-averaged graphs
