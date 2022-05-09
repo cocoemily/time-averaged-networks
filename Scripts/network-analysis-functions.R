@@ -202,7 +202,7 @@ plot_model_errors_bars = function(modelerrors, variables, labsize) {
                   "eigenvector centrality", "modularity", "path length", 
                   "edge density", "degree")
   names(metric.labs) = c("btwn_me", "cc_me", "diam_me", "eigen_me", "mod_me", "pl_me", "ed_me", "deg_me")
-  me$count = ifelse((me$value <= 1 & me$value >= -1), "different", "not different")
+  me$count = ifelse((me$value <= 1 & me$value >= -1), "not different", "different")
   tab_obs = me %>% group_by(modelerror, num.graphs) %>% summarize(obs = n(), .groups = 'rowwise')
   tab_count = me %>% group_by(modelerror, num.graphs, count) %>% summarize(sum = n(), .groups = 'rowwise')
   tab_all = merge(tab_obs, tab_count, by = c("modelerror", "num.graphs"))
@@ -212,7 +212,6 @@ plot_model_errors_bars = function(modelerrors, variables, labsize) {
   barplot = ggplot(data = tab_all) +
     aes(x = num.graphs, y = perc, fill = count, label = perc) +
     geom_bar(stat = "identity", position = "fill", width = 0.95) + 
-    geom_label(position = position_fill(vjust = 0.5), colour = "#e5e6d8", label.size = 0, size = labsize, aes(x = num.graphs, y = perc, fill = count, label = perc_lab)) +
     facet_wrap(~ modelerror, labeller = labeller(modelerror = metric.labs)) +
     labs(x = "number of graphs", y = "") +
     theme(legend.position = c(0.83, 0.1),
@@ -224,5 +223,8 @@ plot_model_errors_bars = function(modelerrors, variables, labsize) {
                                           colour = "white",
                                           size = 0.5, linetype = "solid") )+
     scale_fill_manual(values = c("not different" = "#202020", "different" = "#909090"))
+  if (labsize > 0) {
+    barplot = barplot + geom_label(position = position_fill(vjust = 0.5), colour = "#e5e6d8", label.size = 0, size = labsize, aes(x = num.graphs, y = perc, fill = count, label = perc_lab))    
+  }  
   return(barplot)
 }
