@@ -545,8 +545,25 @@ cv.resamp.bin <- function(x) {
 
 
 # Now apply the function to all 400 networks (20 per time period, which is for the 20 time averaged Chaco networks) for Chaco.
-BR.rs <- ICRATES.nets %>%
-  purrr::map(~ purrr::map(.x, cv.resamp.bin))
+# BR.rs <- ICRATES.nets %>%
+#   purrr::map(~ purrr::map(.x, cv.resamp.bin))
+BR.rs = vector(mode = "list", length = length(ICRATES.nets))
+exec_time = rep(NA, length(ICRATES.nets))
+for (i in 1:length(ICRATES.nets)) {
+  start_time = Sys.time()
+  list_i = ICRATES.nets[[i]]
+  out.list = vector(mode = "list", length = length(list_i))
+  for (j in 1:length(list_i)) {
+    net_ij = list_i[[j]]
+    out.list_ij = cv.resamp.bin(net_ij)
+    out.list[[j]] = out.list_ij   
+  }
+  BR.rs[[i]] = out.list
+  print(i)
+  end_time = Sys.time()
+  exec_time[i] = difftime(end_time, start_time, units = "mins")
+  print(exec_time[i])
+}
 
 
 # Create output tables for node removal sensitivity analysis
@@ -653,7 +670,9 @@ datatable(
 BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
 
 # Save data BR.rs.plotting for visual summary
-#saveRDS(BR.rs.plotting, file = "../Data/sensitivity_analysis_nodes_ICRATES.rds")
+saveRDS(BR.rs.plotting, file = "../Data/sensitivity_analysis_nodes_ICRATES.rds")
+# Save data on execution time
+write.csv(exec_time, file = "Data/exec_time_nodes_ICRATES.csv")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_nodes <- BR.rs.plotting %>%
@@ -748,8 +767,24 @@ cv.resamp.edge <- function(x) {
 }
 
 # Now apply the function to all 400 networks (20 per time period, which is for the 20 time averaged Chaco networks) for Chaco.
-BR.edge <- ICRATES.nets %>%
-  purrr::map(~ purrr::map(.x, cv.resamp.edge))
+# BR.edge <- ICRATES.nets %>%
+#  purrr::map(~ purrr::map(.x, cv.resamp.edge))
+BR.edge = vector(mode = "list", length = length(ICRATES.nets))
+exec_time = rep(NA, length(ICRATES.nets))
+for (i in 3:length(ICRATES.nets)) {
+  start_time = Sys.time()
+  list_i = ICRATES.nets[[i]]
+  out.list = vector(mode = "list", length = length(list_i))
+  for (j in 1:length(list_i)) {
+    net_ij = list_i[[j]]
+    out.list_ij = cv.resamp.edge(net_ij)
+    out.list[[j]] = out.list_ij   
+  }
+  BR.edge[[i]] = out.list
+  print(i)
+  end_time = Sys.time()
+  exec_time[i] = difftime(end_time, start_time, units = "mins")
+}
 
 
 # # Create output tables for node removal sensitivity analysis
@@ -857,6 +892,8 @@ BR.edge.plotting <- unlist(BR.edge, recursive = FALSE)
 
 # Save data BR.edge.plotting for visual summary
 saveRDS(BR.edge.plotting, file = "../Data/sensitivity_analysis_edges_ICRATES.rds")
+# Save data on execution time
+write.csv(exec_time, file = "Data/exec_time_edges_ICRATES.csv")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_edges <- BR.edge.plotting %>%
