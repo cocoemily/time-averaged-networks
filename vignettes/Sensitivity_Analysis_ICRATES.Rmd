@@ -470,7 +470,7 @@ plot_sa <- function(sa.data) {
 
 ### Over multiple centrality measures and/or networks
 
-```{r missing_nodes_multiple, echo=FALSE, warning=FALSE, eval=F}
+```{r missing_nodes_multiple, echo=FALSE, warning=FALSE}
 
 # Set number of replicates.
 nsim <- 100
@@ -670,9 +670,9 @@ datatable(
 BR.rs.plotting <- unlist(BR.rs, recursive = FALSE)
 
 # Save data BR.rs.plotting for visual summary
-saveRDS(BR.rs.plotting, file = "../Data/sensitivity_analysis_nodes_ICRATES.rds")
+#saveRDS(BR.rs.plotting, file = "../Data/sensitivity_analysis_nodes_ICRATES.rds")
 # Save data on execution time
-write.csv(exec_time, file = "Data/exec_time_nodes_ICRATES.csv")
+#write.csv(exec_time, file = "Data/exec_time_nodes_ICRATES.csv")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_nodes <- BR.rs.plotting %>%
@@ -891,9 +891,9 @@ for (i in 3:length(ICRATES.nets)) {
 BR.edge.plotting <- unlist(BR.edge, recursive = FALSE)
 
 # Save data BR.edge.plotting for visual summary
-saveRDS(BR.edge.plotting, file = "../Data/sensitivity_analysis_edges_ICRATES.rds")
+#saveRDS(BR.edge.plotting, file = "../Data/sensitivity_analysis_edges_ICRATES.rds")
 # Save data on execution time
-write.csv(exec_time, file = "Data/exec_time_edges_ICRATES.csv")
+#write.csv(exec_time, file = "Data/exec_time_edges_ICRATES.csv")
 
 # This outputs a list of ggplot objects for all the time averaged networks for Chaco, using the plot_sa function.
 plots_sa_edges <- BR.edge.plotting %>%
