@@ -559,11 +559,13 @@ for (i in 1:length(ICRATES.nets)) {
     out.list[[j]] = out.list_ij   
   }
   BR.rs[[i]] = out.list
+  names(BR.rs)[i] = names(ICRATES.nets)[i]
   print(i)
   end_time = Sys.time()
   exec_time[i] = difftime(end_time, start_time, units = "mins")
   print(exec_time[i])
 }
+#names(BR.rs) <- icrates.names 
 
 
 # Create output tables for node removal sensitivity analysis
@@ -781,6 +783,7 @@ for (i in 3:length(ICRATES.nets)) {
     out.list[[j]] = out.list_ij   
   }
   BR.edge[[i]] = out.list
+  names(BR.edge)[i] = names(ICRATES.nets)[i]
   print(i)
   end_time = Sys.time()
   exec_time[i] = difftime(end_time, start_time, units = "mins")
