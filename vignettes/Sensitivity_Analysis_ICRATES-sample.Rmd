@@ -39,7 +39,7 @@ for(f in files) {
 
 ICRATES_ta_graphs = c(i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, 
                       i11, i12, i13, i14, i15, i16, i17, i18, i19, i20, 
-                      i21, i22, i23, i24, i25)  
+                      i21, i22, i23, i24, i25, i26, i27)  
 
 
 load("../Data/ICRATES/timeslice_levels.RData")
@@ -553,8 +553,27 @@ cv.resamp.bin <- function(x) {
 
 
 # Now apply the function to a subsample of networks from the ICRATES dataset.
-BR.rs <- ICRATES.nets.sub %>%
-  purrr::map(~ purrr::map(.x, cv.resamp.bin))
+# BR.rs <- ICRATES.nets %>%
+#   purrr::map(~ purrr::map(.x, cv.resamp.bin))
+BR.rs = vector(mode = "list", length = length(ICRATES.nets))
+exec_time = rep(NA, length(ICRATES.nets))
+for (i in 1:length(ICRATES.nets)) {
+  start_time = Sys.time()
+  list_i = ICRATES.nets[[i]]
+  out.list = vector(mode = "list", length = length(list_i))
+  for (j in 1:length(list_i)) {
+    net_ij = list_i[[j]]
+    out.list_ij = cv.resamp.bin(net_ij)
+    out.list[[j]] = out.list_ij   
+  }
+  BR.rs[[i]] = out.list
+  names(BR.rs)[i] = names(ICRATES.nets)[i]
+  print(i)
+  end_time = Sys.time()
+  exec_time[i] = difftime(end_time, start_time, units = "mins")
+  print(exec_time[i])
+}
+#names(BR.rs) <- icrates.names 
 
 
 # Create output tables for node removal sensitivity analysis
@@ -753,8 +772,25 @@ cv.resamp.edge <- function(x) {
 }
 
 # Now apply the function to a subsample of networks from the ICRATES dataset.
-BR.edge <- ICRATES.nets.sub %>%
-  purrr::map(~ purrr::map(.x, cv.resamp.edge))
+# BR.edge <- ICRATES.nets %>%
+#  purrr::map(~ purrr::map(.x, cv.resamp.edge))
+BR.edge = vector(mode = "list", length = length(ICRATES.nets))
+exec_time = rep(NA, length(ICRATES.nets))
+for (i in 3:length(ICRATES.nets)) {
+  start_time = Sys.time()
+  list_i = ICRATES.nets[[i]]
+  out.list = vector(mode = "list", length = length(list_i))
+  for (j in 1:length(list_i)) {
+    net_ij = list_i[[j]]
+    out.list_ij = cv.resamp.edge(net_ij)
+    out.list[[j]] = out.list_ij   
+  }
+  BR.edge[[i]] = out.list
+  names(BR.edge)[i] = names(ICRATES.nets)[i]
+  print(i)
+  end_time = Sys.time()
+  exec_time[i] = difftime(end_time, start_time, units = "mins")
+}
 
 
 # Create output tables for node removal sensitivity analysis

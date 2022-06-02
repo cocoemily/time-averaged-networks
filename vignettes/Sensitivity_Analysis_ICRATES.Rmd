@@ -791,102 +791,102 @@ for (i in 3:length(ICRATES.nets)) {
 
 
 # # Create output tables for node removal sensitivity analysis
-# outputs.edge = create_output_tables(BR.edge)
-# # knitr::kable(outputs.edge[[1]], caption = "Degree Centrality Rho Values")
-# # knitr::kable(outputs.edge[[2]], caption = "Eigenvector Centrality Rho Values")
-# # knitr::kable(output.edge[[3]], caption = "Betweenness Centrality Rho Values")
-# # knitr::kable(output.edge[[4]], caption = "Clustering Coefficient Values")
-# # knitr::kable(output.edge[[5]], caption = "Modularity Values")
-# datatable(
-#   outputs.edge[[1]],
-#   extensions = 'Buttons',
-#   options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
-#   caption = "Degree Centrality Rho Values",
-#   rownames = FALSE,
-#   colnames = c(
-#     "Original Network",
-#     "Number of Networks Averaged",
-#     "Sample Percentage",
-#     "Min",
-#     "1st Quartile",
-#     "Median",
-#     "3rd Quartile",
-#     "Max"
-#   )
-# ) %>%
-#   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-# datatable(
-#   outputs.edge[[2]],
-#   extensions = 'Buttons',
-#   options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
-#   caption = "Eigenvector Centrality Rho Values",
-#   rownames = FALSE,
-#   colnames = c(
-#     "Original Network",
-#     "Number of Networks Averaged",
-#     "Sample Percentage",
-#     "Min",
-#     "1st Quartile",
-#     "Median",
-#     "3rd Quartile",
-#     "Max"
-#   )
-# ) %>%
-#   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-# datatable(
-#   outputs.edge[[3]],
-#   extensions = 'Buttons',
-#   options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
-#   caption = "Betweenness Centrality Rho Values",
-#   rownames = FALSE,
-#   colnames = c(
-#     "Original Network",
-#     "Number of Networks Averaged",
-#     "Sample Percentage",
-#     "Min",
-#     "1st Quartile",
-#     "Median",
-#     "3rd Quartile",
-#     "Max"
-#   )
-# ) %>%
-#   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-# datatable(
-#   outputs.edge[[4]],
-#   extensions = 'Buttons',
-#   options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
-#   caption = "Clustering Coefficient Values",
-#   rownames = FALSE,
-#   colnames = c(
-#     "Original Network",
-#     "Number of Networks Averaged",
-#     "Sample Percentage",
-#     "Min",
-#     "1st Quartile",
-#     "Median",
-#     "3rd Quartile",
-#     "Max"
-#   )
-# ) %>%
-#   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
-# datatable(
-#   outputs.edge[[5]],
-#   extensions = 'Buttons',
-#   options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
-#   caption = "Modularity Values",
-#   rownames = FALSE,
-#   colnames = c(
-#     "Original Network",
-#     "Number of Networks Averaged",
-#     "Sample Percentage",
-#     "Min",
-#     "1st Quartile",
-#     "Median",
-#     "3rd Quartile",
-#     "Max"
-#   )
-# ) %>%
-#   formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+outputs.edge = create_output_tables(BR.edge)
+# knitr::kable(outputs.edge[[1]], caption = "Degree Centrality Rho Values")
+# knitr::kable(outputs.edge[[2]], caption = "Eigenvector Centrality Rho Values")
+# knitr::kable(output.edge[[3]], caption = "Betweenness Centrality Rho Values")
+# knitr::kable(output.edge[[4]], caption = "Clustering Coefficient Values")
+# knitr::kable(output.edge[[5]], caption = "Modularity Values")
+datatable(
+  outputs.edge[[1]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Degree Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.edge[[2]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Eigenvector Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.edge[[3]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Betweenness Centrality Rho Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.edge[[4]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Clustering Coefficient Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
+datatable(
+  outputs.edge[[5]],
+  extensions = 'Buttons',
+  options = list(dom = 'Bfrtip', buttons = c('copy', 'csv')),
+  caption = "Modularity Values",
+  rownames = FALSE,
+  colnames = c(
+    "Original Network",
+    "Number of Networks Averaged",
+    "Sample Percentage",
+    "Min",
+    "1st Quartile",
+    "Median",
+    "3rd Quartile",
+    "Max"
+  )
+) %>%
+  formatRound(c("min", "quart.1", "med", "quart.3", "max"), 3)
 
 
 # Plotting
