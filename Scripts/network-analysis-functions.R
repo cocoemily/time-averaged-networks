@@ -46,6 +46,54 @@ pca_biplot = function(alldata, variables) {
   return(p.pca)
 }
 
+#'
+#'Function produces a PCA biplot based on the time-averaged data on which the original data is plotted
+#' @param alldata all of the network metric values for each original/time-averaged network
+#' @param variables list specifying the network metrics of interest
+#' @param top.a whether the first set of graphs should be plot last therefore be on top
+#' @param pointsize numeric scalar defining the size of the points 
+#' @param repel whether to repel or not
+#' @param rlo smallest circle size
+#' @param rup largest circle size
+#' @param plot.nets selection of networks to be plotted; if NULL all networks are plotted
+#' @return PCA biplot graph
+#' 
+pca_biplot3 = function(alldata, variables, top.a, pointsize, repel, rlo, rup, plot.nets) { 
+  
+  alldata = na.omit(alldata)
+  alldata = alldata[order(alldata$network, decreasing = top.a), ]
+  
+  colorpal = RColorBrewer::brewer.pal(11, "Spectral")
+  newcol_Cat = colorRampPalette(colorpal)
+  colorcodes = newcol_Cat(length(unique(alldata$network)))
+  df_colorcodes = data.frame("network" = sort(unique(alldata$network), decreasing = top.a), "colorcodes" = colorcodes)
+  alldata = merge(alldata, df_colorcodes, by = "network")
+  alldata = alldata[order(alldata$network, decreasing = top.a), ]
+  
+  avg = alldata %>% filter(num.graphs != 1)
+  orig = alldata %>% filter(num.graphs == 1)
+   
+  pca_avg = prcomp(avg %>% dplyr::select(c(variables)), scale = T, center = T)
+   
+  orig.coord = as.data.frame(predict(pca_avg, orig %>% dplyr::select(c(variables))))
+  rownames(orig.coord) = as.character(orig$network)
+  
+  if (is.null(plot.nets)) {
+    keep.ind = 1:dim(avg)[1]
+    colorpalette = df_colorcodes$colorcodes
+  } else {
+    keep.ind = which(avg$network %in% plot.nets)
+    colorpalette = df_colorcodes$colorcodes[which(df_colorcodes$network %in% plot.nets)]
+  }
+   
+  p.pca = fviz_pca_biplot(pca_avg, axes = c(1, 2), repel = repel, pointsize = avg$num.graphs, pointshape = 21, col.var = "contrib", fill.ind = avg$network,
+                          label = "var", select.ind = list(name = keep.ind), gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), palette = colorpalette, mean.point = FALSE, title = "")
+  p.pca = p.pca + scale_size_continuous(range = c(rlo, rup))
+  p.pca = fviz_add(p.pca, orig.coord, shape = 17, labelsize = 0, color = df_colorcodes$colorcodes, pointsize = pointsize)
+  # NOTE: for ICRATES :: df_colorcodes$colorcodes[5:50]
+  return(p.pca)
+}
+
 ####Model Error Analysis####
 #'
 #' Rewire the network 100 times and calculate value of specified function
