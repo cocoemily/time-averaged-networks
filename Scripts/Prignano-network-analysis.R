@@ -105,7 +105,7 @@ for (i in 1:length(plot.nets.all)) {
   ggsave(paste0("figures/pca/Prignano/pca-biplot_", i,"_.pdf"), pcaplot_i)
 }
 
-write.csv(get_pca_variable_contribs(alldata_nodu, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length", "num.graphs")), file = "output/Chaco/pca-dim-contribs.csv")
+write.csv(get_pca_variable_contribs(alldata_nodu, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length", "num.graphs")), file = "output/Prignano/pca-dim-contribs.csv")
 
 
 
