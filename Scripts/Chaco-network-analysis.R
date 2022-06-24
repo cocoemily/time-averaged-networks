@@ -65,8 +65,31 @@ oplot = ggplot(od, aes(y = value, x = network, color = network)) +
 ggsave("figures/metrics/Chaco/original-network-metrics.pdf", oplot, width = 8, height = 5)
 
 ####PCA Analysis####
-write.csv(get_pca_variable_contribs(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "output/Chaco/pca-dim-contribs.csv")
-ggsave("figures/pca/Chaco/pca-biplot.pdf", pca_biplot(alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")))
+lvls_names = paste0(letters[1:20], ": ", name.list)
+df_lvls = cbind.data.frame("lvls" = name.list, "network" = lvls_names)
+colnames(alldata)[which(colnames(alldata) == "network")] = "lvls"
+alldata = merge(alldata, df_lvls, by = "lvls"); head(alldata)
+alldata_nodu = alldata[,] # alldata with no duplicates
+if(length(which(duplicated(alldata_nodu))) > 0) {
+  alldata_nodu = alldata_nodu[-which(duplicated(alldata_nodu)),]  
+}
+# dim(alldata)[1] - dim(alldata_nodu)[1]
+# length(name.list)
+
+# biplot for all networks
+pcaplot_all = pca_biplot3(alldata_nodu, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length", "num.graphs"), top.a = FALSE, pointsize = 6, repel = TRUE, rlo = 4, rup = 12, plot.nets = NULL) +
+  theme(legend.text = element_text(size = 8))
+ggsave(paste0("figures/pca/Chaco/pca-biplot_", "all","_.pdf"), pcaplot_all)
+write.csv(get_pca_variable_contribs(alldata_nodu, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length", "num.graphs")), file = "output/Chaco/pca-dim-contribs.csv")
+
+# biplots per network
+plot.nets.all = sort(unique(alldata_nodu$network))
+for (i in 1:length(plot.nets.all)) {
+  plot.nets.selected = plot.nets.all[i]
+  pcaplot_i = pca_biplot3(alldata_nodu, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length", "num.graphs"), top.a = FALSE, pointsize = 6, repel = FALSE, rlo = 2, rup = 10, plot.nets = plot.nets.selected) + # c("a: chaco800")
+    theme(legend.text = element_text(size = 10))
+  ggsave(paste0("figures/pca/Chaco/pca-biplot_", i,"_.pdf"), pcaplot_i)
+}
 
 ####Model Errors####
 ##comparison to original graph
