@@ -73,16 +73,31 @@ ggsave("figures/metrics/ICRATES/original-network-metrics.pdf", ioplot, width = 8
 # ggsave("figures/metrics/ICRATES/noncomplete_original-network-metrics.pdf", ioplot2, width = 8, height = 5)
 
 ####PCA Analysis####
-i_alldata = na.omit(i_alldata)
+name.list = unique(i_alldata$network)
 colnames(i_alldata)[which(colnames(i_alldata) == "network")] = "lvls"
 i_alldata = merge(i_alldata, df_lvls, by = "lvls")
-head(i_alldata)
-write.csv(get_pca_variable_contribs(i_alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")), file = "output/ICRATES/pca-dim-contribs.csv")
-ipca = pca_biplot(i_alldata, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length")) +
-  theme(legend.title = element_text(size = 5), 
-        legend.text = element_text(size = 5))
-ggsave("figures/pca/ICRATES/pca-biplot.pdf", ipca)
+alldata_nodu = i_alldata[,] # alldata with no duplicates
+if(length(which(duplicated(alldata_nodu))) > 0) {
+  alldata_nodu = alldata_nodu[-which(duplicated(alldata_nodu)),]  
+}
+# dim(i_alldata)[1] - dim(alldata_nodu)[1]
+# length(name.list)
 
+# biplot of all networks
+pcaplot_all = pca_biplot3(alldata_nodu, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length", "num.graphs"), top.a = FALSE, pointsize = 6, repel = TRUE, rlo = 4, rup = 12, plot.nets = NULL) +
+  theme(legend.text = element_text(size = 8))
+ggsave(paste0("figures/pca/ICRATES/pca-biplot_", "all","_.pdf"), pcaplot_all)
+
+# biplots per network
+plot.nets.all = sort(unique(alldata_nodu$network))
+for (i in 1:length(plot.nets.all)) {
+  plot.nets.selected = plot.nets.all[i]
+  pcaplot_i = pca_biplot3(alldata_nodu, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length", "num.graphs"), top.a = FALSE, pointsize = 6, repel = FALSE, rlo = 2, rup = 10, plot.nets = plot.nets.selected) + # c("a: chaco800")
+    theme(legend.text = element_text(size = 10))
+  ggsave(paste0("figures/pca/ICRATES/pca-biplot_", i,"_.pdf"), pcaplot_i)
+}
+
+write.csv(get_pca_variable_contribs(alldata_nodu, c("btwn", "eigen", "mean.deg", "cc", "mod", "path.length", "num.graphs")), file = "output/ICRATES/pca-dim-contribs.csv")
 
 
 ####Model Errors####
