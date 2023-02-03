@@ -9,12 +9,16 @@ time_average = function(graphs, start, end) {
   return(igraph::simplify(graph_from_edgelist(el, directed = F)))
 }
 
-get_ta_graphs = function(original, index, graphs) {
+get_ta_graphs = function(original, index, graphs, Chaco = FALSE) {
   gl = list(original)
   ngl = list(1)
   if(index == 1) { 
     for(i in 1:(length(graphs)-index)) {
-      gl = list.append(gl, time_average(graphs, index, index+i))
+      if(Chaco == T) {
+        gl = list.append(gl, time_average_CHACO(CHACO_datasets, index, index+i))
+      }else {
+        gl = list.append(gl, time_average(graphs, index, index+i))
+      }
       #ngl = list.append(ngl, i+1)
     }
     num.graphs = seq(2, length(graphs), by = 1)
@@ -23,7 +27,11 @@ get_ta_graphs = function(original, index, graphs) {
     }
   } else if(index == length(graphs)) {
     for(i in 1:(length(graphs)-1)) {
-      gl = list.append(gl, time_average(graphs, i, index))
+      if(Chaco == T) {
+        gl = list.append(gl, time_average_CHACO(CHACO_datasets, i, index))
+      } else {
+        gl = list.append(gl, time_average(graphs, i, index))
+      }
       #ngl = list.append(ngl, i+1)
     }
     num.graphs = seq(length(graphs), 2 , by = -1)
@@ -34,12 +42,20 @@ get_ta_graphs = function(original, index, graphs) {
     for(i in 1:index) {
       if(i != index) {
         for(j in index:length(graphs)) {
-          gl = list.append(gl, time_average(graphs, i, j))
+          if(Chaco == T) {
+            gl = list.append(gl, time_average_CHACO(CHACO_datasets, i, j))
+          } else {
+            gl = list.append(gl, time_average(graphs, i, j))
+          }
           ngl = list.append(ngl, (j-i+1))
         }
       } else {
         for(j in (index+1):length(graphs)) {
-          gl = list.append(gl, time_average(graphs, i, j))
+          if(Chaco == T) {
+            gl = list.append(gl, time_average_CHACO(CHACO_datasets, i, j))
+          } else {
+            gl = list.append(gl, time_average(graphs, i, j))
+          }
           ngl = list.append(ngl, (j-i+1))
         }
       }

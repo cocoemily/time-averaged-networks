@@ -2,6 +2,11 @@ source("Scripts/time-average-functions.R")
 source("Scripts/Chaco-time-average.R")
 source("Scripts/network-analysis-functions.R")
 
+#graphs = readRDS(file = "Data/Chaco_original_graph_objects.RData")
+#graphs1 = readRDS(file = "Data/Chaco_ta_graph_objects_1.RData")
+#graphs2 = readRDS(file = "Data/Chaco_ta_graph_objects_2.RData")
+#graphs3 = readRDS(file = "Data/Chaco_ta_graph_objects_3.RData")
+
 library(ggthemes)
 library(dplyr)
 library(ggplot2)
