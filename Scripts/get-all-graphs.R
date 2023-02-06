@@ -18,13 +18,24 @@ rm(list = setdiff(ls(), c("Chaco_original_graphs", "Chaco_ta_graphs",
                           "ICRATES_original_graphs", "ICRATES_ta_graphs")))
 
 save(Chaco_original_graphs, file = "Data/Chaco_original_graph_objects.RData")
-c1 = Chaco_ta_graphs[1:10]
-c2 = Chaco_ta_graphs[11:15]
-c3 = Chaco_ta_graphs[16:20]
+c1 = Chaco_ta_graphs[1:4]
+c2 = Chaco_ta_graphs[5:7]
+c3 = Chaco_ta_graphs[8:9]
+c4 = Chaco_ta_graphs[10:11]
+c5 = Chaco_ta_graphs[12:13]
+c6 = Chaco_ta_graphs[14:15]
+c7 = Chaco_ta_graphs[16:17]
+c8 = Chaco_ta_graphs[18:20]
+
 
 save(c1, file = "Data/Chaco_ta_graph_objects_1.RData")
 save(c2, file = "Data/Chaco_ta_graph_objects_2.RData")
 save(c3, file = "Data/Chaco_ta_graph_objects_3.RData")
+save(c4, file = "Data/Chaco_ta_graph_objects_4.RData")
+save(c5, file = "Data/Chaco_ta_graph_objects_5.RData")
+save(c6, file = "Data/Chaco_ta_graph_objects_6.RData")
+save(c7, file = "Data/Chaco_ta_graph_objects_7.RData")
+save(c8, file = "Data/Chaco_ta_graph_objects_8.RData")
 
 #save(Prignano_original_graphs, Prignano_ta_graphs, file = "Data/Prignano_graph_objects.RData")
 

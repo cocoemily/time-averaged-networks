@@ -7,16 +7,16 @@ chaco = read.csv("Data/Chaco/AllCeramics.csv")
 chaco_id = chaco %>% group_by(SWSN_ID) %>%
   summarize(Site = first(Site))
 
-ad800 = read.csv("Data/Chaco/AD800cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-ad850 = read.csv("Data/Chaco/AD850cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-ad900 = read.csv("Data/Chaco/AD900cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-ad950 = read.csv("Data/Chaco/AD950cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-ad1000 = read.csv("Data/Chaco/AD1000cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-ad1050 = read.csv("Data/Chaco/AD1050cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-ad1100 = read.csv("Data/Chaco/AD1100cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-ad1150 = read.csv("Data/Chaco/AD1150cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-ad1200 = read.csv("Data/Chaco/AD1200cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
-ad1250 = read.csv("Data/Chaco/AD1250cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad800 = read.csv("Data/Chaco/AD800cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad850 = read.csv("Data/Chaco/AD850cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad900 = read.csv("Data/Chaco/AD900cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad950 = read.csv("Data/Chaco/AD950cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad1000 = read.csv("Data/Chaco/AD1000cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad1050 = read.csv("Data/Chaco/AD1050cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad1100 = read.csv("Data/Chaco/AD1100cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad1150 = read.csv("Data/Chaco/AD1150cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad1200 = read.csv("Data/Chaco/AD1200cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
+# ad1250 = read.csv("Data/Chaco/AD1250cer.csv") %>% left_join(chaco_id, by = c("X" = "Site"))
 
 #make networks -- 25 years
 create_network_OLD = function(chaco_tp) {
