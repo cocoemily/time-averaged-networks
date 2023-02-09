@@ -1,9 +1,6 @@
 source("Scripts/time-average-functions.R")
-#source("Scripts/Chaco-time-average.R")
+source("Scripts/Chaco-time-average.R")
 source("Scripts/network-analysis-functions.R")
-
-load("Data/Chaco_original_graph_objects.RData")
-graphs = Chaco_original_graphs
 
 library(ggthemes)
 library(dplyr)
