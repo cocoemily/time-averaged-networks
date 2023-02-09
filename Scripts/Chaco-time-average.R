@@ -119,13 +119,17 @@ CHACO_datasets = list(
 
 time_average_CHACO = function(datasets, start, end) {
   newnet = datasets[[1]]
-  colnames(newnet) = c(colnames(datasets[[1]])[1], colnames(datasets[[1]])[2], "period")
   for(i in 2:end) {
     newcols = datasets[[i]]
-    colnames(newcols) = c(colnames(datasets[[i]])[1], colnames(datasets[[i]])[2], "period")
-    newnet = rbind(newnet, newcols)
+    newnet = newnet %>% full_join(newcols, by = c("SWSN_ID", "SWSN_Ware"), keep = FALSE)
   }
-  return(create_network(newnet))
+  
+  newnet[is.na(newnet)] <- 0
+  newnet$total = apply(newnet[,3:ncol(newnet)], 1, sum)
+  
+  sendnet = newnet %>% dplyr::select(SWSN_ID, SWSN_Ware, total)
+  
+  return(create_network(sendnet))
 }
 
 #time-averaged graphs

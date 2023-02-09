@@ -146,13 +146,13 @@ Chaco_ta_compare = function(original, index, graphs, o_name) {
   if(index == 1) { 
     for(i in 1:(length(graphs)-index)) {
       #print(i)
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, index, index+i)), i+1)
+      df[nrow(df) + 1, ] = c(get_row(time_average_CHACO(CHACO_datasets, index, index+i)), i+1)
     }
     df$num.graphs = c(seq(1, nrow(df), by = 1))
     df$network = c(replicate(nrow(df), o_name))
   } else if(index == length(graphs)) {
     for(i in 1:(length(graphs)-1)) {
-      df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, index)), i+1)
+      df[nrow(df) + 1, ] = c(get_row(time_average_CHACO(CHACO_datasets, i, index)), i+1)
     }
     df$num.graphs = c(1, seq(nrow(df), 2 , by = -1))
     df$network = c(replicate(nrow(df), o_name))
@@ -167,12 +167,12 @@ Chaco_ta_compare = function(original, index, graphs, o_name) {
       #print(i)
       if(i != index) {
         for(j in index:length(graphs)) {
-          df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, j)), (j-i+1))
+          df[nrow(df) + 1, ] = c(get_row(time_average_CHACO(CHACO_datasets, i, j)), (j-i+1))
         }
       } else {
         for(j in (index+1):length(graphs)) {
           #print(j)
-          df[nrow(df) + 1, ] = c(get_row(time_average(graphs, i, j)), (j-i+1))
+          df[nrow(df) + 1, ] = c(get_row(time_average_CHACO(CHACO_datasets, i, j)), (j-i+1))
         }
       }
     }
