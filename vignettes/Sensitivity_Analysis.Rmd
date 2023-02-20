@@ -34,7 +34,7 @@ Here, we run a variety of sensitivity analyses on the original and time-averaged
 # First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we will only use Chaco_ta_graphs, as the first network for each time period will be the original graph.
 #load("../Data/Chaco_graph_objects.RData")
 for(i in 1:8) {
-  load(paste0("Data/Chaco_ta_graph_objects_", i,".RData"))
+  load(paste0("../Data/Chaco_ta_graph_objects_", i,".RData"))
 }
 Chaco_ta_graphs = c(c1, c2, c3, c4, c5, c6, c7, c8)
 
