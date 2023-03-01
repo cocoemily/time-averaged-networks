@@ -250,7 +250,18 @@ plot_model_errors_bars = function(modelerrors, variables, labsize) {
                   "eigenvector centrality", "modularity", "path length", 
                   "edge density", "degree")
   names(metric.labs) = c("btwn_me", "cc_me", "diam_me", "eigen_me", "mod_me", "pl_me", "ed_me", "deg_me")
-  me$count = ifelse((me$value <= 1 & me$value >= -1), "not different", "different")
+  me$count = NA
+  for (val_i in 1:dim(me)[1]) {
+    if (is.infinite(me$value[val_i])) {
+      me$count[val_i] = "Inf"
+    } else if (is.na(me$value[val_i])) {
+      me$count[val_i] = "NA"
+    } else if (me$value[val_i] <= 1 & me$value[val_i] >= -1) {
+      me$count[val_i] = "not different"
+    } else if (me$value[val_i] > 1 | me$value[val_i] < -1) {
+      me$count[val_i] = "different"
+    }
+  }
   tab_obs = me %>% group_by(modelerror, num.graphs) %>% summarize(obs = n(), .groups = 'rowwise')
   tab_count = me %>% group_by(modelerror, num.graphs, count) %>% summarize(sum = n(), .groups = 'rowwise')
   tab_all = merge(tab_obs, tab_count, by = c("modelerror", "num.graphs"))
@@ -270,7 +281,7 @@ plot_model_errors_bars = function(modelerrors, variables, labsize) {
           panel.background = element_rect(fill = "white",
                                           colour = "white",
                                           size = 0.5, linetype = "solid") )+
-    scale_fill_manual(values = c("not different" = "#202020", "different" = "#909090"))
+    scale_fill_manual(values = c("not different" = "#202020", "different" = "#909090", "Inf" = "#aab7b8", "NA" = "#f8f9f9"))
   if (labsize > 0) {
     barplot = barplot + geom_label(position = position_fill(vjust = 0.5), colour = "#e5e6d8", label.size = 0, size = labsize, aes(x = num.graphs, y = perc, fill = count, label = perc_lab))    
   }  
