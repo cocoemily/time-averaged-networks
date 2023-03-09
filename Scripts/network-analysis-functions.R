@@ -287,3 +287,39 @@ plot_model_errors_bars = function(modelerrors, variables, labsize) {
   }  
   return(barplot)
 }
+
+#'
+#'Function computes Spearman's Rho and interprets the values
+#' @param alldata all of the network metric values for each original/time-averaged network
+#' @return dataframe with correlation value and interpretation per metric
+#' 
+get_corr_wrtTA = function(alldata) {
+  
+  alldata_ta = alldata[alldata$num.graphs > 1, ]
+  alldata_ta = na.omit(alldata_ta)
+  df_results = data.frame("metric" = c("Betweenness centrality", "Clustering coefficient", "Eigenvector centrality", "Modularity", "Mean degree", "Path length"), 
+                          "correlation_value" = NA,
+                          "correlation_with_amount_of_TimeAveraging" = NA)
+  
+  df_results$correlation_value[1] = round(cor(alldata_ta$num.graphs, alldata_ta$btwn, method = 'spearman'),2)
+  df_results$correlation_value[2] = round(cor(alldata_ta$num.graphs, alldata_ta$cc, method = 'spearman'),2)
+  df_results$correlation_value[3] = round(cor(alldata_ta$num.graphs, alldata_ta$eigen, method = 'spearman'),2)
+  df_results$correlation_value[4] = round(cor(alldata_ta$num.graphs, alldata_ta$mod, method = 'spearman'),2)
+  df_results$correlation_value[5] = round(cor(alldata_ta$num.graphs, alldata_ta$mean.deg, method = 'spearman'),2)
+  df_results$correlation_value[6] = round(cor(alldata_ta$num.graphs, alldata_ta$path.length, method = 'spearman'),2)
+  
+  for (i in 1:6) {
+    if (abs(df_results$correlation_value[i]) <= 0.3) {
+      df_results$correlation_with_amount_of_TimeAveraging[i] = "Negligible"
+    } else if (abs(df_results$correlation_value[i]) > 0.3 & abs(df_results$correlation_value[i]) <= 0.5) {
+      df_results$correlation_with_amount_of_TimeAveraging[i] = ifelse(df_results$correlation_value[i] < 0, "Weakly negative", "Weakly positive") 
+    } else if (abs(df_results$correlation_value[i]) > 0.5 & abs(df_results$correlation_value[i]) <= 0.7) {
+      df_results$correlation_with_amount_of_TimeAveraging[i] = ifelse(df_results$correlation_value[i] < 0, "Moderately negative", "Moderately positive") 
+    } else {
+      df_results$correlation_with_amount_of_TimeAveraging[i] = ifelse(df_results$correlation_value[i] < 0, "Strongly negative", "Strongly positive")
+    }
+  } 
+  return(df_results)
+}
+
+
