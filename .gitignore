@@ -5,10 +5,6 @@
 .Ruserdata
 Data/Prignano/node-csv
 Data/Chaco/AD*
-Data/Chaco/attributes.csv
-Data/Chaco/*.RData
-Data/Chaco/*.txt
-Data/Chaco/*.csv
 Data/ICRATES/time-slices
 
 # Mac trash files
