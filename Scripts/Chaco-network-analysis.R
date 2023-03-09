@@ -127,3 +127,7 @@ ggsave("figures/null-models/Chaco/me_perc_ta-to-orig.pdf", plot_model_errors_bar
 # }
 # write.csv(modelerrors2, file = "output/Chaco/model-errors_ta-to-ta.csv")
 # ggsave("figures/null-models/Chaco/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
+
+# Compute correlation with amount of time-averaging, for Table-1
+get_corr_wrtTA(alldata_nodu)
+
