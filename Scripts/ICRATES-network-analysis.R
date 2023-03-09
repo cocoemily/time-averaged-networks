@@ -151,4 +151,6 @@ ggsave("figures/null-models/ICRATES/me_perc_ta-to-orig.pdf", plot_model_errors_b
 # write.csv(me4, file = "output/ICRATES/model-errors_ta-to-ta_4.csv")
 # ggsave("figures/null-models/ICRATES/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
 
+# Compute correlation with amount of time-averaging, for Table-1
+get_corr_wrtTA(alldata_nodu)
 
