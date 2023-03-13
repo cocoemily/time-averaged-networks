@@ -1,7 +1,14 @@
 source("Scripts/time-average-functions.R")
-source("Scripts/Chaco-time-average.R")
+#source("Scripts/Chaco-time-average.R")
 source("Scripts/node_metrics.R")
 source("Scripts/node-analysis-functions.R")
+
+load("Data/Chaco_original_graph_objects.RData")
+graphs = Chaco_original_graphs
+for(i in 1:8) {
+  load(paste0("Data/Chaco_ta_graph_objects_", i,".RData"))
+}
+chaco_tagraphs = c(c1, c2, c3, c4, c5, c6, c7, c8)
 
 library(cowplot)
 

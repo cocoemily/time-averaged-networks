@@ -104,26 +104,30 @@ ggsave("figures/null-models/Chaco/me_ta-to-orig.pdf", plot_model_errors(modelerr
 ggsave("figures/null-models/Chaco/me_perc_ta-to-orig.pdf", plot_model_errors_bars(modelerrors, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), labsize = 1.1), height = 4, width = 7)
 
 
-modelerrors2 = calculate_model_error(graphs[[1]], c800)
-for(index in 1:length(graphs)) {
-  if(index == 1) { 
-    for(i in 2:(length(graphs)-index)) {
-      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), datalist[[index]]))
-    }
-  } else if(index == length(graphs)) {
-    modelerrors2 = rbind(modelerrors2, calculate_model_error(graphs[[index]], datalist[[index]]))
-    for(i in 1:(length(graphs)-1)) {
-      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), datalist[[index]]))
-    }
-  } else {
-    modelerrors2 = rbind(modelerrors2, calculate_model_error(graphs[[index]], datalist[[index]]))
-    for(i in 1:(length(graphs)-index)) {
-      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), datalist[[index]]))
-    }
-    for(i in 1:(index-1)) {
-      modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), datalist[[index]]))
-    }
-  }
-}
-write.csv(modelerrors2, file = "output/Chaco/model-errors_ta-to-ta.csv")
-ggsave("figures/null-models/Chaco/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
+# modelerrors2 = calculate_model_error(graphs[[1]], c800)
+# for(index in 1:length(graphs)) {
+#   if(index == 1) { 
+#     for(i in 2:(length(graphs)-index)) {
+#       modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), datalist[[index]]))
+#     }
+#   } else if(index == length(graphs)) {
+#     modelerrors2 = rbind(modelerrors2, calculate_model_error(graphs[[index]], datalist[[index]]))
+#     for(i in 1:(length(graphs)-1)) {
+#       modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), datalist[[index]]))
+#     }
+#   } else {
+#     modelerrors2 = rbind(modelerrors2, calculate_model_error(graphs[[index]], datalist[[index]]))
+#     for(i in 1:(length(graphs)-index)) {
+#       modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, index, index+i), datalist[[index]]))
+#     }
+#     for(i in 1:(index-1)) {
+#       modelerrors2 = rbind(modelerrors2, calculate_model_error(time_average(graphs, i, index), datalist[[index]]))
+#     }
+#   }
+# }
+# write.csv(modelerrors2, file = "output/Chaco/model-errors_ta-to-ta.csv")
+# ggsave("figures/null-models/Chaco/all_ta_me.pdf", plot_model_errors(modelerrors2, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me")), height = 4, width = 7)
+
+# Compute correlation with amount of time-averaging, for Table-1
+get_corr_wrtTA(alldata_nodu)
+

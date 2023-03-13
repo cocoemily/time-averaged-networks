@@ -33,11 +33,10 @@ Here, we run a variety of sensitivity analyses on the original and time-averaged
 
 # First, load in all of the the igraph objects (i.e., Chaco_original_graphs and Chaco_ta_graphs). However, we will only use Chaco_ta_graphs, as the first network for each time period will be the original graph.
 #load("../Data/Chaco_graph_objects.RData")
-load("../Data/Chaco_ta_graph_objects_1.RData")
-load("../Data/Chaco_ta_graph_objects_2.RData")
-load("../Data/Chaco_ta_graph_objects_3.RData")
-
-Chaco_ta_graphs = append(append(cf, cs), ct)
+for(i in 1:8) {
+  load(paste0("../Data/Chaco_ta_graph_objects_", i,".RData"))
+}
+Chaco_ta_graphs = c(c1, c2, c3, c4, c5, c6, c7, c8)
 
 # The lists are unnested for 1 level.
 Chaco.nets <- purrr::map(Chaco_ta_graphs, 1)

@@ -174,3 +174,6 @@ me_aata = rbind(
 all_me_ta = rbind(me_eia1eta, me_eia1lta, me_eia2ta, me_oata, me_aata)
 write.csv(all_me_ta, file = "output/Prignano/model-errors_ta-to-ta.csv")
 ggsave("figures/null-models/Prignano/all_ta_me.pdf", plot_model_errors(all_me_ta, c("btwn_me", "eigen_me", "cc_me", "mod_me", "diam_me"), span = 0.75), height = 4, width = 7)
+
+# Compute correlation with amount of time-averaging, for Table-1
+get_corr_wrtTA(alldata_nodu)
