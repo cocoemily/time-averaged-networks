@@ -1,6 +1,7 @@
 ## The effects of time-averaging on archaeological networks
 
-[abstract here]
+### Abstract
+It is well recognized that time-averaging of archaeological deposits results in significant biases in interpretations of the archaeological record. In this study, we investigate the biases introduced by time-averaging in the study of social and economic networks from the archaeological record. Using three different archaeological network datasets, we combine network slices from multiple periods to mimic the effects of time-averaging to understand how the palimpsest nature of the archaeological record affects our interpretations of the network. The results of our analysis indicate that time-averaging reduces the fidelity of network interpretations compared to the non-time-averaged networks when analyzing network or node properties. Our results also showed that the effects of time-averaging are highly dependent on initial network structures. This makes it difficult to establish general rules for how to interpret time-averaged networks in archaeology. However, our study shows that it is of paramount importance that archaeologists are aware of these biases and evaluate the reliability of their data accordingly.
 
 ### Data  
 ##### Prignano  
